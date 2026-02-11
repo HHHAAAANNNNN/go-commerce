@@ -21,6 +21,9 @@ export default function HeroSection() {
         
         {/* Vignette Effect */}
         <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-black/60"></div>
+        
+        {/* Bottom Fade to Next Section */}
+        <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-b from-transparent via-[#0A0A0F]/50 to-[#0A0A0F]"></div>
       </div>
 
       {/* Content */}
@@ -60,35 +63,6 @@ export default function HeroSection() {
           >
             View Deals
           </a>
-        </div>
-
-        {/* Trust Badges */}
-        <div className="grid grid-cols-3 gap-8 max-w-2xl animate-fade-in-up animation-delay-600">
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 mb-3 bg-primary-400/10 backdrop-blur-sm rounded-full flex items-center justify-center transition-all hover:scale-110 hover:bg-primary-400/20 duration-300 border border-primary-400/20">
-              <svg className="w-6 h-6 text-primary-400" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
-                <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z"/>
-              </svg>
-            </div>
-            <p className="text-sm font-medium text-slate-300">Free Shipping</p>
-          </div>
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 mb-3 bg-accent-300/10 backdrop-blur-sm rounded-full flex items-center justify-center transition-all hover:scale-110 hover:bg-accent-300/20 duration-300 border border-accent-300/20">
-              <svg className="w-6 h-6 text-accent-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
-              </svg>
-            </div>
-            <p className="text-sm font-medium text-slate-300">Secure Payment</p>
-          </div>
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 mb-3 bg-secondary-300/10 backdrop-blur-sm rounded-full flex items-center justify-center transition-all hover:scale-110 hover:bg-secondary-300/20 duration-300 border border-secondary-300/20">
-              <svg className="w-6 h-6 text-secondary-400" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
-              </svg>
-            </div>
-            <p className="text-sm font-medium text-slate-300">24/7 Support</p>
-          </div>
         </div>
 
         {/* Scroll Indicator */}

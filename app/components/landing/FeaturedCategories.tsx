@@ -54,9 +54,11 @@ export default function FeaturedCategories() {
   return (
     <section id="products" className="relative py-24 bg-[#0A0A0F] overflow-hidden">
       {/* Background Elements */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0F] via-[#1a0f2e]/20 to-[#0A0A0F]"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#1a0f2e]/10 to-transparent"></div>
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-400/10 rounded-full filter blur-3xl"></div>
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-secondary-300/10 rounded-full filter blur-3xl"></div>
+      {/* Bottom gradient transition to next section */}
+      <div className="absolute inset-x-0 bottom-0 h-96 bg-gradient-to-b from-transparent via-[#0f0a1a]/50 to-[#150a24] pointer-events-none"></div>
 
       <div className="relative container mx-auto px-4">
         {/* Section Header */}

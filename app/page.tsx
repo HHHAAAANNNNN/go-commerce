@@ -4,6 +4,7 @@ import FeaturedCategories from "./components/landing/FeaturedCategories";
 import WhyUs from "./components/landing/WhyUs";
 import SocialProof from "./components/landing/SocialProof";
 import CTASection from "./components/landing/CTASection";
+import Footer from "./components/Footer";
 
 export default function Home() {
   return (
@@ -16,6 +17,7 @@ export default function Home() {
         <SocialProof />
         <CTASection />
       </main>
+      <Footer />
     </>
   );
 }

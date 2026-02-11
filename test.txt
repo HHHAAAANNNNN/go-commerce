@@ -1,0 +1,3 @@
+Welcome to Go-Commerce!
+This is a test file.
+Appended line 1

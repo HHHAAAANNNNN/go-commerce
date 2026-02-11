@@ -1,0 +1,9 @@
+{
+  "customer_id": 1,
+  "customer_name": "Farhan Nugraha",
+  "product_id": "LAP001",
+  "product_name": "Laptop ASUS ROG",
+  "quantity": 1,
+  "timestamp": "2026-02-11T15:21:28.777337+07:00",
+  "total": 15000000
+}

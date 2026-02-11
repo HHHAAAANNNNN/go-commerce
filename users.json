@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "name": "Farhan Nugraha",
+    "email": "farhan@email.com",
+    "balance": 10000000,
+    "is_member": true,
+    "created_at": "0001-01-01T00:00:00Z"
+  },
+  {
+    "id": 2,
+    "name": "Budi Santoso",
+    "email": "budi@email.com",
+    "balance": 5000000,
+    "is_member": false,
+    "created_at": "0001-01-01T00:00:00Z"
+  }
+]

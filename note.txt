@@ -31,3 +31,76 @@ COLOR PALLETES:
 FONT:
     Primary: font-family: 'Inter', system-ui, sans-serif;
     Secondary: font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+APP SITE:
+    - LOGIN/REGISTER PAGE (we think about this after all sites are done) 
+    - DASHBOARD PAGE [AS CUSTOMERS]
+        - navbar (dari kiri ke kanan: Logo Ipsum; judul halaman; user Profil); (profil jika ditekan memunculkan menu: Edit Profile; my cart; logout)
+        - sidebar (dari atas ke bawah: dashboard; Products; vouchers; support)
+        - main page
+            - Welcome banner
+            - membership status (current membership status; member since; privilege level; next membership tier foreshadow status and spending target; progress to next membership tier; CTA for SHOP NOW that directing to product page)
+            - statistic cards (total orders in items; pending orders; completed orders; total spent in currency)
+            - two column:
+                - left (width:mainpage ratio = 1:2): activity chart (chart for showing spending per month in range of last 6 - 12 months)
+                - right (width:mainpage ratio = 2:1): recent 5 - 10 orders, showing IDs, product name, Qty, Date, Status (done; ship; pend), action (if done = view; if ship = track; if pend = pay)
+            - two column:
+                - left (width:mainpage ratio = 2:1): cards for Product Recommendation based on most category spent
+                - right (width:mainpage ratio = 1:2): donut chart for spending by category 
+            - active vouchers (only showing top 3 most saving vouchers, then given the option to view all vouchers which directing to voucher page same as from sidebar)
+
+    - PRODUCT LISTING PAGE
+        - navbar & sidebar: same as dashboard
+        - main page:
+            - Filter & Search Bar (top): search box with autocomplete; filter dropdown (category, price range slider, brand checkboxes, rating filter, stock status); sort by dropdown (newest, price low-high, price high-low, most popular, best rating); view toggle (grid/list); results count
+            - Breadcrumb navigation: Home > Products > [Category if filtered]
+            - Product Grid (3-4 columns responsive): product cards (image, tag (New/Hot/Sale), name, rating stars, price, stock badge, "Add to Cart" button); hover effect (quick view icon overlay); sold count badge
+            - Pagination (bottom): Previous / 1 2 3 ... 10 / Next or "Load More" button
+            - Quick View Modal: product image gallery thumbnail; name, price, rating; short description; quantity selector; Add to Cart / Buy Now buttons; "View Full Details" link
+
+    - PRODUCT DETAILS PAGE
+        - navbar & sidebar: same
+        - main page:
+            - Breadcrumb: Home > Products > [Category] > [Product Name]
+            - Two Column Layout (40:60 ratio):
+                - left (Product Gallery): main large image (zoomable); 360° view badge; video preview badge
+                - right (Product Info): product name; rating stars with reviews count; SKU/Product Code; stock status badge (In Stock/Only X left/Pre-order); price (large, bold gradient) + original price strikethrough; discount badge; member price highlight box; variant selector (color swatches, storage/RAM chips); quantity selector [-] [1] [+]; action buttons (Add to Cart primary gradient large, Buy Now outline, Heart wishlist, Share icon); delivery info box (estimated delivery, free shipping badge, location selector); trust badges (100% Original, Official Warranty, Easy Returns 14 days)
+            - Tabs Section (Full Width): Description tab (full description, features bullets, specs table); Specifications tab (technical specs table); Reviews tab (rating breakdown bar chart, filter reviews, review cards with avatar/name/date/rating/text/helpful/images, "Write a Review" button); Q&A tab ("Ask a Question" button, previous Q&A with upvote/downvote)
+            - Related Products Section: "You May Also Like" horizontal scroll 6-8 cards about the same category
+    
+    - CART PAGE
+        - navbar & sidebar: same (cart badge showing item count)
+        - main page:
+            - Breadcrumb: Home > Shopping Cart
+            - Two Column Layout (65:35 ratio):
+                - left (Cart Items): header "Shopping Cart ([X] items)"; "Select All" checkbox; Cart Item Cards (checkbox, product image clickable, name + variant, price per unit, quantity selector [-] [qty] [+], subtotal, delete icon, move to wishlist link, stock warning if qty > stock); Bulk Actions (Delete Selected, Move Selected to Wishlist); Recommended Add-ons ("Frequently Bought Together" 2-3 cards with checkbox)
+                - right (Order Summary): sticky card; subtotal, shipping (calculated at checkout), tax (default is 11%), discount (if voucher -Rp green); Voucher/Coupon Input (text + Apply button, list available vouchers); Total (large bold gradient); member discount info; CTA "Proceed to Checkout" (large gradient full width); "Continue Shopping" link; trust indicators (Secure Checkout, Free Shipping threshold, Easy Returns)
+            - Empty Cart State: empty cart illustration; "Your cart is empty"; "Start Shopping" button; "Popular Products" section
+
+    - CHECKOUT PAGE
+        - navbar: simplified (logo + progress indicator only)
+        - sidebar: hidden (full focus)
+        - main page:
+            - Progress Indicator (top): Step 1: Shipping ● —— Step 2: Payment ○ —— Step 3: Review ○
+            - Two Column Layout (60:40 ratio):
+                - left (Checkout Forms):
+                    - Step 1 Shipping: section header; saved addresses radio cards (address preview with Edit/Delete, Set as Default checkbox); "+ Add New Address" button; Address Form (full name, phone, province dropdown, city dropdown, district dropdown, full address textarea, postal code, address label radio Home/Office/Other, save as default checkbox); Shipping Method Radio Cards (Regular free 5-7d, Express Rp20k 2-3d recommended, Same Day Rp50k today, each with estimated arrival); "Continue to Payment" button
+                    - Step 2 Payment: section header; Payment Options radio cards (E-Wallet: GoPay/OVO/Dana/ShopeePay; Bank Transfer: BCA/Mandiri/BNI/BRI virtual account; Credit/Debit Card with input form; Installment 0% 3/6/12mo for amount > threshold; COD for certain areas); "Review Order" button
+                    - Step 3 Review: "Review Your Order" header; shipping address summary compact card; shipping method summary; payment method summary; each with "Change" link; order items list compact no edit (small image, name, qty, price); Terms & Conditions checkbox "I agree to T&C and Privacy Policy"; Place Order Button (large gradient pulsing) "Place Order - Rp XXX"
+                - right (Order Summary Sticky): order summary read-only; items breakdown collapsible (product × qty: price); subtotal, shipping [method] price, voucher discount, tax; Total to Pay (large bold); estimated delivery date; trust badges (Encrypted Secure, Money Back Guarantee, 24/7 Support)
+
+    - ORDER HISTORY PAGE
+        - navbar & sidebar: same
+        - main page:
+            - Header Section: page title "Order History"; filter tabs (All Orders, To Pay, To Ship, To Receive, Completed, Cancelled) each with badge count; search orders input "Search by order ID or product name"; date range filter (Last 30d/3mo/6mo/All time)
+            - Order Cards List (vertical full width):
+                - Card Header: left (Order ID + Order Date); right (Status badge with color)
+                - Card Body: product list horizontal (image small, name + variant, qty × price); "Show [X] more items" if > 3
+                - Card Footer: left (Total payment bold); right (Action buttons based on status: To Pay "Pay Now" primary + "Cancel Order"; To Ship "Track Order" + "Cancel Order"; To Receive "Track Order" + "Confirm Received"; Completed "Buy Again" + "Review" + "View Details"; Cancelled "Buy Again" + "View Details")
+            - Order Details Modal/Page: order timeline visual (Order Placed, Payment Confirmed, Processing, Shipped, Delivered with timestamps); order information table (Order ID, Date, Payment Method, Shipping Method, Tracking Number clickable with Copy); shipping address; product list detail with subtotals; price breakdown; actions ("Download Invoice" + "Need Help?" buttons)
+            - Empty State: illustration; "No orders yet"; "Start Shopping" button
+
+    - ADDITIONAL PAGES:
+        - VOUCHER PAGE (from sidebar): available vouchers grid 3 columns; each card (code, discount amount, min purchase, expiry, terms, "Copy Code"/"Apply" button); filter (All/Free Shipping/Percentage/Fixed Amount); sort (Highest Discount/Expiring Soon); tabs (My vouchers vs Available); voucher detail modal with full T&C
+        - PROFILE/SETTINGS PAGE: tabs (Personal Info/Addresses/Change Password/Notification Preferences); Personal Info (avatar upload, name, email, phone, birthdate); Address book (saved addresses add/edit/delete/set default); Notification toggles (Order updates, Promotions, Newsletter)
+        - SUPPORT PAGE: FAQ accordion sections (Orders, Payments, Shipping, Returns, Account); "Contact Us" form (name, email, order ID optional, category dropdown, message); live chat widget trigger; help articles search; support ticket status tracker

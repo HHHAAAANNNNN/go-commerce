@@ -51,21 +51,21 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
 
   return (
     <aside 
-      className={`bg-[#0A0A0F] border-r border-slate-800/50 min-h-screen transition-all duration-300 ${
+      className={`bg-[#0A0A0F] border-r border-slate-800/50 min-h-screen transition-all duration-300 flex flex-col ${
         isCollapsed ? "w-20" : "w-64"
       }`}
     >
-      <div className="p-6">
-        <nav className="space-y-2">
+      <div className="flex-1 p-4">
+        <nav className="space-y-1 mt-4">
           {menuItems.map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
                   isActive
-                    ? "bg-gradient-to-r from-primary-400/10 to-secondary-400/10 text-primary-400 border border-primary-400/20"
+                    ? "bg-gradient-to-r from-primary-400/10 to-secondary-400/10 text-primary-400 border border-primary-400/20 shadow-lg shadow-primary-400/10"
                     : "text-slate-400 hover:text-white hover:bg-slate-800/40"
                 } ${isCollapsed ? "justify-center" : ""}`}
                 title={isCollapsed ? item.label : ""}
@@ -74,12 +74,37 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
                   {item.icon}
                 </span>
                 {!isCollapsed && (
-                  <span className="font-medium">{item.label}</span>
+                  <span className="font-medium text-sm">{item.label}</span>
                 )}
               </Link>
             );
           })}
         </nav>
+      </div>
+      
+      {/* Profile Section at Bottom */}
+      <div className="border-t border-slate-800/50 p-4">
+        {!isCollapsed ? (
+          <Link
+            href="/profile"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span className="font-medium text-sm">Profile</span>
+          </Link>
+        ) : (
+          <Link
+            href="/profile"
+            className="flex items-center justify-center px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all"
+            title="Profile"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </Link>
+        )}
       </div>
     </aside>
   );

@@ -1,5 +1,7 @@
 "use client";
 
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+
 export default function DashboardPage() {
   const currentHour = new Date().getHours();
   const greeting = currentHour < 12 ? "Good Morning" : currentHour < 18 ? "Good Afternoon" : "Good Evening";
@@ -35,7 +37,7 @@ export default function DashboardPage() {
             <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary-400 via-accent-400 to-secondary-400 bg-clip-text text-transparent mb-2">
               Farhan Nugraha
             </h1>
-            <p className="text-slate-300 text-lg">Welcome back to your dashboard! 👋</p>
+            <p className="text-slate-300 text-lg">Welcome back to your dashboard!</p>
           </div>
           <div className="hidden md:flex flex-col items-end gap-2">
             <div className="px-4 py-2 bg-gradient-to-r from-accent-400/20 to-accent-400/10 border border-accent-400/30 rounded-full">
@@ -338,19 +340,295 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Recommendations & Donut Chart - Placeholder */}
-      <div className="grid grid-cols-3 gap-6">
-        <div className="col-span-2 bg-slate-800/40 rounded-xl p-4 h-64">
-          <p className="text-slate-400">Product Recommendations</p>
+      {/* Recommendations & Spending Breakdown */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Product Recommendations */}
+        <div className="lg:col-span-2 bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-xl font-bold text-white mb-1">Recommended for You</h3>
+              <p className="text-slate-400 text-sm">Based on your purchase history</p>
+            </div>
+            <button className="px-4 py-2 bg-primary-400/10 text-primary-400 rounded-lg text-sm font-semibold hover:bg-primary-400/20 transition-colors border border-primary-400/20">
+              View All
+            </button>
+          </div>
+
+          {/* Product Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { name: 'AirPods Pro 2', category: 'Accessories', price: 3799000, image: '🎧', discount: 15, tag: 'Hot' },
+              { name: 'iPad Air M2', category: 'Tablets', price: 9999000, image: '📱', discount: 10, tag: 'New' },
+              { name: 'Magic Keyboard', category: 'Accessories', price: 4499000, image: '⌨️', discount: 0, tag: '' },
+            ].map((product, index) => (
+              <div
+                key={index}
+                className="group bg-slate-800/50 backdrop-blur-sm border border-slate-700/30 rounded-xl overflow-hidden hover:border-primary-400/40 transition-all duration-300 hover:scale-105"
+              >
+                {/* Product Image */}
+                <div className="relative h-40 bg-gradient-to-br from-slate-700/50 to-slate-800/50 flex items-center justify-center">
+                  <span className="text-6xl">{product.image}</span>
+                  {product.tag && (
+                    <div className="absolute top-3 left-3">
+                      <span className="px-2.5 py-1 bg-accent-400/90 backdrop-blur-sm text-slate-900 text-xs font-bold rounded-full">
+                        {product.tag}
+                      </span>
+                    </div>
+                  )}
+                  {product.discount > 0 && (
+                    <div className="absolute top-3 right-3">
+                      <span className="px-2.5 py-1 bg-red-500/90 backdrop-blur-sm text-white text-xs font-bold rounded-full">
+                        -{product.discount}%
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Product Info */}
+                <div className="p-4">
+                  <p className="text-slate-400 text-xs mb-1">{product.category}</p>
+                  <h4 className="text-white font-semibold mb-2 line-clamp-1">{product.name}</h4>
+                  
+                  {/* Rating */}
+                  <div className="flex items-center gap-1 mb-3">
+                    {[...Array(5)].map((_, i) => (
+                      <svg key={i} className="w-3 h-3 text-accent-400 fill-current" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                    <span className="text-slate-400 text-xs ml-1">4.8</span>
+                  </div>
+
+                  {/* Price */}
+                  <p className="text-primary-400 font-bold text-lg mb-3">
+                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(product.price).replace('Rp', 'Rp ')}
+                  </p>
+
+                  {/* Add to Cart Button */}
+                  <button className="w-full py-2 bg-primary-400/10 text-primary-400 rounded-lg text-sm font-semibold hover:bg-primary-400 hover:text-white transition-all duration-300 border border-primary-400/20">
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="col-span-1 bg-slate-800/40 rounded-xl p-4 h-64">
-          <p className="text-slate-400">Donut Chart</p>
+
+        {/* Spending by Category - Donut Chart */}
+        <div className="lg:col-span-1 bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
+          <div className="mb-6">
+            <h3 className="text-xl font-bold text-white mb-1">Spending by Category</h3>
+            <p className="text-slate-400 text-sm">This year breakdown</p>
+          </div>
+
+          {/* Interactive Donut Chart - Larger */}
+          <div className="flex items-center justify-center mb-4">
+            <ResponsiveContainer width="100%" height={280}>
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: 'Phones', value: 20340000, percentage: 45 },
+                    { name: 'Laptops', value: 15820000, percentage: 35 },
+                    { name: 'Accessories', value: 9040000, percentage: 20 },
+                  ]}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={75}
+                  outerRadius={110}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  <Cell fill="#a78bfa" />
+                  <Cell fill="#22d3ee" />
+                  <Cell fill="#fbbf24" />
+                </Pie>
+                <Tooltip 
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div style={{
+                          backgroundColor: 'rgba(15, 23, 42, 0.98)',
+                          border: '1px solid rgba(100, 116, 139, 0.4)',
+                          borderRadius: '12px',
+                          padding: '16px',
+                          boxShadow: '0 8px 16px rgba(0, 0, 0, 0.4)'
+                        }}>
+                          {/* Category Name */}
+                          <div style={{ marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid rgba(148, 163, 184, 0.2)' }}>
+                            <span style={{ color: '#f1f5f9', fontWeight: 'bold', fontSize: '15px' }}>{data.name}</span>
+                          </div>
+                          {/* Amount */}
+                          <div style={{ marginBottom: '6px' }}>
+                            <span style={{ color: '#cbd5e1', fontSize: '12px' }}>Amount: </span>
+                            <span style={{ color: '#f1f5f9', fontWeight: 'bold', fontSize: '14px' }}>
+                              {new Intl.NumberFormat('id-ID', { 
+                                style: 'currency', 
+                                currency: 'IDR', 
+                                minimumFractionDigits: 0 
+                              }).format(data.value).replace('Rp', 'Rp ')}
+                            </span>
+                          </div>
+                          {/* Percentage */}
+                          <div>
+                            <span style={{ color: '#cbd5e1', fontSize: '12px' }}>Percentage: </span>
+                            <span style={{ color: '#fbbf24', fontWeight: 'bold', fontSize: '14px' }}>
+                              {data.percentage}%
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Total Spent Below Chart */}
+          <div className="text-center pt-4 border-t border-slate-700/30">
+            <p className="text-slate-400 text-xs mb-1">Total Spent</p>
+            <p className="text-white font-bold text-2xl">
+              {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(45200000).replace('Rp', 'Rp ')}
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Vouchers - Placeholder */}
-      <div className="bg-slate-800/40 rounded-xl p-4">
-        <p className="text-slate-400">Active Vouchers</p>
+      {/* Active Vouchers - Gold Royal Theme */}
+      <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-xl font-bold text-white mb-1">Active Vouchers</h3>
+            <p className="text-slate-400 text-sm">Save more on your next purchase</p>
+          </div>
+          <a 
+            href="/vouchers"
+            className="text-accent-400 text-sm font-semibold hover:text-accent-300 transition-colors flex items-center gap-1"
+          >
+            View All Vouchers 
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </a>
+        </div>
+
+        {/* Voucher Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {[
+            { 
+              code: 'TECH20', 
+              discount: '20% OFF', 
+              description: 'Maximum discount Rp 100,000', 
+              minPurchase: 500000,
+              expiry: '3 days left',
+              type: 'percentage',
+              tagColor: 'from-purple-500 to-purple-600',
+              glowColor: 'purple-500'
+            },
+            { 
+              code: 'FREESHIP', 
+              discount: 'FREE SHIPPING', 
+              description: 'No minimum purchase required', 
+              minPurchase: 0,
+              expiry: '1 week left',
+              type: 'shipping',
+              tagColor: 'from-cyan-500 to-cyan-600',
+              glowColor: 'cyan-500'
+            },
+            { 
+              code: 'SAVE50K', 
+              discount: 'Rp 50,000', 
+              description: 'Discount for all products', 
+              minPurchase: 1000000,
+              expiry: '2 weeks left',
+              type: 'fixed',
+              tagColor: 'from-amber-400 to-yellow-500',
+              glowColor: 'amber-400'
+            },
+          ].map((voucher, index) => (
+            <div
+              key={index}
+              className="relative group bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-xl overflow-hidden hover:border-accent-400/50 hover:shadow-xl hover:shadow-accent-400/10 transition-all duration-300"
+            >
+              {/* Animated Gold Shimmer Effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent-400/10 to-transparent shimmer-animation opacity-0 group-hover:opacity-100"></div>
+              
+              {/* Gold accent line at top with shimmer */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent-400 to-transparent animate-pulse"></div>
+              
+              {/* Decorative corner with sparkle */}
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-accent-400/10 to-transparent rounded-bl-[100px] group-hover:from-accent-400/20 transition-all duration-500"></div>
+              
+              <div className="p-5 relative z-10">
+                {/* Voucher Code Tag */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className={`px-2.5 py-1 bg-gradient-to-r ${voucher.tagColor} rounded-lg shadow-lg`}>
+                    <p className="text-white font-bold text-[10px] tracking-wider">{voucher.code}</p>
+                  </div>
+                  <button 
+                    className="p-1.5 hover:bg-slate-700/50 rounded-lg transition-all hover:scale-110"
+                    title="Copy code"
+                  >
+                    <svg className="w-3.5 h-3.5 text-slate-400 hover:text-accent-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Discount Amount - Better Contrast */}
+                <h4 className="text-xl font-bold text-white mb-1.5 drop-shadow-lg">
+                  {voucher.discount}
+                </h4>
+                <p className="text-slate-300 text-xs mb-3 min-h-[32px]">{voucher.description}</p>
+
+                {/* Divider with gold shimmer */}
+                <div className="relative my-3">
+                  <div className="border-t border-slate-700/50 border-dashed"></div>
+                  <div className="absolute inset-0 border-t border-accent-400/20 border-dashed shimmer-animation"></div>
+                </div>
+
+                {/* Details - Better Visibility */}
+                <div className="space-y-2 mb-3">
+                  {voucher.minPurchase > 0 ? (
+                    <div className="flex items-center gap-2 text-[11px] text-slate-300">
+                      <svg className="w-3.5 h-3.5 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                      </svg>
+                      <span>Min. purchase: <span className="text-white font-bold">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(voucher.minPurchase).replace('Rp', 'Rp ')}</span></span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-[11px] text-green-400">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="font-bold">No Minimum Purchase</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-[11px] text-amber-300">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="font-bold">{voucher.expiry}</span>
+                  </div>
+                </div>
+
+                {/* Use Button - Gold Shimmer Theme */}
+                <button className="relative w-full py-2.5 bg-gradient-to-r from-accent-400/20 to-accent-500/20 text-accent-300 rounded-lg text-xs font-bold hover:from-accent-400 hover:to-accent-500 hover:text-slate-900 hover:shadow-xl hover:shadow-accent-400/40 transition-all duration-300 border border-accent-400/40 hover:border-accent-400 group overflow-hidden">
+                  {/* Button shimmer effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent shimmer-animation opacity-0 group-hover:opacity-100"></div>
+                  <span className="relative flex items-center justify-center gap-2">
+                    Use Voucher
+                    <svg className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </span>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

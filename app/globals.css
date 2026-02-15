@@ -183,4 +183,18 @@ html {
   .bg-gradient-radial {
     background-image: radial-gradient(circle at center, var(--tw-gradient-stops));
   }
+
+  /* Gold Shimmer Animation */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .shimmer-animation {
+    animation: shimmer 3s infinite;
+  }
 }

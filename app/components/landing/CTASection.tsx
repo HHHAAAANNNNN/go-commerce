@@ -60,7 +60,10 @@ export default function CTASection() {
             {/* CTA Buttons */}
             <div className="flex flex-col items-center justify-center gap-4">
               {/* Primary CTA - Create Account */}
-              <button className="group relative px-8 py-4 bg-gradient-to-r from-primary-400 to-secondary-400 text-white rounded-full font-semibold text-lg hover:from-primary-500 hover:to-secondary-500 transition-all duration-300 hover:scale-105 shadow-2xl shadow-primary-400/30 hover:shadow-primary-400/50 min-w-[280px]">
+              <a
+                href="/dashboard"
+                className="group relative px-8 py-4 bg-gradient-to-r from-primary-400 to-secondary-400 text-white rounded-full font-semibold text-lg hover:from-primary-500 hover:to-secondary-500 transition-all duration-300 hover:scale-105 shadow-2xl shadow-primary-400/30 hover:shadow-primary-400/50 min-w-[280px] inline-block"
+              >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   Create Free Account
                   <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,15 +72,18 @@ export default function CTASection() {
                 </span>
                 {/* Glow effect */}
                 <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary-400/50 to-secondary-400/50 blur-xl group-hover:blur-2xl transition-all duration-300 opacity-50 group-hover:opacity-100"></div>
-              </button>
+              </a>
 
               {/* Secondary CTA - Login */}
-              <button className="group text-slate-400 hover:text-white transition-colors duration-300 text-sm">
+              <a
+                href="/dashboard"
+                className="group text-slate-400 hover:text-white transition-colors duration-300 text-sm"
+              >
                 <span className="flex items-center gap-1">
                   Already Member? 
                   <span className="text-primary-400 group-hover:text-secondary-400 transition-colors underline underline-offset-2">Login Here</span>
                 </span>
-              </button>
+              </a>
             </div>
 
             {/* Trust Indicators */}

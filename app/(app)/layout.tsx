@@ -14,14 +14,21 @@ export default function AppLayout({
   return (
     <div className="min-h-screen bg-[#0A0A0F]">
       <AppNavbar onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
-      <div className="flex">
-        <div className="sticky top-0 h-screen z-40">
-          <Sidebar isCollapsed={isSidebarCollapsed} />
-        </div>
-        <main className="flex-1 p-6 relative z-0">
-          {children}
-        </main>
+      
+      {/* Fixed Sidebar */}
+      <div className="fixed left-0 top-[73px] h-[calc(100vh-73px)] z-30">
+        <Sidebar isCollapsed={isSidebarCollapsed} />
       </div>
+      
+      {/* Main Content with margin to avoid overlap */}
+      <main 
+        className={`pb-6 px-6 transition-all duration-300 ${
+          isSidebarCollapsed ? "ml-20" : "ml-64"
+        }`}
+        style={{ marginTop: '20px' }}
+      >
+        {children}
+      </main>
     </div>
   );
 }

@@ -51,7 +51,7 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
 
   return (
     <aside 
-      className={`bg-[#0A0A0F] border-r border-slate-800/50 h-screen transition-all duration-300 flex flex-col ${
+      className={`bg-[#0A0A0F] border-r border-slate-800/50 h-full transition-all duration-300 flex flex-col ${
         isCollapsed ? "w-20" : "w-64"
       }`}
     >

@@ -43,7 +43,7 @@ export default function AppNavbar({ onToggleSidebar }: AppNavbarProps) {
             </svg>
           </button>
           <div className="text-xl font-bold bg-gradient-to-r from-primary-400 to-secondary-400 bg-clip-text text-transparent">
-            Logo Ipsum
+            [Logo Ipsum]
           </div>
         </div>
 

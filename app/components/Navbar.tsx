@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from "react";
 
-export default function Navbar() {
+interface NavbarProps {
+  onLoginClick: () => void;
+}
+
+export default function Navbar({ onLoginClick }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -23,6 +27,8 @@ export default function Navbar() {
       });
     }
   };
+
+
 
   return (
     <nav
@@ -82,6 +88,7 @@ export default function Navbar() {
 
           {/* Login Button */}
           <button
+            onClick={onLoginClick}
             className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-300 hover:scale-105 ${
               isScrolled
                 ? "bg-gradient-to-r from-primary-400 to-primary-500 text-white hover:from-primary-500 hover:to-primary-600 shadow-md shadow-primary-400/20 hover:shadow-xl hover:shadow-primary-400/30"

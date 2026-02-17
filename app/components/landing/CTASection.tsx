@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 
-export default function CTASection() {
+interface CTASectionProps {
+  onLoginClick: () => void;
+}
+
+export default function CTASection({ onLoginClick }: CTASectionProps) {
   const [showRegisterForm, setShowRegisterForm] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -21,6 +25,16 @@ export default function CTASection() {
 
   const handlePrevStep = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+    setCurrentStep(1);
+  };
+
+  const handleLoginClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    onLoginClick();
+  };
+
+  const handleRegisterFromLogin = () => {
+    setShowRegisterForm(true);
     setCurrentStep(1);
   };
 
@@ -89,6 +103,7 @@ export default function CTASection() {
                   {/* Primary CTA - Create Account */}
                   <a
                     href="#"
+                    id="register-trigger"
                     onClick={handleToggleForm}
                     className="group relative px-8 py-4 bg-gradient-to-r from-primary-400 to-secondary-400 text-white rounded-full font-semibold text-lg hover:from-primary-500 hover:to-secondary-500 transition-all duration-300 hover:scale-105 shadow-2xl shadow-primary-400/30 hover:shadow-primary-400/50 min-w-[280px] inline-block"
                   >
@@ -113,7 +128,8 @@ export default function CTASection() {
 
                   {/* Secondary CTA - Login */}
                   <a
-                    href="/dashboard"
+                    href="#"
+                    onClick={handleLoginClick}
                     className="group text-slate-400 hover:text-white transition-colors duration-300 text-sm"
                   >
                     <span className="flex items-center gap-1">
@@ -288,7 +304,8 @@ export default function CTASection() {
                   {/* Already Member - Centered */}
                   <div className="text-center pt-3">
                     <a
-                      href="/dashboard"
+                      href="#"
+                      onClick={handleLoginClick}
                       className="group text-slate-400 hover:text-white transition-colors duration-300 text-xs inline-block"
                     >
                       <span className="flex items-center gap-1">

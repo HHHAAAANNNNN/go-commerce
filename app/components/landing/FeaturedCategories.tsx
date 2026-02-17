@@ -2,27 +2,41 @@
 
 import { useEffect, useRef } from "react";
 import Image from "next/image";
+import { CartItem } from "../CartModal";
 
-export default function FeaturedCategories() {
+interface FeaturedCategoriesProps {
+  onAddToCart: (product: CartItem) => void;
+}
+
+export default function FeaturedCategories({ onAddToCart }: FeaturedCategoriesProps) {
   const mobileScrollRef = useRef<HTMLDivElement>(null);
   const laptopScrollRef = useRef<HTMLDivElement>(null);
 
   // Sample data - nanti akan diganti dengan data dari API
   const phones = [
-    { id: 1, name: "iPhone 15 Pro Max", price: "Rp 21,xxx,000", image: "/assets/products/phones/iPhone 15 Pro Max.jpg", rating: 4.9, tag: "Trending", stock: 15 },
-    { id: 2, name: "Samsung S24 Ultra", price: "Rp 19,xxx,000", image: "/assets/products/phones/Samsung S24 Ultra.jpg", rating: 4.8, tag: "New", stock: 23 },
-    { id: 3, name: "Google Pixel 8 Pro", price: "Rp 15,xxx,000", image: "/assets/products/phones/Google Pixel 8 Pro.jpg", rating: 4.7, tag: "Hot", stock: 8 },
-    { id: 4, name: "OnePlus 12", price: "Rp 13,xxx,000", image: "/assets/products/phones/OnePlus 12.jpg", rating: 4.8, tag: "Popular", stock: 12 },
-    { id: 5, name: "Xiaomi 14 Pro", price: "Rp 11,xxx,000", image: "/assets/products/phones/Xiaomi 14 Pro.jpg", rating: 4.6, tag: "New", stock: 20 },
+    { id: 1, name: "iPhone 15 Pro Max", price: 21000000, image: "/assets/products/phones/iPhone 15 Pro Max.jpg", rating: 4.9, tag: "Trending", stock: 15, category: "Mobile Phones" },
+    { id: 2, name: "Samsung S24 Ultra", price: 19000000, image: "/assets/products/phones/Samsung S24 Ultra.jpg", rating: 4.8, tag: "New", stock: 23, category: "Mobile Phones" },
+    { id: 3, name: "Google Pixel 8 Pro", price: 15000000, image: "/assets/products/phones/Google Pixel 8 Pro.jpg", rating: 4.7, tag: "Hot", stock: 8, category: "Mobile Phones" },
+    { id: 4, name: "OnePlus 12", price: 13000000, image: "/assets/products/phones/OnePlus 12.jpg", rating: 4.8, tag: "Popular", stock: 12, category: "Mobile Phones" },
+    { id: 5, name: "Xiaomi 14 Pro", price: 11000000, image: "/assets/products/phones/Xiaomi 14 Pro.jpg", rating: 4.6, tag: "New", stock: 20, category: "Mobile Phones" },
   ];
 
   const laptops = [
-    { id: 1, name: "MacBook Pro M3", price: "Rp 32,xxx,000", image: "/assets/products/laptops/MacBook Pro M3.jpg", rating: 4.9, tag: "Premium", stock: 10 },
-    { id: 2, name: "Dell XPS 15", price: "Rp 28,xxx,000", image: "/assets/products/laptops/Dell XPS 15.jpg", rating: 4.8, tag: "Popular", stock: 15 },
-    { id: 3, name: "ASUS ROG Zephyrus", price: "Rp 35,xxx,000", image: "/assets/products/laptops/ASUS ROG Zephyrus.jpg", rating: 4.7, tag: "Gaming", stock: 7 },
-    { id: 4, name: "Lenovo ThinkPad X1", price: "Rp 26,xxx,000", image: "/assets/products/laptops/Lenovo ThinkPad X1.jpg", rating: 4.8, tag: "Business", stock: 18 },
-    { id: 5, name: "HP Spectre x360", price: "Rp 24,xxx,000", image: "/assets/products/laptops/HP Spectre x360.jpg", rating: 4.6, tag: "New", stock: 12 },
+    { id: 6, name: "MacBook Pro M3", price: 32000000, image: "/assets/products/laptops/MacBook Pro M3.jpg", rating: 4.9, tag: "Premium", stock: 10, category: "Laptops" },
+    { id: 7, name: "Dell XPS 15", price: 28000000, image: "/assets/products/laptops/Dell XPS 15.jpg", rating: 4.8, tag: "Popular", stock: 15, category: "Laptops" },
+    { id: 8, name: "ASUS ROG Zephyrus", price: 35000000, image: "/assets/products/laptops/ASUS ROG Zephyrus.jpg", rating: 4.7, tag: "Gaming", stock: 7, category: "Laptops" },
+    { id: 9, name: "Lenovo ThinkPad X1", price: 26000000, image: "/assets/products/laptops/Lenovo ThinkPad X1.jpg", rating: 4.8, tag: "Business", stock: 18, category: "Laptops" },
+    { id: 10, name: "HP Spectre x360", price: 24000000, image: "/assets/products/laptops/HP Spectre x360.jpg", rating: 4.6, tag: "New", stock: 12, category: "Laptops" },
   ];
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
 
   useEffect(() => {
     const scrollContainer = (ref: React.RefObject<HTMLDivElement>) => {
@@ -132,10 +146,20 @@ export default function FeaturedCategories() {
                       </div>
 
                       {/* Price */}
-                      <p className="text-primary-400 font-bold text-xl mb-4">{phone.price}</p>
+                      <p className="text-primary-400 font-bold text-xl mb-4">{formatPrice(phone.price)}</p>
 
                       {/* Button */}
-                      <button className="w-full py-2.5 bg-primary-400/20 hover:bg-primary-400/30 text-primary-400 rounded-lg font-medium transition-all duration-300 border border-primary-400/30 hover:border-primary-400/50">
+                      <button 
+                        onClick={() => onAddToCart({ 
+                          id: phone.id, 
+                          name: phone.name, 
+                          price: phone.price, 
+                          image: phone.image, 
+                          quantity: 1, 
+                          category: phone.category 
+                        })}
+                        className="w-full py-2.5 bg-primary-400/20 hover:bg-primary-400/30 text-primary-400 rounded-lg font-medium transition-all duration-300 border border-primary-400/30 hover:border-primary-400/50"
+                      >
                         Add to Cart
                       </button>
                     </div>
@@ -277,10 +301,20 @@ export default function FeaturedCategories() {
                       </div>
 
                       {/* Price */}
-                      <p className="text-secondary-400 font-bold text-xl mb-4">{laptop.price}</p>
+                      <p className="text-secondary-400 font-bold text-xl mb-4">{formatPrice(laptop.price)}</p>
 
                       {/* Button */}
-                      <button className="w-full py-2.5 bg-secondary-400/20 hover:bg-secondary-400/30 text-secondary-400 rounded-lg font-medium transition-all duration-300 border border-secondary-400/30 hover:border-secondary-400/50">
+                      <button 
+                        onClick={() => onAddToCart({ 
+                          id: laptop.id, 
+                          name: laptop.name, 
+                          price: laptop.price, 
+                          image: laptop.image, 
+                          quantity: 1, 
+                          category: laptop.category 
+                        })}
+                        className="w-full py-2.5 bg-secondary-400/20 hover:bg-secondary-400/30 text-secondary-400 rounded-lg font-medium transition-all duration-300 border border-secondary-400/30 hover:border-secondary-400/50"
+                      >
                         Add to Cart
                       </button>
                     </div>

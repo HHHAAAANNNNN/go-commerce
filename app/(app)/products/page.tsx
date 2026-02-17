@@ -184,12 +184,21 @@ export default function ProductsPage() {
         </>
       )}
 
-      <div className="space-y-3">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-white">Products</h1>
-        <div className="text-slate-400 text-sm">
-          Home &gt; <span className="text-primary-400">Products</span>
+      <div className="space-y-6">
+      {/* Welcome Banner */}
+      <div className="relative bg-gradient-to-r from-primary-400/10 via-accent-400/10 to-secondary-400/10 border border-primary-400/20 rounded-2xl p-8 overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary-400/10 rounded-full filter blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary-400/10 rounded-full filter blur-3xl"></div>
+        
+        <div className="relative z-10">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary-400 via-accent-400 to-secondary-400 bg-clip-text text-transparent mb-2">
+                Browse Products
+              </h1>
+              <p className="text-slate-300 text-lg">Discover the latest tech products with amazing deals!</p>
+            </div>
+          </div>
         </div>
       </div>
 

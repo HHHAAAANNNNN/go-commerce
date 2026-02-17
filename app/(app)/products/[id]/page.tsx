@@ -457,7 +457,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               }`}
             >
               <span className="flex items-center justify-center gap-2">
-                <span>{tab.icon}</span>
                 {tab.label}
               </span>
             </button>

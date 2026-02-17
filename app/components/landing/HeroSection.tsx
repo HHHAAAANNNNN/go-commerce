@@ -37,7 +37,7 @@ export default function HeroSection() {
         {/* Main Headline */}
         <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 max-w-5xl leading-tight animate-fade-in-up">
           <span className="text-slate-100">Discover Your</span>
-          <span className="block mt-2 bg-gradient-to-r from-primary-400 via-accent-400 to-secondary-300 bg-clip-text text-transparent animate-shimmer bg-[length:200%_auto]">
+          <span className="block mt-2 bg-gradient-to-r from-primary-400 via-accent-400 to-secondary-300 bg-clip-text text-transparent">
             Perfect Product
           </span>
         </h1>

@@ -1,31 +1,81 @@
 "use client";
 
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 interface CTASectionProps {
   onLoginClick: () => void;
 }
 
+interface RegisterFormData {
+  name: string;
+  phone: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
 export default function CTASection({ onLoginClick }: CTASectionProps) {
   const [showRegisterForm, setShowRegisterForm] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState<RegisterFormData>({
+    name: "",
+    phone: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
 
-  const handleToggleForm = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setShowRegisterForm(!showRegisterForm);
-    if (!showRegisterForm) {
-      setCurrentStep(1); // Reset to step 1 when opening form
+    // Log the form data in DB order before sending
+    console.log("=== REGISTRATION FORM DATA ===");
+    console.log("full_name:", formData.name);
+    console.log("email:", formData.email);
+    console.log("password:", formData.password);
+    console.log("phone:", formData.phone);
+
+    setIsLoading(true);
+    try {
+      const response = await fetch("http://localhost:8080/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          full_name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          phone: formData.phone,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Registrasi gagal");
+      }
+      toast.success(data.message || "Registrasi berhasil! Silakan login");
+      setFormData({
+        name: "",
+        phone: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+      setCurrentStep(1);
+      setShowRegisterForm(false);
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } catch (error: any) {
+      if (error.message === "Failed to fetch" || error.name === "TypeError") {
+        toast.error("Tidak dapat terhubung ke server. Pastikan backend server sudah running di port 8080");
+      } else {
+        toast.error(error.message || "Registrasi gagal, silakan coba lagi");
+      }
+    } finally {
+      setIsLoading(false);
     }
-  };
-
-  const handleNextStep = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    setCurrentStep(2);
-  };
-
-  const handlePrevStep = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    setCurrentStep(1);
   };
 
   const handleLoginClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -37,6 +87,36 @@ export default function CTASection({ onLoginClick }: CTASectionProps) {
     setShowRegisterForm(true);
     setCurrentStep(1);
   };
+
+  function handleToggleForm(event: React.MouseEvent<HTMLAnchorElement, MouseEvent>): void {
+    event.preventDefault();
+    setShowRegisterForm((prev) => !prev);
+    if (!showRegisterForm) {
+      setCurrentStep(1);
+      setFormData({
+        name: "",
+        phone: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+    }
+  }
+
+  function handleNextStep(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+    event.preventDefault();
+    // Validate step 1 fields before proceeding
+    if (!formData.name.trim() || !formData.phone.trim()) {
+      toast.error("Please fill in your full name and phone number.");
+      return;
+    }
+    setCurrentStep(2);
+  }
+
+  function handlePrevStep(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+    event.preventDefault();
+    setCurrentStep(1);
+  }
 
   return (
     <section id="cta" className="relative py-32 bg-gradient-to-b from-[#0A0A0F] via-[#0f0a1a] to-[#0A0A0F] overflow-hidden">
@@ -188,7 +268,7 @@ export default function CTASection({ onLoginClick }: CTASectionProps) {
                   </div>
                 </div>
 
-                <form className="space-y-3">
+                <form className="space-y-3" onSubmit={handleRegisterSubmit}>
                   {/* Step 1: Name + Phone */}
                   {currentStep === 1 && (
                     <div className="space-y-3 animate-fade-in-up">
@@ -200,6 +280,8 @@ export default function CTASection({ onLoginClick }: CTASectionProps) {
                         <input
                           type="text"
                           id="fullName"
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                           className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-primary-400/50 focus:ring-2 focus:ring-primary-400/20 transition-all"
                           placeholder="John Doe"
                           required
@@ -214,6 +296,8 @@ export default function CTASection({ onLoginClick }: CTASectionProps) {
                         <input
                           type="tel"
                           id="phone"
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                           className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-primary-400/50 focus:ring-2 focus:ring-primary-400/20 transition-all"
                           placeholder="+62 812 3456 7890"
                           required
@@ -245,6 +329,8 @@ export default function CTASection({ onLoginClick }: CTASectionProps) {
                         <input
                           type="email"
                           id="email"
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                           className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-primary-400/50 focus:ring-2 focus:ring-primary-400/20 transition-all"
                           placeholder="john@example.com"
                           required
@@ -259,6 +345,8 @@ export default function CTASection({ onLoginClick }: CTASectionProps) {
                         <input
                           type="password"
                           id="password"
+                          value={formData.password}
+                          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                           className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-primary-400/50 focus:ring-2 focus:ring-primary-400/20 transition-all"
                           placeholder="••••••••"
                           required
@@ -273,6 +361,8 @@ export default function CTASection({ onLoginClick }: CTASectionProps) {
                         <input
                           type="password"
                           id="confirmPassword"
+                          value={formData.confirmPassword}
+                          onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                           className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-primary-400/50 focus:ring-2 focus:ring-primary-400/20 transition-all"
                           placeholder="••••••••"
                           required
@@ -293,9 +383,10 @@ export default function CTASection({ onLoginClick }: CTASectionProps) {
                         </button>
                         <button
                           type="submit"
-                          className="flex-1 py-2.5 bg-gradient-to-r from-primary-400 to-secondary-400 text-white text-sm rounded-lg font-semibold hover:from-primary-500 hover:to-secondary-500 transition-all duration-300 hover:scale-105 shadow-lg shadow-primary-400/30"
+                          disabled={isLoading}
+                          className="flex-1 py-2.5 bg-gradient-to-r from-primary-400 to-secondary-400 text-white text-sm rounded-lg font-semibold hover:from-primary-500 hover:to-secondary-500 transition-all duration-300 hover:scale-105 shadow-lg shadow-primary-400/30 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          Create Account
+                          {isLoading ? "Creating..." : "Create Account"}
                         </button>
                       </div>
                     </div>

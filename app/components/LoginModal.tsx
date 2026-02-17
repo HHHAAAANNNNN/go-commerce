@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -9,6 +11,77 @@ interface LoginModalProps {
 }
 
 export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginModalProps) {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // Validation
+    if (!email.trim() || !password.trim()) {
+      toast.error("Email dan password harus diisi");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      console.log("Sending login request to backend...");
+      console.log("Email:", email);
+      
+      const response = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          password: password,
+        }),
+      });
+
+      console.log("Response status:", response.status);
+      
+      const data = await response.json();
+      console.log("Response data:", data);
+
+      if (!response.ok) {
+        throw new Error(data.message || "Login gagal");
+      }
+
+      // Success - save user data to localStorage
+      if (data.data && data.data.user) {
+        localStorage.setItem("user", JSON.stringify(data.data.user));
+        if (rememberMe) {
+          localStorage.setItem("rememberMe", "true");
+        }
+      }
+
+      toast.success("Login berhasil!");
+      
+      // Redirect to dashboard after short delay
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 1000);
+    } catch (error: any) {
+      // Better error handling for network errors
+      if (error.message === "Failed to fetch" || error.name === "TypeError") {
+        toast.error("Tidak dapat terhubung ke server. Pastikan backend server sudah running di port 8080");
+      } else {
+        toast.error(error.message || "Login gagal, silakan coba lagi");
+      }
+      // Refresh page on error
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Close modal on ESC key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -59,7 +132,7 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
           </div>
 
           {/* Form */}
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             {/* Email */}
             <div>
               <label htmlFor="loginEmail" className="block text-slate-300 text-sm font-medium mb-2">
@@ -68,9 +141,12 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
               <input
                 type="email"
                 id="loginEmail"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-primary-400/50 focus:ring-2 focus:ring-primary-400/20 transition-all"
                 placeholder="john@example.com"
                 autoFocus
+                required
               />
             </div>
 
@@ -82,8 +158,11 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
               <input
                 type="password"
                 id="loginPassword"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-primary-400/50 focus:ring-2 focus:ring-primary-400/20 transition-all"
                 placeholder="••••••••"
+                required
               />
             </div>
 
@@ -92,6 +171,8 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
                   className="w-4 h-4 bg-slate-800/50 border border-slate-700/50 rounded text-primary-400 focus:ring-2 focus:ring-primary-400/20"
                 />
                 <span className="text-slate-400 text-sm">Remember me</span>
@@ -101,9 +182,10 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
             {/* Login Button */}
             <button
               type="submit"
-              className="w-full py-3 bg-gradient-to-r from-primary-400 to-secondary-400 text-white rounded-lg font-semibold hover:from-primary-500 hover:to-secondary-500 transition-all duration-300 hover:scale-105 shadow-lg shadow-primary-400/30"
+              disabled={isLoading}
+              className="w-full py-3 bg-gradient-to-r from-primary-400 to-secondary-400 text-white rounded-lg font-semibold hover:from-primary-500 hover:to-secondary-500 transition-all duration-300 hover:scale-105 shadow-lg shadow-primary-400/30 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Login
+              {isLoading ? "Logging in..." : "Login"}
             </button>
 
             {/* Register Link */}

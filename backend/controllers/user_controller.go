@@ -13,7 +13,7 @@ import (
 
 // GetAllUsers - GET /api/users
 func GetAllUsers(w http.ResponseWriter, r *http.Request) {
-	query := `SELECT id, name, email, balance, is_member, created_at FROM users ORDER BY id`
+	query := `SELECT id, full_name, email, balance, is_member, created_at FROM users ORDER BY id`
 
 	rows, err := config.DB.Query(query)
 	if err != nil {
@@ -25,7 +25,7 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	var users []models.User
 	for rows.Next() {
 		var user models.User
-		err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.Balance, &user.IsMember, &user.CreatedAt)
+		err := rows.Scan(&user.ID, &user.FullName, &user.Email, &user.Balance, &user.IsMember, &user.CreatedAt)
 		if err != nil {
 			utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to scan user")
 			return
@@ -45,11 +45,11 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := `SELECT id, name, email, balance, is_member, created_at FROM users WHERE id = ?`
+	query := `SELECT id, full_name, email, balance, is_member, created_at FROM users WHERE id = ?`
 
 	var user models.User
 	err = config.DB.QueryRow(query, id).Scan(
-		&user.ID, &user.Name, &user.Email, &user.Balance, &user.IsMember, &user.CreatedAt,
+		&user.ID, &user.FullName, &user.Email, &user.Balance, &user.IsMember, &user.CreatedAt,
 	)
 	if err != nil {
 		utils.ErrorResponse(w, http.StatusNotFound, "User not found")
@@ -69,13 +69,13 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validation
-	if req.Name == "" || req.Email == "" {
-		utils.ErrorResponse(w, http.StatusBadRequest, "Name and email are required")
+	if req.FullName == "" || req.Email == "" {
+		utils.ErrorResponse(w, http.StatusBadRequest, "Full name and email are required")
 		return
 	}
 
-	query := `INSERT INTO users (name, email, balance, is_member) VALUES (?, ?, ?, ?)`
-	result, err := config.DB.Exec(query, req.Name, req.Email, req.Balance, req.IsMember)
+	query := `INSERT INTO users (full_name, email) VALUES (?, ?)`
+	result, err := config.DB.Exec(query, req.FullName, req.Email)
 	if err != nil {
 		utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to create user")
 		return
@@ -84,10 +84,8 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	id, _ := result.LastInsertId()
 	user := models.User{
 		ID:       int(id),
-		Name:     req.Name,
+		FullName: req.FullName,
 		Email:    req.Email,
-		Balance:  req.Balance,
-		IsMember: req.IsMember,
 	}
 
 	utils.CreatedResponse(w, "User created successfully", user)
@@ -109,8 +107,8 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := `UPDATE users SET name = ?, balance = ?, is_member = ? WHERE id = ?`
-	result, err := config.DB.Exec(query, req.Name, req.Balance, req.IsMember, id)
+	query := `UPDATE users SET full_name = ?, balance = ?, is_member = ? WHERE id = ?`
+	result, err := config.DB.Exec(query, req.FullName, req.Balance, req.IsMember, id)
 	if err != nil {
 		utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to update user")
 		return

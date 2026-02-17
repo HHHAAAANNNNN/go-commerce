@@ -29,6 +29,8 @@ func main() {
 	fmt.Printf("🚀 Server starting on http://localhost%s\n", port)
 	fmt.Println("\n📋 Available Endpoints:")
 	fmt.Println("   GET    /api/health")
+	fmt.Println("   POST   /api/auth/register")
+	fmt.Println("   POST   /api/auth/login")
 	fmt.Println("   GET    /api/users")
 	fmt.Println("   GET    /api/users/{id}")
 	fmt.Println("   POST   /api/users")

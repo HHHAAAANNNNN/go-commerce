@@ -41,7 +41,7 @@ export default function FeaturedCategories({ onAddToCart }: FeaturedCategoriesPr
   useEffect(() => {
     const scrollContainer = (ref: React.RefObject<HTMLDivElement>) => {
       if (!ref.current) return;
-      
+
       const container = ref.current;
       let scrollPos = 0;
       const scroll = () => {
@@ -56,8 +56,8 @@ export default function FeaturedCategories({ onAddToCart }: FeaturedCategoriesPr
       return () => clearInterval(interval);
     };
 
-    const cleanupMobile = scrollContainer(mobileScrollRef);
-    const cleanupLaptop = scrollContainer(laptopScrollRef);
+    const cleanupMobile = scrollContainer(mobileScrollRef as React.RefObject<HTMLDivElement>);
+    const cleanupLaptop = scrollContainer(laptopScrollRef as React.RefObject<HTMLDivElement>);
 
     return () => {
       cleanupMobile?.();

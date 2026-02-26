@@ -1,23 +1,71 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
+interface User {
+  id: number;
+  full_name: string;
+  email: string;
+  phone: string;
+  balance: number;
+  is_member: boolean;
+  created_at: string;
+}
+
 export default function DashboardPage() {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Get user from localStorage
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      router.push("/(auth)/login");
+      return;
+    }
+    try {
+      setUser(JSON.parse(storedUser));
+    } catch (error) {
+      console.error("Failed to parse user data:", error);
+      router.push("/(auth)/login");
+    } finally {
+      setLoading(false);
+    }
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-400">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
   const currentHour = new Date().getHours();
   const greeting = currentHour < 12 ? "Good Morning" : currentHour < 18 ? "Good Afternoon" : "Good Evening";
-  
+
   // Mock data for membership
   const membershipData = {
-    currentTier: "Premium",
-    memberSince: "January 2025",
+    currentTier: user.is_member ? "Premium" : "Free",
+    memberSince: new Date(user.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" }),
     totalSpent: 45200000,
     nextTier: "VIP",
     nextTierTarget: 50000000,
     benefits: [
-      { name: "Discount", value: "10% Off", active: true },
-      { name: "Free Shipping", value: "Unlimited", active: true },
+      { name: "Discount", value: user.is_member ? "10% Off" : "None", active: user.is_member },
+      { name: "Free Shipping", value: user.is_member ? "Unlimited" : "Standard", active: user.is_member },
       { name: "Priority Support", value: "24/7", active: true },
-      { name: "Early Access", value: "New Products", active: true },
+      { name: "Early Access", value: "New Products", active: user.is_member },
     ]
   };
 
@@ -30,12 +78,12 @@ export default function DashboardPage() {
         {/* Background decoration */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary-400/10 rounded-full filter blur-3xl"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary-400/10 rounded-full filter blur-3xl"></div>
-        
+
         <div className="relative z-10 flex items-center justify-between">
           <div>
             <p className="text-slate-400 text-sm mb-1">{greeting},</p>
             <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary-400 via-accent-400 to-secondary-400 bg-clip-text text-transparent mb-2">
-              Farhan Nugraha
+              {user.full_name}
             </h1>
             <p className="text-slate-300 text-lg">Welcome back to your dashboard!</p>
           </div>

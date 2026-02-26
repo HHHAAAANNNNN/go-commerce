@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -102,14 +103,17 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get user from database
+	// Get user from database (matching actual table schema)
 	var user models.User
 	var hashedPassword string
-	query := `SELECT id, full_name, email, password, balance, is_member, created_at FROM users WHERE email = ?`
+	var avatarURL sql.NullString
+	var emailVerified bool
+	query := `SELECT id, full_name, email, password, phone, created_at, avatar_url, email_verified FROM users WHERE email = ?`
 	err = config.DB.QueryRow(query, req.Email).Scan(
-		&user.ID, &user.FullName, &user.Email, &hashedPassword, &user.Balance, &user.IsMember, &user.CreatedAt,
+		&user.ID, &user.FullName, &user.Email, &hashedPassword, &user.Phone, &user.CreatedAt, &avatarURL, &emailVerified,
 	)
 	if err != nil {
+		log.Printf("❌ Login query error: %v", err)
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Email atau password salah")
 		return
 	}
@@ -117,6 +121,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	// Verify password
 	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(req.Password))
 	if err != nil {
+		log.Printf("❌ Password verification error: %v", err)
 		utils.ErrorResponse(w, http.StatusUnauthorized, "Email atau password salah")
 		return
 	}

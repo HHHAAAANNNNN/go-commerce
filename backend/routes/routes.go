@@ -28,6 +28,9 @@ func SetupRoutes() *mux.Router {
 	api.HandleFunc("/auth/register", controllers.Register).Methods("POST", "OPTIONS")
 	api.HandleFunc("/auth/login", controllers.Login).Methods("POST", "OPTIONS")
 
+	// Upload route
+	api.HandleFunc("/upload", controllers.UploadImage).Methods("POST", "OPTIONS")
+
 	// User routes
 	api.HandleFunc("/users", controllers.GetAllUsers).Methods("GET", "OPTIONS")
 	api.HandleFunc("/users/{id}", controllers.GetUserByID).Methods("GET", "OPTIONS")

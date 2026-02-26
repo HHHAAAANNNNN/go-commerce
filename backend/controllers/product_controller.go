@@ -1,8 +1,11 @@
 package controllers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/HHHAAAANNNNN/go-commerce-backend/config"
 	"github.com/HHHAAAANNNNN/go-commerce-backend/models"
@@ -12,11 +15,15 @@ import (
 
 // GetAllProducts - GET /api/products
 func GetAllProducts(w http.ResponseWriter, r *http.Request) {
-	query := `SELECT id, name, price, stock, category, rating, created_at FROM products ORDER BY created_at DESC`
+	// Query with category JOIN
+	query := `SELECT p.id, p.name, p.price, p.stock, c.name, p.rating, p.description, p.image_url, p.brand, p.created_at 
+			  FROM products p 
+			  LEFT JOIN categories c ON p.category_id = c.id 
+			  ORDER BY p.id ASC`
 
 	rows, err := config.DB.Query(query)
 	if err != nil {
-		utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch products")
+		utils.ErrorResponse(w, http.StatusInternalServerError, "Query error: "+err.Error())
 		return
 	}
 	defer rows.Close()
@@ -24,13 +31,33 @@ func GetAllProducts(w http.ResponseWriter, r *http.Request) {
 	var products []models.Product
 	for rows.Next() {
 		var product models.Product
-		err := rows.Scan(&product.ID, &product.Name, &product.Price, &product.Stock,
-			&product.Category, &product.Rating, &product.CreatedAt)
+		var imageURL, description, brand string
+		var category sql.NullString
+		var priceFloat float64
+		var ratingFloat float64
+		
+		err := rows.Scan(&product.ID, &product.Name, &priceFloat, &product.Stock,
+			&category, &ratingFloat, &description, &imageURL, &brand, &product.CreatedAt)
 		if err != nil {
-			utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to scan product")
+			utils.ErrorResponse(w, http.StatusInternalServerError, "Scan error: "+err.Error())
 			return
 		}
+		product.Price = int(priceFloat)
+		product.Rating = models.Decimal(ratingFloat)
+		product.Description = description
+		product.Image = imageURL
+		product.Brand = brand
+		if category.Valid {
+			product.Category = category.String
+		} else {
+			product.Category = "Uncategorized"
+		}
 		products = append(products, product)
+	}
+
+	if len(products) == 0 {
+		utils.SuccessResponse(w, "No products found", []models.Product{})
+		return
 	}
 
 	utils.SuccessResponse(w, "Products fetched successfully", products)
@@ -41,16 +68,42 @@ func GetProductByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 
-	query := `SELECT id, name, price, stock, category, rating, created_at FROM products WHERE id = ?`
+	// Convert id to int
+	productID, err := strconv.Atoi(id)
+	if err != nil {
+		utils.ErrorResponse(w, http.StatusBadRequest, "Invalid product ID")
+		return
+	}
+
+	query := `SELECT p.id, p.name, p.price, p.stock, c.name, p.rating, p.description, p.image_url, p.brand, p.created_at 
+			  FROM products p 
+			  LEFT JOIN categories c ON p.category_id = c.id 
+			  WHERE p.id = ?`
 
 	var product models.Product
-	err := config.DB.QueryRow(query, id).Scan(
-		&product.ID, &product.Name, &product.Price, &product.Stock,
-		&product.Category, &product.Rating, &product.CreatedAt,
+	var imageURL, description, brand string
+	var category sql.NullString
+	var priceFloat float64
+	var ratingFloat float64
+	
+	err = config.DB.QueryRow(query, productID).Scan(
+		&product.ID, &product.Name, &priceFloat, &product.Stock,
+		&category, &ratingFloat, &description, &imageURL, &brand, &product.CreatedAt,
 	)
 	if err != nil {
 		utils.ErrorResponse(w, http.StatusNotFound, "Product not found")
 		return
+	}
+
+	product.Price = int(priceFloat)
+	product.Rating = models.Decimal(ratingFloat)
+	product.Description = description
+	product.Image = imageURL
+	product.Brand = brand
+	if category.Valid {
+		product.Category = category.String
+	} else {
+		product.Category = "Uncategorized"
 	}
 
 	utils.SuccessResponse(w, "Product fetched successfully", product)
@@ -66,13 +119,26 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validation
-	if req.ID == "" || req.Name == "" || req.Price <= 0 {
-		utils.ErrorResponse(w, http.StatusBadRequest, "ID, name, and price are required")
+	if req.Name == "" || req.Price <= 0 {
+		utils.ErrorResponse(w, http.StatusBadRequest, "Name and price are required")
 		return
 	}
 
-	query := `INSERT INTO products (id, name, price, stock, category, rating) VALUES (?, ?, ?, ?, ?, ?)`
-	_, err = config.DB.Exec(query, req.ID, req.Name, req.Price, req.Stock, req.Category, req.Rating)
+	// Get category_id from category name
+	var categoryID int
+	err = config.DB.QueryRow("SELECT id FROM categories WHERE name = ?", req.Category).Scan(&categoryID)
+	if err != nil {
+		// Category not found, use default (1) or create new
+		categoryID = 1
+	}
+
+	query := `INSERT INTO products (name, slug, price, stock, category_id, rating, description, image_url, brand) 
+			  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	
+	// Generate slug from name
+	slug := strings.ToLower(strings.ReplaceAll(req.Name, " ", "-"))
+	
+	_, err = config.DB.Exec(query, req.Name, slug, req.Price, req.Stock, categoryID, req.Rating, req.Description, req.Image, req.Brand)
 	if err != nil {
 		utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to create product")
 		return
@@ -93,8 +159,8 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := `UPDATE products SET name = ?, price = ?, stock = ?, category = ?, rating = ? WHERE id = ?`
-	result, err := config.DB.Exec(query, req.Name, req.Price, req.Stock, req.Category, req.Rating, id)
+	query := `UPDATE products SET name = ?, price = ?, stock = ?, rating = ?, description = ?, image_url = ?, brand = ? WHERE id = ?`
+	result, err := config.DB.Exec(query, req.Name, req.Price, req.Stock, req.Rating, req.Description, req.Image, req.Brand, id)
 	if err != nil {
 		utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to update product")
 		return
@@ -138,10 +204,11 @@ func SearchProducts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := `SELECT id, name, price, stock, category, rating, created_at 
-              FROM products 
-              WHERE name LIKE ? OR category LIKE ?
-              ORDER BY rating DESC`
+	query := `SELECT p.id, p.name, p.price, p.stock, c.name, p.rating, p.description, p.image_url, p.brand, p.created_at
+              FROM products p
+              LEFT JOIN categories c ON p.category_id = c.id
+              WHERE p.name LIKE ? OR p.description LIKE ?
+              ORDER BY p.rating DESC`
 
 	searchPattern := "%" + keyword + "%"
 	rows, err := config.DB.Query(query, searchPattern, searchPattern)
@@ -154,10 +221,25 @@ func SearchProducts(w http.ResponseWriter, r *http.Request) {
 	var products []models.Product
 	for rows.Next() {
 		var product models.Product
-		err := rows.Scan(&product.ID, &product.Name, &product.Price, &product.Stock,
-			&product.Category, &product.Rating, &product.CreatedAt)
+		var imageURL, description, brand string
+		var category sql.NullString
+		var priceFloat float64
+		var ratingFloat float64
+		
+		err := rows.Scan(&product.ID, &product.Name, &priceFloat, &product.Stock,
+			&category, &ratingFloat, &description, &imageURL, &brand, &product.CreatedAt)
 		if err != nil {
 			continue
+		}
+		product.Price = int(priceFloat)
+		product.Rating = models.Decimal(ratingFloat)
+		product.Description = description
+		product.Image = imageURL
+		product.Brand = brand
+		if category.Valid {
+			product.Category = category.String
+		} else {
+			product.Category = "Uncategorized"
 		}
 		products = append(products, product)
 	}

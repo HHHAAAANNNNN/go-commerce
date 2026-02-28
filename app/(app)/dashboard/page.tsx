@@ -1,8 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+
+const BACKEND = "http://localhost:8080";
+
+const PAYMENT_METHODS = [
+  { id: "gopay", label: "GoPay", icon: "💚" },
+  { id: "ovo", label: "OVO", icon: "💜" },
+  { id: "debit", label: "Kartu Debit", icon: "💳" },
+  { id: "kredit", label: "Kartu Kredit", icon: "🏦" },
+];
+
+function formatIDR(n: number) {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency', currency: 'IDR', minimumFractionDigits: 0,
+  }).format(n).replace('Rp', 'Rp ');
+}
 
 interface User {
   id: number;
@@ -19,22 +34,89 @@ export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Balance
+  const [balance, setBalance] = useState(0);
+  const [balanceVisible, setBalanceVisible] = useState(false);
+
+  // Top-up modal
+  const [showTopup, setShowTopup] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("gopay");
+  const [topupAmount, setTopupAmount] = useState("");
+  const [topupLoading, setTopupLoading] = useState(false);
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  const showToast = (msg: string, ok: boolean) => {
+    setToast({ msg, ok });
+    setTimeout(() => setToast(null), 3500);
+  };
+
   useEffect(() => {
-    // Get user from localStorage
     const storedUser = localStorage.getItem("user");
-    if (!storedUser) {
-      router.push("/(auth)/login");
-      return;
-    }
+    if (!storedUser) { router.push("/(auth)/login"); return; }
     try {
-      setUser(JSON.parse(storedUser));
-    } catch (error) {
-      console.error("Failed to parse user data:", error);
+      const parsed = JSON.parse(storedUser);
+      setUser(parsed);
+      // Fetch fresh balance from API (localStorage may not have it after login)
+      if (parsed?.id) {
+        fetch(`${BACKEND}/api/users/${parsed.id}/balance`)
+          .then(r => r.json())
+          .then(d => { if (d.success) setBalance(d.data.balance); })
+          .catch(() => { });
+      }
+    } catch {
       router.push("/(auth)/login");
     } finally {
       setLoading(false);
     }
   }, [router]);
+
+  // Close modal on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (showTopup && modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        setShowTopup(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showTopup]);
+
+  const handleTopup = async () => {
+    if (!user) return;
+    const amount = parseInt(topupAmount.replace(/\D/g, ""), 10);
+    if (!amount || amount < 1000) {
+      showToast("Masukkan nominal minimal Rp 1.000", false);
+      return;
+    }
+    setTopupLoading(true);
+    try {
+      const res = await fetch(`${BACKEND}/api/users/${user.id}/topup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        showToast(data.error || "Top-up gagal. Coba lagi.", false);
+        return;
+      }
+      const newBal: number = data.data.balance;
+      setBalance(newBal);
+      // Sync to localStorage
+      const raw = localStorage.getItem("user");
+      if (raw) {
+        try { localStorage.setItem("user", JSON.stringify({ ...JSON.parse(raw), balance: newBal })); } catch { }
+      }
+      showToast(`Top-up ${formatIDR(amount)} berhasil! 🎉`, true);
+      setShowTopup(false);
+      setTopupAmount("");
+    } catch {
+      showToast("Network error. Coba lagi.", false);
+    } finally {
+      setTopupLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -73,6 +155,119 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+
+      {/* Toast */}
+      {toast && (
+        <div className={`fixed top-6 right-6 z-[999] flex items-center gap-3 px-5 py-4 rounded-xl shadow-2xl border backdrop-blur-md animate-fadeIn
+          ${toast.ok
+            ? "bg-emerald-500/20 border-emerald-400/40 text-emerald-300"
+            : "bg-red-500/20 border-red-400/40 text-red-300"}`}
+          style={{ animation: "slideIn .3s ease-out" }}
+        >
+          <span className="text-sm font-medium">{toast.msg}</span>
+          <button onClick={() => setToast(null)} className="opacity-60 hover:opacity-100 transition-opacity">✕</button>
+        </div>
+      )}
+
+      {/* Top-up Modal */}
+      {showTopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div ref={modalRef} className="w-full max-w-md mx-4 bg-slate-900 border border-slate-700/60 rounded-2xl shadow-2xl overflow-hidden">
+            {/* Modal header */}
+            <div className="p-6 border-b border-slate-700/50 bg-gradient-to-r from-primary-400/10 to-secondary-400/10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-white font-bold text-lg">Top Up Balance</h3>
+                  <p className="text-slate-400 text-sm mt-0.5">Saldo saat ini:&nbsp;
+                    <span className="text-primary-400 font-semibold">{formatIDR(balance)}</span>
+                  </p>
+                </div>
+                <button onClick={() => setShowTopup(false)} className="p-2 hover:bg-slate-700/40 rounded-lg text-slate-400 hover:text-white transition-colors">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-5">
+              {/* Payment method */}
+              <div>
+                <label className="block text-slate-300 text-sm font-medium mb-3">Metode Pembayaran</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {PAYMENT_METHODS.map(m => (
+                    <button
+                      key={m.id}
+                      onClick={() => setPaymentMethod(m.id)}
+                      className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-all ${paymentMethod === m.id
+                          ? "bg-primary-400/20 border-primary-400/60 text-white shadow-md shadow-primary-400/20"
+                          : "bg-slate-800/60 border-slate-700/50 text-slate-400 hover:border-slate-600"
+                        }`}
+                    >
+                      <span className="text-lg">{m.icon}</span>
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Amount input */}
+              <div>
+                <label className="block text-slate-300 text-sm font-medium mb-2">Nominal Top Up</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium text-sm">Rp</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={topupAmount}
+                    onChange={e => setTopupAmount(e.target.value.replace(/\D/g, ""))}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-white text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400/50 transition-all"
+                    placeholder="50.000"
+                  />
+                </div>
+                {/* Quick amounts */}
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {[50000, 100000, 200000, 500000].map(amt => (
+                    <button
+                      key={amt}
+                      onClick={() => setTopupAmount(String(amt))}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${topupAmount === String(amt)
+                          ? "bg-primary-400/20 border-primary-400/50 text-primary-300"
+                          : "bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500"
+                        }`}
+                    >
+                      {formatIDR(amt)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal footer */}
+            <div className="px-6 pb-6 flex gap-3">
+              <button
+                onClick={() => setShowTopup(false)}
+                className="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-medium transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleTopup}
+                disabled={topupLoading || !topupAmount}
+                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-400 hover:to-secondary-400 text-white font-bold shadow-lg shadow-primary-500/25 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {topupLoading ? (
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                ) : "💰 Topup!"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Welcome Banner */}
       <div className="relative bg-gradient-to-r from-primary-400/10 via-accent-400/10 to-secondary-400/10 border border-primary-400/20 rounded-2xl p-8 overflow-hidden">
         {/* Background decoration */}
@@ -89,9 +284,40 @@ export default function DashboardPage() {
           </div>
           <div className="hidden md:flex flex-col items-end gap-2">
             <div className="px-4 py-2 bg-gradient-to-r from-accent-400/20 to-accent-400/10 border border-accent-400/30 rounded-full">
-              <p className="text-accent-400 font-semibold text-sm">✨ Premium Member</p>
+              <p className="text-accent-400 font-semibold text-sm">✨ {user.is_member ? "Premium Member" : "Free Member"}</p>
             </div>
             <p className="text-slate-400 text-sm">Member since {membershipData.memberSince}</p>
+            {/* Balance row */}
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-slate-300 text-sm font-medium">
+                {balanceVisible ? formatIDR(balance) : "Rp ••••••"}
+              </span>
+              <button
+                onClick={() => setBalanceVisible(v => !v)}
+                className="p-1 hover:bg-slate-700/50 rounded-md transition-colors text-slate-400 hover:text-white"
+                title={balanceVisible ? "Sembunyikan" : "Tampilkan saldo"}
+              >
+                {balanceVisible ? (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                )}
+              </button>
+              <button
+                onClick={() => setShowTopup(true)}
+                className="flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-primary-500/30 to-secondary-500/30 hover:from-primary-500/50 hover:to-secondary-500/50 border border-primary-400/40 text-primary-300 hover:text-white rounded-full text-xs font-semibold transition-all"
+              >
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                </svg>
+                Top Up
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -102,7 +328,7 @@ export default function DashboardPage() {
         <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-amber-500/15 to-purple-600/15 rounded-full filter blur-3xl animate-pulse"></div>
         <div className="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-purple-600/10 to-amber-500/10 rounded-full filter blur-3xl"></div>
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/5 to-transparent shimmer-animation"></div>
-        
+
         {/* Elegant Pattern Overlay */}
         <div className="absolute inset-0 opacity-[0.03]" style={{
           backgroundImage: 'radial-gradient(circle, rgba(251, 191, 36, 0.4) 1px, transparent 1px)',
@@ -167,7 +393,7 @@ export default function DashboardPage() {
             {/* Decorative elements */}
             <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-amber-400/10 to-purple-600/10 rounded-full filter blur-2xl"></div>
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-purple-600/10 to-amber-400/10 rounded-full filter blur-2xl"></div>
-            
+
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -212,7 +438,7 @@ export default function DashboardPage() {
                   <div className="absolute inset-0 bg-gradient-to-r from-yellow-300/30 via-amber-300/30 to-yellow-300/30 animate-pulse"></div>
                 </div>
                 {/* Progress indicator */}
-                <div 
+                <div
                   className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-gradient-to-br from-amber-300 to-yellow-400 rounded-full shadow-xl shadow-amber-400/60 border-2 border-white/50 transition-all duration-500"
                   style={{ left: `calc(${progress}% - 8px)` }}
                 >
@@ -222,7 +448,7 @@ export default function DashboardPage() {
 
               <div className="flex items-center justify-between">
                 <p className="text-amber-100/80 text-sm">
-                  <span className="text-white font-bold text-base">{progress.toFixed(1)}%</span> Complete • 
+                  <span className="text-white font-bold text-base">{progress.toFixed(1)}%</span> Complete •
                   <span className="text-amber-400 font-bold ml-1">
                     {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(membershipData.nextTierTarget - membershipData.totalSpent)}
                   </span>
@@ -355,7 +581,7 @@ export default function DashboardPage() {
                   </span>
                 </div>
                 <div className="relative w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-                  <div 
+                  <div
                     className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full transition-all duration-500 group-hover:from-primary-300 group-hover:to-secondary-300"
                     style={{ width: `${data.percentage}%` }}
                   ></div>
@@ -393,7 +619,7 @@ export default function DashboardPage() {
               <h3 className="text-xl font-bold text-white mb-1">Recent Orders</h3>
               <p className="text-slate-400 text-sm">Your latest transactions</p>
             </div>
-            <a 
+            <a
               href="/orders"
               className="text-primary-400 text-sm font-semibold hover:text-secondary-400 transition-colors"
             >
@@ -436,11 +662,10 @@ export default function DashboardPage() {
                       <span className="text-slate-400 text-sm">{order.date}</span>
                     </td>
                     <td className="py-4 text-center">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
-                        order.status === 'done' ? 'bg-green-400/10 text-green-400 border border-green-400/20' :
-                        order.status === 'ship' ? 'bg-secondary-400/10 text-secondary-400 border border-secondary-400/20' :
-                        'bg-amber-400/10 text-amber-400 border border-amber-400/20'
-                      }`}>
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${order.status === 'done' ? 'bg-green-400/10 text-green-400 border border-green-400/20' :
+                          order.status === 'ship' ? 'bg-secondary-400/10 text-secondary-400 border border-secondary-400/20' :
+                            'bg-amber-400/10 text-amber-400 border border-amber-400/20'
+                        }`}>
                         {order.status === 'done' && '✓ '}
                         {order.status === 'ship' && '🚚 '}
                         {order.status === 'pend' && '⏳ '}
@@ -448,11 +673,10 @@ export default function DashboardPage() {
                       </span>
                     </td>
                     <td className="py-4 text-center">
-                      <button className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                        order.status === 'done' ? 'bg-slate-700/50 text-slate-300 hover:bg-slate-700' :
-                        order.status === 'ship' ? 'bg-secondary-400/10 text-secondary-400 hover:bg-secondary-400/20 border border-secondary-400/20' :
-                        'bg-amber-400/10 text-amber-400 hover:bg-amber-400/20 border border-amber-400/20'
-                      }`}>
+                      <button className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${order.status === 'done' ? 'bg-slate-700/50 text-slate-300 hover:bg-slate-700' :
+                          order.status === 'ship' ? 'bg-secondary-400/10 text-secondary-400 hover:bg-secondary-400/20 border border-secondary-400/20' :
+                            'bg-amber-400/10 text-amber-400 hover:bg-amber-400/20 border border-amber-400/20'
+                        }`}>
                         {order.status === 'done' ? 'View' : order.status === 'ship' ? 'Track' : 'Pay'}
                       </button>
                     </td>
@@ -512,7 +736,7 @@ export default function DashboardPage() {
                 <div className="p-4">
                   <p className="text-slate-400 text-xs mb-1">{product.category}</p>
                   <h4 className="text-white font-semibold mb-2 line-clamp-1">{product.name}</h4>
-                  
+
                   {/* Rating */}
                   <div className="flex items-center gap-1 mb-3">
                     {[...Array(5)].map((_, i) => (
@@ -566,7 +790,7 @@ export default function DashboardPage() {
                   <Cell fill="#22d3ee" />
                   <Cell fill="#fbbf24" />
                 </Pie>
-                <Tooltip 
+                <Tooltip
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       const data = payload[0].payload;
@@ -586,10 +810,10 @@ export default function DashboardPage() {
                           <div style={{ marginBottom: '6px' }}>
                             <span style={{ color: '#cbd5e1', fontSize: '12px' }}>Amount: </span>
                             <span style={{ color: '#f1f5f9', fontWeight: 'bold', fontSize: '14px' }}>
-                              {new Intl.NumberFormat('id-ID', { 
-                                style: 'currency', 
-                                currency: 'IDR', 
-                                minimumFractionDigits: 0 
+                              {new Intl.NumberFormat('id-ID', {
+                                style: 'currency',
+                                currency: 'IDR',
+                                minimumFractionDigits: 0
                               }).format(data.value).replace('Rp', 'Rp ')}
                             </span>
                           </div>
@@ -627,11 +851,11 @@ export default function DashboardPage() {
             <h3 className="text-xl font-bold text-white mb-1">Active Vouchers</h3>
             <p className="text-slate-400 text-sm">Save more on your next purchase</p>
           </div>
-          <a 
+          <a
             href="/vouchers"
             className="text-accent-400 text-sm font-semibold hover:text-accent-300 transition-colors flex items-center gap-1"
           >
-            View All Vouchers 
+            View All Vouchers
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
@@ -641,30 +865,30 @@ export default function DashboardPage() {
         {/* Voucher Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {[
-            { 
-              code: 'TECH20', 
-              discount: '20% OFF', 
-              description: 'Maximum discount Rp 100,000', 
+            {
+              code: 'TECH20',
+              discount: '20% OFF',
+              description: 'Maximum discount Rp 100,000',
               minPurchase: 500000,
               expiry: '3 days left',
               type: 'percentage',
               tagColor: 'from-purple-500 to-purple-600',
               glowColor: 'purple-500'
             },
-            { 
-              code: 'FREESHIP', 
-              discount: 'FREE SHIPPING', 
-              description: 'No minimum purchase required', 
+            {
+              code: 'FREESHIP',
+              discount: 'FREE SHIPPING',
+              description: 'No minimum purchase required',
               minPurchase: 0,
               expiry: '1 week left',
               type: 'shipping',
               tagColor: 'from-cyan-500 to-cyan-600',
               glowColor: 'cyan-500'
             },
-            { 
-              code: 'SAVE50K', 
-              discount: 'Rp 50,000', 
-              description: 'Discount for all products', 
+            {
+              code: 'SAVE50K',
+              discount: 'Rp 50,000',
+              description: 'Discount for all products',
               minPurchase: 1000000,
               expiry: '2 weeks left',
               type: 'fixed',
@@ -678,20 +902,20 @@ export default function DashboardPage() {
             >
               {/* Animated Gold Shimmer Effect */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent-400/10 to-transparent shimmer-animation opacity-0 group-hover:opacity-100"></div>
-              
+
               {/* Gold accent line at top with shimmer */}
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent-400 to-transparent animate-pulse"></div>
-              
+
               {/* Decorative corner with sparkle */}
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-accent-400/10 to-transparent rounded-bl-[100px] group-hover:from-accent-400/20 transition-all duration-500"></div>
-              
+
               <div className="p-5 relative z-10">
                 {/* Voucher Code Tag */}
                 <div className="flex items-center justify-between mb-3">
                   <div className={`px-2.5 py-1 bg-gradient-to-r ${voucher.tagColor} rounded-lg shadow-lg`}>
                     <p className="text-white font-bold text-[10px] tracking-wider">{voucher.code}</p>
                   </div>
-                  <button 
+                  <button
                     className="p-1.5 hover:bg-slate-700/50 rounded-lg transition-all hover:scale-110"
                     title="Copy code"
                   >

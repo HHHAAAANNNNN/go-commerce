@@ -240,3 +240,62 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	utils.SuccessResponse(w, "User deleted successfully", nil)
 }
+
+// GetBalance - GET /api/users/{id}/balance
+func GetBalance(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		utils.ErrorResponse(w, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	var balance int
+	err = config.DB.QueryRow("SELECT balance FROM users WHERE id = ?", id).Scan(&balance)
+	if err != nil {
+		utils.ErrorResponse(w, http.StatusNotFound, "User not found")
+		return
+	}
+
+	utils.SuccessResponse(w, "Balance fetched", map[string]int{"balance": balance})
+}
+
+// TopUp - POST /api/users/{id}/topup
+func TopUp(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		utils.ErrorResponse(w, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	var req struct {
+		Amount int `json:"amount"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		utils.ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+	if req.Amount <= 0 {
+		utils.ErrorResponse(w, http.StatusBadRequest, "Top-up amount must be greater than 0")
+		return
+	}
+
+	// Atomically increment balance
+	result, err := config.DB.Exec("UPDATE users SET balance = balance + ? WHERE id = ?", req.Amount, id)
+	if err != nil {
+		utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to top up balance")
+		return
+	}
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		utils.ErrorResponse(w, http.StatusNotFound, "User not found")
+		return
+	}
+
+	// Return updated balance
+	var newBalance int
+	config.DB.QueryRow("SELECT balance FROM users WHERE id = ?", id).Scan(&newBalance)
+
+	utils.SuccessResponse(w, "Top-up successful", map[string]int{"balance": newBalance})
+}

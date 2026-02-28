@@ -118,6 +118,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Assign optional nullable fields
+	if avatarURL.Valid {
+		user.AvatarURL = avatarURL.String
+	}
+
 	// Verify password
 	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(req.Password))
 	if err != nil {

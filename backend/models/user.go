@@ -8,6 +8,7 @@ type User struct {
 	Email     string    `json:"email"`
 	Phone     string    `json:"phone,omitempty"`
 	Password  string    `json:"password,omitempty"`
+	AvatarURL string    `json:"avatar_url,omitempty"`
 	Balance   int       `json:"balance"`
 	IsMember  bool      `json:"is_member"`
 	CreatedAt time.Time `json:"created_at"`

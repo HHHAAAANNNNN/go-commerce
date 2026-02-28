@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
+
+const BACKEND = "http://localhost:8080";
 
 interface User {
   id: number;
@@ -10,7 +12,7 @@ interface User {
   phone: string;
   balance: number;
   is_member: boolean;
-  created_at: string;
+  avatar_url?: string;
 }
 
 interface AppNavbarProps {
@@ -23,16 +25,27 @@ export default function AppNavbar({ onToggleSidebar }: AppNavbarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
-  useEffect(() => {
+  const loadUser = useCallback(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
+        // Login stores a flat user object: { id, full_name, email, ... }
         setUser(JSON.parse(storedUser));
       } catch (error) {
         console.error("Failed to parse user data:", error);
       }
     }
   }, []);
+
+  useEffect(() => {
+    loadUser();
+    // Listen for profile updates from the profile page (same window)
+    // We call loadUser() instead of using event.detail because localStorage
+    // always has the complete merged user object including avatar_url
+    const handleProfileUpdated = () => loadUser();
+    window.addEventListener("profileUpdated", handleProfileUpdated);
+    return () => window.removeEventListener("profileUpdated", handleProfileUpdated);
+  }, [loadUser]);
 
   const getPageTitle = () => {
     if (pathname.includes("/dashboard")) return "Dashboard";
@@ -55,6 +68,10 @@ export default function AppNavbar({ onToggleSidebar }: AppNavbarProps) {
   const userInitials = user
     ? user.full_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
     : "FN";
+
+  const avatarSrc = user?.avatar_url
+    ? (user.avatar_url.startsWith("http") ? user.avatar_url : `${BACKEND}${user.avatar_url}`)
+    : null;
 
   return (
     <nav className="bg-[#0A0A0F] border-b border-slate-800/50 sticky top-0 z-50 backdrop-blur-sm">
@@ -89,8 +106,13 @@ export default function AppNavbar({ onToggleSidebar }: AppNavbarProps) {
               <p className="text-white text-sm font-semibold">{user?.full_name || "Guest User"}</p>
               <p className="text-slate-400 text-xs">{user?.is_member ? "Premium Member" : "Free Member"}</p>
             </div>
-            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary-400 to-secondary-400 flex items-center justify-center text-white font-semibold">
-              {userInitials}
+            {/* Avatar: image if available, else initials */}
+            <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-r from-primary-400 to-secondary-400 flex items-center justify-center text-white font-semibold shrink-0">
+              {avatarSrc ? (
+                <img src={avatarSrc} alt={user?.full_name} className="w-full h-full object-cover" />
+              ) : (
+                <span>{userInitials}</span>
+              )}
             </div>
           </button>
 
@@ -105,9 +127,19 @@ export default function AppNavbar({ onToggleSidebar }: AppNavbarProps) {
 
               {/* Menu */}
               <div className="absolute right-0 mt-2 w-56 bg-slate-900/95 backdrop-blur-md border border-slate-700/50 rounded-xl shadow-2xl shadow-primary-400/10 z-50 overflow-hidden">
-                <div className="p-3 border-b border-slate-700/50">
-                  <p className="text-white font-semibold">{user?.full_name || "Guest User"}</p>
-                  <p className="text-slate-400 text-xs">{user?.email || "guest@example.com"}</p>
+                {/* User info header */}
+                <div className="p-3 border-b border-slate-700/50 flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-r from-primary-400 to-secondary-400 flex items-center justify-center text-white text-sm font-semibold shrink-0">
+                    {avatarSrc ? (
+                      <img src={avatarSrc} alt={user?.full_name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{userInitials}</span>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-white font-semibold text-sm truncate">{user?.full_name || "Guest User"}</p>
+                    <p className="text-slate-400 text-xs truncate">{user?.email || "guest@example.com"}</p>
+                  </div>
                 </div>
                 <div className="py-2">
                   <button

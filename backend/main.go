@@ -26,12 +26,16 @@ func main() {
 	// Setup routes
 	router := routes.SetupRoutes()
 
-	// Serve static files from public directory
-	publicDir := filepath.Join("public")
-	if _, err := os.Stat(publicDir); os.IsNotExist(err) {
-		os.MkdirAll(publicDir, 0755)
+	// Serve static files from the project root public/assets directory
+	// Binary runs from backend/ so use ../ to go up to project root
+	// URL: /assets/products/phones/file.jpg
+	// → strip "/assets/" → products/phones/file.jpg
+	// → serve from ../public/assets/ → public/assets/products/phones/file.jpg ✓
+	publicAssetsDir := filepath.Join("..", "public", "assets")
+	if _, err := os.Stat(publicAssetsDir); os.IsNotExist(err) {
+		os.MkdirAll(publicAssetsDir, 0755)
 	}
-	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir(publicDir))))
+	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir(publicAssetsDir))))
 
 	// Start server
 	port := ":8080"

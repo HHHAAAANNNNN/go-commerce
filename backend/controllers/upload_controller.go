@@ -11,6 +11,18 @@ import (
 	"github.com/HHHAAAANNNNN/go-commerce-backend/utils"
 )
 
+// categoryToDir maps form category value to the correct subdirectory and URL path
+func categoryToDir(category string) (dir string, urlBase string) {
+	switch strings.ToLower(category) {
+	case "smartphones":
+		return filepath.Join("..", "public", "assets", "products", "phones"), "/assets/products/phones"
+	case "laptops":
+		return filepath.Join("..", "public", "assets", "products", "laptops"), "/assets/products/laptops"
+	default:
+		return filepath.Join("..", "public", "assets", "products"), "/assets/products"
+	}
+}
+
 // UploadImage - POST /api/upload
 func UploadImage(w http.ResponseWriter, r *http.Request) {
 	// Parse multipart form (max 5MB)
@@ -40,11 +52,9 @@ func UploadImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get category from form
+	// Get category from form and map to directory
 	category := r.FormValue("category")
-	if category == "" {
-		category = "products"
-	}
+	dir, urlBase := categoryToDir(category)
 
 	// Create unique filename
 	filename := fmt.Sprintf("%d_%s", header.Size, header.Filename)
@@ -52,7 +62,6 @@ func UploadImage(w http.ResponseWriter, r *http.Request) {
 	filename = strings.ToLower(filename)
 
 	// Create directory path
-	dir := filepath.Join("public", "assets", category)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to create directory")
 		return
@@ -74,7 +83,7 @@ func UploadImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Return URL
-	url := fmt.Sprintf("/assets/%s/%s", category, filename)
+	// Return relative URL (no host/port prefix)
+	url := fmt.Sprintf("%s/%s", urlBase, filename)
 	utils.SuccessResponse(w, "Image uploaded successfully", map[string]string{"url": url})
 }

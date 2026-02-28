@@ -48,10 +48,26 @@ CREATE TABLE IF NOT EXISTS order_items (
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
+-- Product Specifications Table
+CREATE TABLE IF NOT EXISTS product_specifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    chipset VARCHAR(100),
+    ram_gb INT,
+    rom_value INT,
+    rom_unit VARCHAR(5) DEFAULT 'GB',
+    display_inch DECIMAL(4,1),
+    refresh_rate_hz INT,
+    battery VARCHAR(50),
+    charging VARCHAR(50),
+    camera TEXT,
+    connectivity_5g BOOLEAN DEFAULT FALSE,
+    connectivity_wifi BOOLEAN DEFAULT FALSE,
+    connectivity_nfc BOOLEAN DEFAULT FALSE,
+    os_name VARCHAR(20),
+    os_version VARCHAR(20),
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
 -- Sample data for testing
-INSERT INTO products (id, name, price, stock, category, rating) VALUES
-    ('LAP001', 'Gaming Laptop', 15000000, 10, 'Electronics', 4.5),
-    ('LAP002', 'Business Laptop', 8000000, 25, 'Electronics', 4.2),
-    ('HP001', 'Wireless Headphones', 1500000, 50, 'Audio', 4.7),
-    ('KB001', 'Mechanical Keyboard', 750000, 30, 'Accessories', 4.6),
-    ('MS001', 'Gaming Mouse', 450000, 40, 'Accessories', 4.4);
+-- (use actual product IDs from your database)

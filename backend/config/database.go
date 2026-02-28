@@ -121,6 +121,26 @@ func runMigrations() error {
 	}
 	log.Println("✅ Order items table ready")
 
+	// Product specifications table (key-value schema)
+	// Disable FK checks before drop to handle any constraint issues cleanly
+	DB.Exec(`SET FOREIGN_KEY_CHECKS=0`)
+	DB.Exec(`DROP TABLE IF EXISTS product_specifications`)
+	DB.Exec(`SET FOREIGN_KEY_CHECKS=1`)
+	createSpecsTable := `
+	CREATE TABLE IF NOT EXISTS product_specifications (
+		id INT AUTO_INCREMENT PRIMARY KEY,
+		product_id INT NOT NULL,
+		spec_key VARCHAR(100) NOT NULL,
+		spec_value TEXT,
+		display_order INT DEFAULT 0,
+		INDEX idx_product_id (product_id)
+	)`
+	_, err = DB.Exec(createSpecsTable)
+	if err != nil {
+		return fmt.Errorf("failed to create product_specifications table: %w", err)
+	}
+	log.Println("✅ Product specifications table ready")
+
 	// Insert sample products if products table is empty
 	var count int
 	err = DB.QueryRow("SELECT COUNT(*) FROM products").Scan(&count)

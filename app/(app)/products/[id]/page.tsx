@@ -3,6 +3,13 @@
 import { use, useState, useEffect } from "react";
 import Link from "next/link";
 
+const BACKEND = "http://localhost:8080";
+
+interface ProductSpec {
+  key: string;
+  value: string;
+}
+
 interface Product {
   id: string;
   name: string;
@@ -13,6 +20,7 @@ interface Product {
   image?: string;
   stock: number;
   brand: string;
+  specifications?: ProductSpec[];
 }
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -29,7 +37,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
   const fetchProduct = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/api/products/${resolvedParams.id}`);
+      const response = await fetch(`${BACKEND}/api/products/${resolvedParams.id}`);
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.data) {
@@ -49,6 +57,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       currency: "IDR",
       minimumFractionDigits: 0,
     }).format(price);
+  };
+
+  // Build full image src: if relative path, prepend backend URL
+  const imageSrc = (path?: string) => {
+    if (!path) return null;
+    return path.startsWith("http") ? path : `${BACKEND}${path}`;
   };
 
   const handleAddToCart = () => {
@@ -74,7 +88,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <h2 className="text-2xl font-bold text-white mb-2">Product Not Found</h2>
-          <p className="text-slate-400 mb-6">The product you're looking for doesn't exist.</p>
+          <p className="text-slate-400 mb-6">The product you&apos;re looking for doesn&apos;t exist.</p>
           <Link
             href="/products"
             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-400 to-secondary-400 text-white rounded-lg font-semibold hover:from-primary-500 hover:to-secondary-500 transition-all"
@@ -88,6 +102,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       </div>
     );
   }
+
+  const fullImageSrc = imageSrc(product.image);
+  const specs = product.specifications ?? [];
 
   return (
     <div className="space-y-6">
@@ -117,9 +134,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         <div className="space-y-4">
           <div className="relative bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden">
             <div className="aspect-square relative">
-              {product.image && !imageError ? (
+              {fullImageSrc && !imageError ? (
                 <img
-                  src={product.image}
+                  src={fullImageSrc}
                   alt={product.name}
                   className="w-full h-full object-cover"
                   onError={() => setImageError(true)}
@@ -132,16 +149,15 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 </div>
               )}
             </div>
-            
+
             {/* Stock Badge */}
             <div className="absolute top-4 right-4">
-              <span className={`px-4 py-2 rounded-lg text-sm font-bold backdrop-blur-sm shadow-lg ${
-                product.stock > 20
+              <span className={`px-4 py-2 rounded-lg text-sm font-bold backdrop-blur-sm shadow-lg ${product.stock > 20
                   ? 'bg-green-500/90 text-white'
                   : product.stock > 0
-                  ? 'bg-amber-500/90 text-white'
-                  : 'bg-red-500/90 text-white'
-              }`}>
+                    ? 'bg-amber-500/90 text-white'
+                    : 'bg-red-500/90 text-white'
+                }`}>
                 {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
               </span>
             </div>
@@ -252,18 +268,17 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         {/* Tab Headers */}
         <div className="flex border-b border-slate-700">
           {[
-            { id: 'description', label: 'Description'},
-            { id: 'specs', label: 'Specifications'},
-            { id: 'reviews', label: 'Reviews'},
+            { id: 'description', label: 'Description' },
+            { id: 'specs', label: 'Specifications' },
+            { id: 'reviews', label: 'Reviews' },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`flex-1 px-6 py-4 font-semibold transition-all ${
-                activeTab === tab.id
+              className={`flex-1 px-6 py-4 font-semibold transition-all ${activeTab === tab.id
                   ? 'bg-primary-400/10 text-white border-b-2 border-primary-400'
                   : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-              }`}
+                }`}
             >
               {tab.label}
             </button>
@@ -284,12 +299,26 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           {activeTab === 'specs' && (
             <div className="space-y-4">
               <h3 className="text-xl font-bold text-white">Technical Specifications</h3>
-              <div className="bg-slate-900 rounded-lg p-8 text-center">
-                <svg className="w-16 h-16 text-slate-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <p className="text-slate-400">Specifications will be available soon.</p>
-              </div>
+              {specs.length > 0 ? (
+                <div className="divide-y divide-slate-700 rounded-lg overflow-hidden border border-slate-700">
+                  {specs.map((spec, i) => (
+                    <div
+                      key={i}
+                      className={`flex items-start px-5 py-3 ${i % 2 === 0 ? 'bg-slate-900/50' : 'bg-slate-900/30'}`}
+                    >
+                      <span className="w-44 shrink-0 text-slate-400 text-sm font-medium">{spec.key}</span>
+                      <span className="text-white text-sm">{spec.value}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-slate-900 rounded-lg p-8 text-center">
+                  <svg className="w-16 h-16 text-slate-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <p className="text-slate-400">No specifications available for this product.</p>
+                </div>
+              )}
             </div>
           )}
 

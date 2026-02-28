@@ -195,11 +195,10 @@ export default function ProductsPage() {
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    selectedCategory === category
-                      ? "bg-gradient-to-r from-primary-400/20 to-secondary-400/20 text-primary-400 border border-primary-400/30"
-                      : "bg-slate-800 text-slate-400 border border-slate-700 hover:text-white hover:border-slate-600"
-                  }`}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${selectedCategory === category
+                    ? "bg-gradient-to-r from-primary-400/20 to-secondary-400/20 text-primary-400 border border-primary-400/30"
+                    : "bg-slate-800 text-slate-400 border border-slate-700 hover:text-white hover:border-slate-600"
+                    }`}
                 >
                   {category}
                 </button>
@@ -211,11 +210,10 @@ export default function ProductsPage() {
             {/* Price Filter */}
             <button
               onClick={() => setShowPriceFilter(!showPriceFilter)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
-                minPrice || maxPrice
-                  ? "bg-primary-400/20 text-primary-400 border-primary-400/30"
-                  : "bg-slate-800 text-slate-400 border-slate-700 hover:text-white hover:border-slate-600"
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-all ${minPrice || maxPrice
+                ? "bg-primary-400/20 text-primary-400 border-primary-400/30"
+                : "bg-slate-800 text-slate-400 border-slate-700 hover:text-white hover:border-slate-600"
+                }`}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -286,7 +284,7 @@ export default function ProductsPage() {
               <div className="relative aspect-square bg-slate-800 overflow-hidden">
                 {product.image && !imageErrors[product.id] ? (
                   <img
-                    src={product.image}
+                    src={product.image.startsWith('http') ? product.image : `http://localhost:8080${product.image}`}
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     onError={() => setImageErrors(prev => ({ ...prev, [product.id]: true }))}
@@ -298,7 +296,7 @@ export default function ProductsPage() {
                     </svg>
                   </div>
                 )}
-                
+
                 {/* Category Badge */}
                 <div className="absolute top-3 left-3 px-3 py-1.5 bg-gradient-to-r from-primary-400/90 to-secondary-400/90 backdrop-blur-sm rounded-full text-white text-xs font-semibold shadow-lg">
                   {product.category}
@@ -407,9 +405,11 @@ interface BasicFormData {
 
 interface SmartphoneSpecs {
   chipset: string;
-  ram: string;
-  rom: string;
-  display: string;
+  ram_gb: string;
+  rom_value: string;
+  rom_unit: 'GB' | 'TB';
+  display_inch: string;
+  refresh_rate_hz: string;
   battery: string;
   charging: string;
   camera: string;
@@ -418,26 +418,28 @@ interface SmartphoneSpecs {
     wifi: boolean;
     nfc: boolean;
   };
-  os: string;
+  os_name: 'Android' | 'iOS';
+  os_version: string;
 }
 
 interface LaptopSpecs {
   cpu: string;
-  ram: string;
-  storage: {
-    size: string;
-    type: 'SSD' | 'HDD';
-  };
+  ram_gb: string;
+  ram_ddr: 'DDR5' | 'DDR4';
+  storage_value: string;
+  storage_unit: 'GB' | 'TB';
+  storage_type: 'SSD' | 'HDD';
   display: string;
   gpu: string;
-  battery: string;
+  battery_wh: string;
   ports: {
     usb: boolean;
     hdmi: boolean;
     wifi6: boolean;
     other: boolean;
   };
-  os: string;
+  os_name: 'Windows' | 'macOS';
+  os_version: string;
 }
 
 function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
@@ -446,7 +448,7 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
   const [error, setError] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
-  
+
   const [basicData, setBasicData] = useState<BasicFormData>({
     name: '',
     price: '',
@@ -458,9 +460,11 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
 
   const [smartphoneSpecs, setSmartphoneSpecs] = useState<SmartphoneSpecs>({
     chipset: '',
-    ram: '',
-    rom: '',
-    display: '',
+    ram_gb: '',
+    rom_value: '',
+    rom_unit: 'GB',
+    display_inch: '',
+    refresh_rate_hz: '',
     battery: '',
     charging: 'Standard Charging',
     camera: '',
@@ -469,26 +473,28 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
       wifi: false,
       nfc: false,
     },
-    os: '',
+    os_name: 'Android',
+    os_version: '',
   });
 
   const [laptopSpecs, setLaptopSpecs] = useState<LaptopSpecs>({
     cpu: '',
-    ram: '',
-    storage: {
-      size: '',
-      type: 'SSD',
-    },
+    ram_gb: '',
+    ram_ddr: 'DDR5',
+    storage_value: '',
+    storage_unit: 'GB',
+    storage_type: 'SSD',
     display: '',
     gpu: '',
-    battery: '',
+    battery_wh: '',
     ports: {
       usb: false,
       hdmi: false,
       wifi6: false,
       other: false,
     },
-    os: '',
+    os_name: 'Windows',
+    os_version: '',
   });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -519,25 +525,63 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
       if (imageFile) {
         const formData = new FormData();
         formData.append('image', imageFile);
-        formData.append('category', basicData.category.toLowerCase());
-        
+        // Map frontend category → upload endpoint category (which maps to correct subfolder)
+        const categoryUploadMap: Record<string, string> = {
+          'Smartphones': 'smartphones',
+          'Laptops': 'laptops',
+          'Audio': 'audio',
+          'Accessories': 'accessories',
+        };
+        formData.append('category', categoryUploadMap[basicData.category] || basicData.category.toLowerCase());
+
         const uploadResponse = await fetch('http://localhost:8080/api/upload', {
           method: 'POST',
           body: formData,
         });
-        
+
         if (uploadResponse.ok) {
           const uploadData = await uploadResponse.json();
-          imageUrl = uploadData.url;
+          // Store ONLY the relative path (e.g. /assets/products/phones/file.jpg)
+          if (uploadData.data && uploadData.data.url) {
+            imageUrl = uploadData.data.url;
+          }
         }
       }
 
-      // Prepare specs based on category
-      let specs = {};
+      // Prepare spec payload (flattened for backend)
+      let specPayload: Record<string, unknown> = {};
       if (basicData.category === 'Smartphones') {
-        specs = { smartphoneSpecs };
+        specPayload = {
+          chipset: smartphoneSpecs.chipset,
+          ram_gb: smartphoneSpecs.ram_gb ? parseInt(smartphoneSpecs.ram_gb) : 0,
+          rom_value: smartphoneSpecs.rom_value ? parseInt(smartphoneSpecs.rom_value) : 0,
+          rom_unit: smartphoneSpecs.rom_unit,
+          display_inch: smartphoneSpecs.display_inch ? parseFloat(smartphoneSpecs.display_inch) : 0,
+          refresh_rate_hz: smartphoneSpecs.refresh_rate_hz ? parseInt(smartphoneSpecs.refresh_rate_hz) : 0,
+          battery: smartphoneSpecs.battery,
+          charging: smartphoneSpecs.charging,
+          camera: smartphoneSpecs.camera,
+          connectivity_5g: smartphoneSpecs.connectivity.network5g,
+          connectivity_wifi: smartphoneSpecs.connectivity.wifi,
+          connectivity_nfc: smartphoneSpecs.connectivity.nfc,
+          os_name: smartphoneSpecs.os_name,
+          os_version: smartphoneSpecs.os_version,
+        };
       } else if (basicData.category === 'Laptops') {
-        specs = { laptopSpecs };
+        specPayload = {
+          chipset: laptopSpecs.cpu,
+          ram_gb: laptopSpecs.ram_gb ? parseInt(laptopSpecs.ram_gb) : 0,
+          // Store RAM as "16 GB DDR5" via the backend formatter — send raw fields
+          rom_value: laptopSpecs.storage_value ? parseInt(laptopSpecs.storage_value) : 0,
+          rom_unit: laptopSpecs.storage_unit,
+          battery: laptopSpecs.battery_wh ? `${laptopSpecs.battery_wh} Wh` : '',
+          display: laptopSpecs.display,
+          os_name: laptopSpecs.os_name,
+          os_version: laptopSpecs.os_version,
+          ram_ddr: laptopSpecs.ram_ddr,
+          storage_type: laptopSpecs.storage_type,
+          connectivity_wifi: laptopSpecs.ports.wifi6,
+        };
       }
 
       // Create product
@@ -553,7 +597,7 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
           description: basicData.description,
           image: imageUrl,
           rating: 0,
-          ...specs,
+          ...specPayload,
         }),
       });
 
@@ -564,8 +608,9 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
       }
 
       onProductAdded();
-    } catch (err: any) {
-      setError(err.message || 'Failed to add product');
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : 'Failed to add product';
+      setError(errMsg);
     } finally {
       setLoading(false);
     }
@@ -745,8 +790,9 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
               {basicData.category === 'Smartphones' && (
                 <div className="space-y-4">
                   <h3 className="text-lg font-bold text-white">Smartphone Specifications</h3>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Chipset */}
                     <div>
                       <label className="block text-slate-300 text-sm font-medium mb-2">Chipset</label>
                       <input
@@ -757,46 +803,98 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
                         placeholder="e.g., Snapdragon 8 Gen 3"
                       />
                     </div>
+
+                    {/* RAM */}
                     <div>
                       <label className="block text-slate-300 text-sm font-medium mb-2">RAM</label>
-                      <input
-                        type="text"
-                        value={smartphoneSpecs.ram}
-                        onChange={(e) => setSmartphoneSpecs({ ...smartphoneSpecs, ram: e.target.value })}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
-                        placeholder="e.g., 8GB"
-                      />
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="1"
+                          value={smartphoneSpecs.ram_gb}
+                          onChange={(e) => setSmartphoneSpecs({ ...smartphoneSpecs, ram_gb: e.target.value })}
+                          className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                          placeholder="e.g., 8"
+                        />
+                        <span className="text-slate-300 font-semibold text-sm bg-slate-700 px-3 py-3 rounded-lg whitespace-nowrap">GB</span>
+                      </div>
                     </div>
+
+                    {/* ROM */}
                     <div>
                       <label className="block text-slate-300 text-sm font-medium mb-2">ROM (Storage)</label>
-                      <input
-                        type="text"
-                        value={smartphoneSpecs.rom}
-                        onChange={(e) => setSmartphoneSpecs({ ...smartphoneSpecs, rom: e.target.value })}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
-                        placeholder="e.g., 256GB"
-                      />
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="1"
+                          value={smartphoneSpecs.rom_value}
+                          onChange={(e) => setSmartphoneSpecs({ ...smartphoneSpecs, rom_value: e.target.value })}
+                          className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                          placeholder="e.g., 256"
+                        />
+                        <select
+                          value={smartphoneSpecs.rom_unit}
+                          onChange={(e) => setSmartphoneSpecs({ ...smartphoneSpecs, rom_unit: e.target.value as 'GB' | 'TB' })}
+                          className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                        >
+                          <option value="GB">GB</option>
+                          <option value="TB">TB</option>
+                        </select>
+                      </div>
                     </div>
+
+                    {/* Display */}
                     <div>
-                      <label className="block text-slate-300 text-sm font-medium mb-2">Display & Refresh Rate</label>
-                      <input
-                        type="text"
-                        value={smartphoneSpecs.display}
-                        onChange={(e) => setSmartphoneSpecs({ ...smartphoneSpecs, display: e.target.value })}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
-                        placeholder="e.g., 6.7 inch AMOLED, 120Hz"
-                      />
+                      <label className="block text-slate-300 text-sm font-medium mb-2">Display Size</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="1"
+                          step="0.1"
+                          value={smartphoneSpecs.display_inch}
+                          onChange={(e) => setSmartphoneSpecs({ ...smartphoneSpecs, display_inch: e.target.value })}
+                          className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                          placeholder="e.g., 6.7"
+                        />
+                        <span className="text-slate-300 font-semibold text-sm bg-slate-700 px-3 py-3 rounded-lg whitespace-nowrap">inch</span>
+                      </div>
                     </div>
+
+                    {/* Refresh Rate */}
+                    <div>
+                      <label className="block text-slate-300 text-sm font-medium mb-2">Refresh Rate</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="60"
+                          step="1"
+                          value={smartphoneSpecs.refresh_rate_hz}
+                          onChange={(e) => setSmartphoneSpecs({ ...smartphoneSpecs, refresh_rate_hz: e.target.value })}
+                          className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                          placeholder="e.g., 120"
+                        />
+                        <span className="text-slate-300 font-semibold text-sm bg-slate-700 px-3 py-3 rounded-lg whitespace-nowrap">Hz</span>
+                      </div>
+                    </div>
+
+                    {/* Battery */}
                     <div>
                       <label className="block text-slate-300 text-sm font-medium mb-2">Battery Capacity</label>
-                      <input
-                        type="text"
-                        value={smartphoneSpecs.battery}
-                        onChange={(e) => setSmartphoneSpecs({ ...smartphoneSpecs, battery: e.target.value })}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
-                        placeholder="e.g., 5000mAh"
-                      />
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          step="100"
+                          value={smartphoneSpecs.battery}
+                          onChange={(e) => setSmartphoneSpecs({ ...smartphoneSpecs, battery: e.target.value })}
+                          className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                          placeholder="e.g., 5000"
+                        />
+                        <span className="text-slate-300 font-semibold text-sm bg-slate-700 px-3 py-3 rounded-lg whitespace-nowrap">mAh</span>
+                      </div>
                     </div>
+
+                    {/* Charging */}
                     <div>
                       <label className="block text-slate-300 text-sm font-medium mb-2">Charging</label>
                       <select
@@ -810,6 +908,8 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
                         <option value="Wireless Charging">Wireless Charging</option>
                       </select>
                     </div>
+
+                    {/* Camera */}
                     <div className="md:col-span-2">
                       <label className="block text-slate-300 text-sm font-medium mb-2">Camera</label>
                       <input
@@ -820,15 +920,27 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
                         placeholder="e.g., 50MP Main + 12MP Ultra Wide + 10MP Telephoto"
                       />
                     </div>
+
+                    {/* OS */}
                     <div className="md:col-span-2">
                       <label className="block text-slate-300 text-sm font-medium mb-2">Operating System</label>
-                      <input
-                        type="text"
-                        value={smartphoneSpecs.os}
-                        onChange={(e) => setSmartphoneSpecs({ ...smartphoneSpecs, os: e.target.value })}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
-                        placeholder="e.g., Android 14, iOS 17"
-                      />
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={smartphoneSpecs.os_name}
+                          onChange={(e) => setSmartphoneSpecs({ ...smartphoneSpecs, os_name: e.target.value as 'Android' | 'iOS' })}
+                          className="bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                        >
+                          <option value="Android">Android</option>
+                          <option value="iOS">iOS</option>
+                        </select>
+                        <input
+                          type="text"
+                          value={smartphoneSpecs.os_version}
+                          onChange={(e) => setSmartphoneSpecs({ ...smartphoneSpecs, os_version: e.target.value })}
+                          className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                          placeholder="e.g., 14  (version number)"
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -871,7 +983,7 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
               {basicData.category === 'Laptops' && (
                 <div className="space-y-4">
                   <h3 className="text-lg font-bold text-white">Laptop Specifications</h3>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-slate-300 text-sm font-medium mb-2">Processor (CPU)</label>
@@ -883,36 +995,61 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
                         placeholder="e.g., Intel Core i7-13700H"
                       />
                     </div>
+                    {/* RAM */}
                     <div>
                       <label className="block text-slate-300 text-sm font-medium mb-2">RAM</label>
-                      <input
-                        type="text"
-                        value={laptopSpecs.ram}
-                        onChange={(e) => setLaptopSpecs({ ...laptopSpecs, ram: e.target.value })}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
-                        placeholder="e.g., 16GB DDR5"
-                      />
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="1"
+                          step="1"
+                          value={laptopSpecs.ram_gb}
+                          onChange={(e) => setLaptopSpecs({ ...laptopSpecs, ram_gb: e.target.value })}
+                          className="w-24 bg-slate-800 border border-slate-700 rounded-lg px-3 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                          placeholder="16"
+                        />
+                        <span className="text-slate-300 font-semibold text-sm bg-slate-700 px-3 py-3 rounded-lg">GB</span>
+                        <select
+                          value={laptopSpecs.ram_ddr}
+                          onChange={(e) => setLaptopSpecs({ ...laptopSpecs, ram_ddr: e.target.value as 'DDR5' | 'DDR4' })}
+                          className="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-2 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                        >
+                          <option value="DDR5">DDR5</option>
+                          <option value="DDR4">DDR4</option>
+                        </select>
+                      </div>
                     </div>
+
+                    {/* Storage */}
                     <div>
-                      <label className="block text-slate-300 text-sm font-medium mb-2">Storage Size</label>
-                      <input
-                        type="text"
-                        value={laptopSpecs.storage.size}
-                        onChange={(e) => setLaptopSpecs({ ...laptopSpecs, storage: { ...laptopSpecs.storage, size: e.target.value } })}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
-                        placeholder="e.g., 512GB"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-slate-300 text-sm font-medium mb-2">Storage Type</label>
-                      <select
-                        value={laptopSpecs.storage.type}
-                        onChange={(e) => setLaptopSpecs({ ...laptopSpecs, storage: { ...laptopSpecs.storage, type: e.target.value as 'SSD' | 'HDD' } })}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
-                      >
-                        <option value="SSD">SSD</option>
-                        <option value="HDD">HDD</option>
-                      </select>
+                      <label className="block text-slate-300 text-sm font-medium mb-2">Storage</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="1"
+                          step="1"
+                          value={laptopSpecs.storage_value}
+                          onChange={(e) => setLaptopSpecs({ ...laptopSpecs, storage_value: e.target.value })}
+                          className="w-24 bg-slate-800 border border-slate-700 rounded-lg px-3 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                          placeholder="512"
+                        />
+                        <select
+                          value={laptopSpecs.storage_unit}
+                          onChange={(e) => setLaptopSpecs({ ...laptopSpecs, storage_unit: e.target.value as 'GB' | 'TB' })}
+                          className="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-2 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                        >
+                          <option value="GB">GB</option>
+                          <option value="TB">TB</option>
+                        </select>
+                        <select
+                          value={laptopSpecs.storage_type}
+                          onChange={(e) => setLaptopSpecs({ ...laptopSpecs, storage_type: e.target.value as 'SSD' | 'HDD' })}
+                          className="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-2 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                        >
+                          <option value="SSD">SSD</option>
+                          <option value="HDD">HDD</option>
+                        </select>
+                      </div>
                     </div>
                     <div>
                       <label className="block text-slate-300 text-sm font-medium mb-2">Display</label>
@@ -934,25 +1071,43 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
                         placeholder="e.g., NVIDIA RTX 4050"
                       />
                     </div>
+                    {/* Battery */}
                     <div>
                       <label className="block text-slate-300 text-sm font-medium mb-2">Battery</label>
-                      <input
-                        type="text"
-                        value={laptopSpecs.battery}
-                        onChange={(e) => setLaptopSpecs({ ...laptopSpecs, battery: e.target.value })}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
-                        placeholder="e.g., 56Wh"
-                      />
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="1"
+                          step="1"
+                          value={laptopSpecs.battery_wh}
+                          onChange={(e) => setLaptopSpecs({ ...laptopSpecs, battery_wh: e.target.value })}
+                          className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                          placeholder="e.g., 56"
+                        />
+                        <span className="text-slate-300 font-semibold text-sm bg-slate-700 px-3 py-3 rounded-lg">Wh</span>
+                      </div>
                     </div>
+
+                    {/* Operating System */}
                     <div>
                       <label className="block text-slate-300 text-sm font-medium mb-2">Operating System</label>
-                      <input
-                        type="text"
-                        value={laptopSpecs.os}
-                        onChange={(e) => setLaptopSpecs({ ...laptopSpecs, os: e.target.value })}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
-                        placeholder="e.g., Windows 11 Pro"
-                      />
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={laptopSpecs.os_name}
+                          onChange={(e) => setLaptopSpecs({ ...laptopSpecs, os_name: e.target.value as 'Windows' | 'macOS' })}
+                          className="bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                        >
+                          <option value="Windows">Windows</option>
+                          <option value="macOS">macOS</option>
+                        </select>
+                        <input
+                          type="text"
+                          value={laptopSpecs.os_version}
+                          onChange={(e) => setLaptopSpecs({ ...laptopSpecs, os_version: e.target.value })}
+                          className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                          placeholder="e.g., 11 Pro"
+                        />
+                      </div>
                     </div>
                   </div>
 

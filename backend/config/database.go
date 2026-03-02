@@ -156,6 +156,25 @@ func runMigrations() error {
 		log.Println("✅ Sample products inserted")
 	}
 
+	// Vouchers table
+	createVouchersTable := `
+	CREATE TABLE IF NOT EXISTS vouchers (
+		id            INT AUTO_INCREMENT PRIMARY KEY,
+		code          VARCHAR(50) NOT NULL UNIQUE,
+		type          ENUM('percentage','fixed','shipping') NOT NULL,
+		amount        DECIMAL(10,2) DEFAULT 0,
+		description   TEXT,
+		min_purchase  INT DEFAULT 0,
+		duration_days INT NOT NULL DEFAULT 30,
+		expires_at    DATETIME,
+		created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	)`
+	_, err = DB.Exec(createVouchersTable)
+	if err != nil {
+		return fmt.Errorf("failed to create vouchers table: %w", err)
+	}
+	log.Println("✅ Vouchers table ready")
+
 	log.Println("✅ All migrations completed successfully")
 	return nil
 }

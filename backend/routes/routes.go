@@ -49,5 +49,9 @@ func SetupRoutes() *mux.Router {
 	api.HandleFunc("/products/{id}", controllers.UpdateProduct).Methods("PUT", "OPTIONS")
 	api.HandleFunc("/products/{id}", controllers.DeleteProduct).Methods("DELETE", "OPTIONS")
 
+	// Voucher routes
+	api.HandleFunc("/vouchers", controllers.ListVouchers).Methods("GET", "OPTIONS")
+	api.HandleFunc("/vouchers", controllers.CreateVoucher).Methods("POST", "OPTIONS")
+
 	return router
 }

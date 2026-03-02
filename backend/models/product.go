@@ -75,6 +75,14 @@ type ProductCreateRequest struct {
 	ConnectivityNfc  bool    `json:"connectivity_nfc"`
 	OsName           string  `json:"os_name"`
 	OsVersion        string  `json:"os_version"`
+	// Audio specs
+	FrequencyResponse string `json:"frequency_response"`
+	Impedance         string `json:"impedance"`
+	Sensitivity       string `json:"sensitivity"`
+	DriverSize        string `json:"driver_size"`
+	// Laptop-specific
+	Display string `json:"display"`
+	GPU     string `json:"gpu"`
 }
 
 type ProductUpdateRequest struct {

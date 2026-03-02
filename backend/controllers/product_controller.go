@@ -184,17 +184,41 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 
 	// Insert specifications as key-value rows
 	order := 1
-	specRows := []struct{ key, value string }{
-		{"Chipset", req.Chipset},
-		{"RAM", formatRAM(req.RamGB, req.RamDdr)},
-		{"ROM", formatROM(req.RomValue, req.RomUnit, req.StorageType)},
-		{"Display", formatDisplay(req.DisplayInch)},
-		{"Refresh Rate", formatRefreshRate(req.RefreshRateHz)},
-		{"Battery", req.Battery},
-		{"Charging", req.Charging},
-		{"Camera", req.Camera},
-		{"Operating System", formatOS(req.OsName, req.OsVersion)},
-		{"Connectivity", formatConnectivity(req.Connectivity5G, req.ConnectivityWifi, req.ConnectivityNfc)},
+
+	var specRows []struct{ key, value string }
+
+	switch req.Category {
+	case "Audio":
+		specRows = []struct{ key, value string }{
+			{"Respon Frekuensi", req.FrequencyResponse},
+			{"Impedansi", formatUnit(req.Impedance, "Ω")},
+			{"Sensitivitas", formatUnit(req.Sensitivity, "dB")},
+			{"Ukuran Driver", formatUnit(req.DriverSize, "mm")},
+		}
+	case "Laptops":
+		specRows = []struct{ key, value string }{
+			{"Chipset", req.Chipset},
+			{"RAM", formatRAM(req.RamGB, req.RamDdr)},
+			{"ROM", formatROM(req.RomValue, req.RomUnit, req.StorageType)},
+			{"Display", req.Display},
+			{"GPU", req.GPU},
+			{"Battery", req.Battery},
+			{"Operating System", formatOS(req.OsName, req.OsVersion)},
+			{"Connectivity", formatConnectivity(req.Connectivity5G, req.ConnectivityWifi, req.ConnectivityNfc)},
+		}
+	default:
+		specRows = []struct{ key, value string }{
+			{"Chipset", req.Chipset},
+			{"RAM", formatRAM(req.RamGB, req.RamDdr)},
+			{"ROM", formatROM(req.RomValue, req.RomUnit, req.StorageType)},
+			{"Display", formatDisplay(req.DisplayInch)},
+			{"Refresh Rate", formatRefreshRate(req.RefreshRateHz)},
+			{"Battery", req.Battery},
+			{"Charging", req.Charging},
+			{"Camera", req.Camera},
+			{"Operating System", formatOS(req.OsName, req.OsVersion)},
+			{"Connectivity", formatConnectivity(req.Connectivity5G, req.ConnectivityWifi, req.ConnectivityNfc)},
+		}
 	}
 
 	for _, s := range specRows {
@@ -257,6 +281,13 @@ func formatOS(name, version string) string {
 	return name
 }
 
+func formatUnit(value, unit string) string {
+	if value == "" {
+		return ""
+	}
+	return value + " " + unit
+}
+
 func formatConnectivity(g5, wifi, nfc bool) string {
 	var parts []string
 	if g5 {
@@ -276,24 +307,85 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 
-	var req models.ProductUpdateRequest
+	var req models.ProductCreateRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		utils.ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
-	query := `UPDATE products SET name = ?, price = ?, stock = ?, rating = ?, description = ?, image_url = ?, brand = ? WHERE id = ?`
-	result, err := config.DB.Exec(query, req.Name, req.Price, req.Stock, req.Rating, req.Description, req.Image, req.Brand, id)
-	if err != nil {
-		utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to update product")
+	// Verify product exists first
+	var productIDInt int
+	err = config.DB.QueryRow("SELECT id FROM products WHERE id = ?", id).Scan(&productIDInt)
+	if err != nil || productIDInt == 0 {
+		utils.ErrorResponse(w, http.StatusNotFound, "Product not found")
 		return
 	}
 
-	rowsAffected, _ := result.RowsAffected()
-	if rowsAffected == 0 {
-		utils.ErrorResponse(w, http.StatusNotFound, "Product not found")
+	// Resolve category_id from category name
+	var categoryID int
+	if req.Category != "" {
+		_ = config.DB.QueryRow("SELECT id FROM categories WHERE name = ?", req.Category).Scan(&categoryID)
+		if categoryID == 0 {
+			categoryID = 1
+		}
+	}
+
+	// Update basic product fields (rating is intentionally excluded — not editable via product form)
+	query := `UPDATE products SET name = ?, price = ?, stock = ?, category_id = ?, description = ?, image_url = ?, brand = ? WHERE id = ?`
+	_, err = config.DB.Exec(query, req.Name, req.Price, req.Stock, categoryID, req.Description, req.Image, req.Brand, id)
+	if err != nil {
+		utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to update product: "+err.Error())
 		return
+	}
+
+	// Re-sync specifications: delete old, insert new (productIDInt already set above)
+	if productIDInt > 0 {
+		_, _ = config.DB.Exec("DELETE FROM product_specifications WHERE product_id = ?", productIDInt)
+
+		order := 1
+		var specRows []struct{ key, value string }
+
+		switch req.Category {
+		case "Audio":
+			specRows = []struct{ key, value string }{
+				{"Respon Frekuensi", req.FrequencyResponse},
+				{"Impedansi", formatUnit(req.Impedance, "Ω")},
+				{"Sensitivitas", formatUnit(req.Sensitivity, "dB")},
+				{"Ukuran Driver", formatUnit(req.DriverSize, "mm")},
+			}
+		case "Laptops":
+			specRows = []struct{ key, value string }{
+				{"Chipset", req.Chipset},
+				{"RAM", formatRAM(req.RamGB, req.RamDdr)},
+				{"ROM", formatROM(req.RomValue, req.RomUnit, req.StorageType)},
+				{"Display", req.Display},
+				{"GPU", req.GPU},
+				{"Battery", req.Battery},
+				{"Operating System", formatOS(req.OsName, req.OsVersion)},
+				{"Connectivity", formatConnectivity(req.Connectivity5G, req.ConnectivityWifi, req.ConnectivityNfc)},
+			}
+		default:
+			specRows = []struct{ key, value string }{
+				{"Chipset", req.Chipset},
+				{"RAM", formatRAM(req.RamGB, req.RamDdr)},
+				{"ROM", formatROM(req.RomValue, req.RomUnit, req.StorageType)},
+				{"Display", formatDisplay(req.DisplayInch)},
+				{"Refresh Rate", formatRefreshRate(req.RefreshRateHz)},
+				{"Battery", req.Battery},
+				{"Charging", req.Charging},
+				{"Camera", req.Camera},
+				{"Operating System", formatOS(req.OsName, req.OsVersion)},
+				{"Connectivity", formatConnectivity(req.Connectivity5G, req.ConnectivityWifi, req.ConnectivityNfc)},
+			}
+		}
+
+		for _, s := range specRows {
+			if err2 := insertSpec(int64(productIDInt), s.key, s.value, order); err2 != nil {
+				fmt.Printf("Warning: failed to insert spec %s: %v\n", s.key, err2)
+			}
+			order++
+		}
 	}
 
 	utils.SuccessResponse(w, "Product updated successfully", nil)

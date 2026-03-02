@@ -18,6 +18,8 @@ func categoryToDir(category string) (dir string, urlBase string) {
 		return filepath.Join("..", "public", "assets", "products", "phones"), "/assets/products/phones"
 	case "laptops":
 		return filepath.Join("..", "public", "assets", "products", "laptops"), "/assets/products/laptops"
+	case "audio":
+		return filepath.Join("..", "public", "assets", "products", "audio"), "/assets/products/audio"
 	case "avatars":
 		return filepath.Join("..", "public", "assets", "people"), "/assets/people"
 	default:

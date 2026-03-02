@@ -122,10 +122,7 @@ func runMigrations() error {
 	log.Println("✅ Order items table ready")
 
 	// Product specifications table (key-value schema)
-	// Disable FK checks before drop to handle any constraint issues cleanly
-	DB.Exec(`SET FOREIGN_KEY_CHECKS=0`)
-	DB.Exec(`DROP TABLE IF EXISTS product_specifications`)
-	DB.Exec(`SET FOREIGN_KEY_CHECKS=1`)
+	// NOTE: do NOT drop this table on startup — it would wipe all spec data
 	createSpecsTable := `
 	CREATE TABLE IF NOT EXISTS product_specifications (
 		id INT AUTO_INCREMENT PRIMARY KEY,

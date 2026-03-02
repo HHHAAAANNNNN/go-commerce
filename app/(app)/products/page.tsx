@@ -25,7 +25,7 @@ export default function ProductsPage() {
   const [maxPrice, setMaxPrice] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
 
-  const categories = ["All", "Smartphones", "Laptops", "Audio", "Accessories"];
+  const categories = ["All", "Smartphones", "Laptops", "Audio"];
 
   useEffect(() => {
     fetchProducts();
@@ -85,10 +85,10 @@ export default function ProductsPage() {
       {showPriceFilter && (
         <>
           <div
-            className="fixed inset-0 bg-black/50 z-40"
+            className="fixed inset-0 top-[73px] bg-black/50 z-40"
             onClick={() => setShowPriceFilter(false)}
           />
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-50 p-6">
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-50 p-6" style={{ top: 'calc(50% + 36px)' }}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-white">Price Range</h3>
               <button
@@ -360,15 +360,13 @@ export default function ProductsPage() {
             <h3 className="text-xl font-bold text-white mb-2">No products found</h3>
             <p className="text-slate-400 mb-6">Try adjusting your search or filters</p>
             <button
-              onClick={() => {
-                setSearchQuery("");
-                setSelectedCategory("All");
-                setMinPrice("");
-                setMaxPrice("");
-              }}
-              className="px-6 py-3 bg-gradient-to-r from-primary-400 to-secondary-400 text-white rounded-lg font-semibold hover:opacity-90 transition-all"
+              onClick={() => setShowAddModal(true)}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-400 to-secondary-400 text-white rounded-lg font-semibold hover:opacity-90 transition-all"
             >
-              Clear All Filters
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Add New Product
             </button>
           </div>
         )}
@@ -442,10 +440,18 @@ interface LaptopSpecs {
   os_version: string;
 }
 
+interface AudioSpecs {
+  frequency_response: string;
+  impedance: string;
+  sensitivity: string;
+  driver_size: string;
+}
+
 function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
   const [step, setStep] = useState<1 | 2>(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [stepError, setStepError] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
 
@@ -497,6 +503,13 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
     os_version: '',
   });
 
+  const [audioSpecs, setAudioSpecs] = useState<AudioSpecs>({
+    frequency_response: '',
+    impedance: '',
+    sensitivity: '',
+    driver_size: '',
+  });
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -509,8 +522,19 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
     }
   };
 
+  const handleImageClear = () => {
+    setImageFile(null);
+    setImagePreview('');
+  };
+
   const handleBasicSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setStepError('');
+    if (!basicData.name.trim()) { setStepError('Nama produk wajib diisi.'); return; }
+    if (!basicData.price || parseInt(basicData.price) <= 0) { setStepError('Harga produk wajib diisi dan harus lebih dari 0.'); return; }
+    if (!basicData.stock || parseInt(basicData.stock) < 0) { setStepError('Stok produk wajib diisi.'); return; }
+    if (!basicData.brand.trim()) { setStepError('Brand wajib diisi.'); return; }
+    if (!basicData.description.trim()) { setStepError('Deskripsi wajib diisi.'); return; }
     setStep(2);
   };
 
@@ -530,7 +554,6 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
           'Smartphones': 'smartphones',
           'Laptops': 'laptops',
           'Audio': 'audio',
-          'Accessories': 'accessories',
         };
         formData.append('category', categoryUploadMap[basicData.category] || basicData.category.toLowerCase());
 
@@ -576,11 +599,19 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
           rom_unit: laptopSpecs.storage_unit,
           battery: laptopSpecs.battery_wh ? `${laptopSpecs.battery_wh} Wh` : '',
           display: laptopSpecs.display,
+          gpu: laptopSpecs.gpu,
           os_name: laptopSpecs.os_name,
           os_version: laptopSpecs.os_version,
           ram_ddr: laptopSpecs.ram_ddr,
           storage_type: laptopSpecs.storage_type,
           connectivity_wifi: laptopSpecs.ports.wifi6,
+        };
+      } else if (basicData.category === 'Audio') {
+        specPayload = {
+          frequency_response: audioSpecs.frequency_response,
+          impedance: audioSpecs.impedance,
+          sensitivity: audioSpecs.sensitivity,
+          driver_size: audioSpecs.driver_size,
         };
       }
 
@@ -623,8 +654,8 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-40 flex items-center justify-center p-4" onClick={closeModalOnBackdrop}>
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 top-[73px] bg-black/70 z-40 flex items-center justify-center p-4" onClick={closeModalOnBackdrop}>
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[calc(100vh-73px-2rem)] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-slate-900 border-b border-slate-700 p-6 flex items-center justify-between z-10">
           <div>
@@ -654,6 +685,11 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
           {error && (
             <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">
               {error}
+            </div>
+          )}
+          {stepError && (
+            <div className="bg-amber-500/10 border border-amber-500/30 text-amber-400 px-4 py-3 rounded-lg text-sm">
+              {stepError}
             </div>
           )}
 
@@ -711,7 +747,6 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
                     <option value="Smartphones">Smartphones</option>
                     <option value="Laptops">Laptops</option>
                     <option value="Audio">Audio</option>
-                    <option value="Accessories">Accessories</option>
                   </select>
                 </div>
 
@@ -732,14 +767,25 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
                   <label className="block text-slate-300 text-sm font-medium mb-2">Product Image</label>
                   <div className="flex items-center gap-4">
                     {imagePreview && (
-                      <img src={imagePreview} alt="Preview" className="w-24 h-24 object-cover rounded-lg border border-slate-700" />
+                      <div className="relative shrink-0">
+                        <img src={imagePreview} alt="Preview" className="w-24 h-24 object-cover rounded-lg border border-slate-700" />
+                        <button
+                          type="button"
+                          onClick={handleImageClear}
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
                     )}
                     <label className="flex-1 cursor-pointer">
                       <div className="border-2 border-dashed border-slate-700 hover:border-primary-400/50 rounded-lg p-6 text-center transition-colors">
                         <svg className="w-8 h-8 text-slate-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        <p className="text-slate-400 text-sm">Click to upload image</p>
+                        <p className="text-slate-400 text-sm">{imagePreview ? 'Klik untuk ganti gambar' : 'Klik untuk upload gambar'}</p>
                         <p className="text-slate-500 text-xs mt-1">JPG, PNG (Max 5MB)</p>
                       </div>
                       <input
@@ -1156,13 +1202,74 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
                 </div>
               )}
 
-              {(basicData.category === 'Audio' || basicData.category === 'Accessories') && (
-                <div className="text-center py-12">
-                  <svg className="w-16 h-16 text-slate-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <p className="text-slate-400">Specifications for {basicData.category} will be available soon.</p>
-                  <p className="text-slate-500 text-sm mt-2">You can proceed to add the product with basic information only.</p>
+              {basicData.category === 'Audio' && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-bold text-white">Audio Specifications</h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Frequency Response */}
+                    <div>
+                      <label className="block text-slate-300 text-sm font-medium mb-2">Respon Frekuensi (Hz)</label>
+                      <input
+                        type="text"
+                        value={audioSpecs.frequency_response}
+                        onChange={(e) => setAudioSpecs({ ...audioSpecs, frequency_response: e.target.value })}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                        placeholder="e.g., 20Hz - 20kHz"
+                      />
+                    </div>
+
+                    {/* Impedance */}
+                    <div>
+                      <label className="block text-slate-300 text-sm font-medium mb-2">Impedansi (Ω)</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={audioSpecs.impedance}
+                          onChange={(e) => setAudioSpecs({ ...audioSpecs, impedance: e.target.value })}
+                          className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                          placeholder="e.g., 32"
+                        />
+                        <span className="text-slate-300 font-semibold text-sm bg-slate-700 px-3 py-3 rounded-lg whitespace-nowrap">Ω</span>
+                      </div>
+                    </div>
+
+                    {/* Sensitivity */}
+                    <div>
+                      <label className="block text-slate-300 text-sm font-medium mb-2">Sensitivitas (dB)</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.1"
+                          value={audioSpecs.sensitivity}
+                          onChange={(e) => setAudioSpecs({ ...audioSpecs, sensitivity: e.target.value })}
+                          className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                          placeholder="e.g., 108"
+                        />
+                        <span className="text-slate-300 font-semibold text-sm bg-slate-700 px-3 py-3 rounded-lg whitespace-nowrap">dB</span>
+                      </div>
+                    </div>
+
+                    {/* Driver Size */}
+                    <div>
+                      <label className="block text-slate-300 text-sm font-medium mb-2">Ukuran Driver (mm)</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={audioSpecs.driver_size}
+                          onChange={(e) => setAudioSpecs({ ...audioSpecs, driver_size: e.target.value })}
+                          className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                          placeholder="e.g., 40"
+                        />
+                        <span className="text-slate-300 font-semibold text-sm bg-slate-700 px-3 py-3 rounded-lg whitespace-nowrap">mm</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 

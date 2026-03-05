@@ -86,7 +86,6 @@ export default function AppNavbar({ onToggleSidebar }: AppNavbarProps) {
     if (pathname.includes("/orders")) return "Order History";
     if (pathname.includes("/vouchers")) return "Vouchers";
     if (pathname.includes("/profile")) return "Profile Settings";
-    if (pathname.includes("/support")) return "Support";
     return "Dashboard";
   };
 

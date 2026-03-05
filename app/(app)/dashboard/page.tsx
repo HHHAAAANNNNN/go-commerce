@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 const BACKEND = "http://localhost:8080";
@@ -29,8 +29,68 @@ interface User {
   created_at: string;
 }
 
+interface OrderRow {
+  id: string;
+  products: string;
+  total_qty: number;
+  total: number;
+  status: string;
+  created_at: string;
+}
+
+interface MonthData {
+  month: string;
+  amount: number;
+  percentage: number;
+}
+
+interface CategoryData {
+  name: string;
+  value: number;
+  percentage: number;
+}
+
+interface StatsData {
+  total_orders: number;
+  pending_orders: number;
+  completed_orders: number;
+  this_year_orders: number;
+  monthly_spending: MonthData[];
+  category_breakdown: CategoryData[];
+}
+
+interface VoucherRow {
+  id: number;
+  code: string;
+  name: string;
+  description: string;
+  type: string;
+  discount_value: number;
+  min_purchase: number;
+  max_discount: number;
+  usage_limit: number;
+  used_count: number;
+  valid_from: string;
+  valid_until: string;
+  is_active: boolean;
+}
+
+interface RecommendedProduct {
+  id: number;
+  name: string;
+  price: number;
+  category: string;
+  rating: number;
+  stock: number;
+  image: string;
+  brand: string;
+}
+
+const PIE_COLORS = ["#a78bfa", "#22d3ee", "#fbbf24", "#f87171", "#34d399"];
+
 export default function DashboardPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -47,10 +107,46 @@ export default function DashboardPage() {
   const modalRef = useRef<HTMLDivElement>(null);
   const [totalSpent, setTotalSpent] = useState(0);
 
+  // Live data
+  const [stats, setStats] = useState<StatsData | null>(null);
+  const [recentOrders, setRecentOrders] = useState<OrderRow[]>([]);
+  const [activeVouchers, setActiveVouchers] = useState<VoucherRow[]>([]);
+  const [recommendedProducts, setRecommendedProducts] = useState<RecommendedProduct[]>([]);
+
   const showToast = (msg: string, ok: boolean) => {
     setToast({ msg, ok });
     setTimeout(() => setToast(null), 3500);
   };
+
+  const fetchDashboardData = useCallback(async (uid: number) => {
+    // Parallel fetch: balance, total-spent, stats, orders, vouchers, products
+    const [balRes, spentRes, statsRes, ordersRes, vouchersRes, prodsRes] = await Promise.allSettled([
+      fetch(`${BACKEND}/api/users/${uid}/balance`).then(r => r.json()),
+      fetch(`${BACKEND}/api/users/${uid}/total-spent`).then(r => r.json()),
+      fetch(`${BACKEND}/api/users/${uid}/stats`).then(r => r.json()),
+      fetch(`${BACKEND}/api/users/${uid}/orders?limit=5`).then(r => r.json()),
+      fetch(`${BACKEND}/api/vouchers`).then(r => r.json()),
+      fetch(`${BACKEND}/api/products`).then(r => r.json()),
+    ]);
+
+    if (balRes.status === "fulfilled" && balRes.value.success) setBalance(balRes.value.data.balance);
+    if (spentRes.status === "fulfilled" && spentRes.value.success) setTotalSpent(spentRes.value.data.total_spent);
+    if (statsRes.status === "fulfilled" && statsRes.value.success) setStats(statsRes.value.data);
+    if (ordersRes.status === "fulfilled" && ordersRes.value.success) setRecentOrders(ordersRes.value.data || []);
+    if (vouchersRes.status === "fulfilled" && vouchersRes.value.success) {
+      const now = new Date();
+      const active = (vouchersRes.value.data as VoucherRow[]).filter(
+        v => v.is_active && new Date(v.valid_until) > now && (v.usage_limit === 0 || v.used_count < v.usage_limit)
+      );
+      setActiveVouchers(active);
+    }
+    if (prodsRes.status === "fulfilled" && prodsRes.value.success) {
+      // Show up to 3 random products as recommendations
+      const all: RecommendedProduct[] = prodsRes.value.data || [];
+      const shuffled = [...all].sort(() => Math.random() - 0.5).slice(0, 3);
+      setRecommendedProducts(shuffled);
+    }
+  }, []);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -58,23 +154,24 @@ export default function DashboardPage() {
     try {
       const parsed = JSON.parse(storedUser);
       setUser(parsed);
-      // Fetch fresh balance from API (localStorage may not have it after login)
       if (parsed?.id) {
-        fetch(`${BACKEND}/api/users/${parsed.id}/balance`)
-          .then(r => r.json())
-          .then(d => { if (d.success) setBalance(d.data.balance); })
-          .catch(() => { });
-        fetch(`${BACKEND}/api/users/${parsed.id}/total-spent`)
-          .then(r => r.json())
-          .then(d => { if (d.success) setTotalSpent(d.data.total_spent); })
-          .catch(() => { });
+        fetchDashboardData(parsed.id).finally(() => setLoading(false));
+      } else {
+        setLoading(false);
       }
     } catch {
       router.push("/(auth)/login");
-    } finally {
-      setLoading(false);
     }
-  }, [router]);
+  }, [router, fetchDashboardData]);
+
+  // Show checkout success toast if redirected from cart
+  useEffect(() => {
+    if (searchParams.get("checkout") === "success") {
+      showToast("Pesanan berhasil! Terima kasih telah berbelanja 🎉", true);
+      // Remove query param without full reload
+      router.replace("/dashboard");
+    }
+  }, [searchParams, router]);
 
   // Close modal on outside click
   useEffect(() => {
@@ -108,7 +205,6 @@ export default function DashboardPage() {
       }
       const newBal: number = data.data.balance;
       setBalance(newBal);
-      // Sync to localStorage
       const raw = localStorage.getItem("user");
       if (raw) {
         try { localStorage.setItem("user", JSON.stringify({ ...JSON.parse(raw), balance: newBal })); } catch { }
@@ -541,12 +637,8 @@ export default function DashboardPage() {
             </div>
             <span className="text-primary-400/60 text-xs font-semibold">ALL TIME</span>
           </div>
-          <h3 className="text-3xl font-bold text-white mb-1">24</h3>
+          <h3 className="text-3xl font-bold text-white mb-1">{stats?.total_orders ?? 0}</h3>
           <p className="text-slate-400 text-sm">Total Orders</p>
-          <div className="mt-3 flex items-center gap-1 text-xs">
-            <span className="text-green-400">↗ +3</span>
-            <span className="text-slate-500">this month</span>
-          </div>
         </div>
 
         {/* Pending Orders */}
@@ -559,11 +651,11 @@ export default function DashboardPage() {
             </div>
             <span className="text-amber-400/60 text-xs font-semibold">PENDING</span>
           </div>
-          <h3 className="text-3xl font-bold text-white mb-1">2</h3>
+          <h3 className="text-3xl font-bold text-white mb-1">{stats?.pending_orders ?? 0}</h3>
           <p className="text-slate-400 text-sm">Pending Orders</p>
-          <button className="mt-3 text-amber-400 text-xs font-semibold hover:text-amber-300 transition-colors">
+          <a href="/orders" className="mt-3 inline-block text-amber-400 text-xs font-semibold hover:text-amber-300 transition-colors">
             Review Now →
-          </button>
+          </a>
         </div>
 
         {/* Completed Orders */}
@@ -576,10 +668,14 @@ export default function DashboardPage() {
             </div>
             <span className="text-green-400/60 text-xs font-semibold">SUCCESS</span>
           </div>
-          <h3 className="text-3xl font-bold text-white mb-1">22</h3>
+          <h3 className="text-3xl font-bold text-white mb-1">{stats?.completed_orders ?? 0}</h3>
           <p className="text-slate-400 text-sm">Completed Orders</p>
           <div className="mt-3 flex items-center gap-1 text-xs">
-            <span className="text-slate-500">91.7% success rate</span>
+            <span className="text-slate-500">
+              {stats && stats.total_orders > 0
+                ? `${((stats.completed_orders / stats.total_orders) * 100).toFixed(1)}% success rate`
+                : 'No orders yet'}
+            </span>
           </div>
         </div>
 
@@ -594,13 +690,9 @@ export default function DashboardPage() {
             <span className="text-secondary-400/60 text-xs font-semibold">THIS YEAR</span>
           </div>
           <h3 className="text-3xl font-bold text-white mb-1">
-            {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(totalSpent).replace('Rp', 'Rp ')}
+            {formatIDR(totalSpent)}
           </h3>
           <p className="text-slate-400 text-sm">Total Spent</p>
-          <div className="mt-3 flex items-center gap-1 text-xs">
-            <span className="text-green-400">↗ +12%</span>
-            <span className="text-slate-500">vs last year</span>
-          </div>
         </div>
       </div>
 
@@ -622,29 +714,27 @@ export default function DashboardPage() {
 
           {/* Simple Bar Chart */}
           <div className="space-y-4">
-            {[
-              { month: 'Sep', amount: 5200000, percentage: 52 },
-              { month: 'Oct', amount: 8100000, percentage: 81 },
-              { month: 'Nov', amount: 6800000, percentage: 68 },
-              { month: 'Dec', amount: 9500000, percentage: 95 },
-              { month: 'Jan', amount: 7200000, percentage: 72 },
-              { month: 'Feb', amount: 8400000, percentage: 84 },
-            ].map((data, index) => (
-              <div key={index} className="group">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-slate-400 text-sm font-medium">{data.month}</span>
-                  <span className="text-white text-sm font-semibold">
-                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(data.amount).replace('Rp', 'Rp ')}
-                  </span>
+            {(stats?.monthly_spending ?? []).length === 0 ? (
+              <p className="text-slate-500 text-sm text-center py-6">No spending data yet</p>
+            ) : (() => {
+              const maxAmount = Math.max(...(stats?.monthly_spending ?? []).map(d => d.amount), 1);
+              return (stats?.monthly_spending ?? []).map((data, index) => (
+                <div key={index} className="group">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-slate-400 text-sm font-medium">{data.month}</span>
+                    <span className="text-white text-sm font-semibold">
+                      {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(data.amount).replace('Rp', 'Rp ')}
+                    </span>
+                  </div>
+                  <div className="relative w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div
+                      className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full transition-all duration-500 group-hover:from-primary-300 group-hover:to-secondary-300"
+                      style={{ width: `${Math.round((data.amount / maxAmount) * 100)}%` }}
+                    ></div>
+                  </div>
                 </div>
-                <div className="relative w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-                  <div
-                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full transition-all duration-500 group-hover:from-primary-300 group-hover:to-secondary-300"
-                    style={{ width: `${data.percentage}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
+              ));
+            })()}
           </div>
 
           {/* Summary */}
@@ -653,17 +743,16 @@ export default function DashboardPage() {
               <div>
                 <p className="text-slate-400 text-xs mb-1">Average Monthly</p>
                 <p className="text-white font-bold text-lg">
-                  {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(7533333).replace('Rp', 'Rp ')}
+                  {(() => {
+                    const months = stats?.monthly_spending ?? [];
+                    const avg = months.length > 0 ? months.reduce((s, d) => s + d.amount, 0) / months.length : 0;
+                    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(avg).replace('Rp', 'Rp ');
+                  })()}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-slate-400 text-xs mb-1">Trend</p>
-                <p className="text-green-400 font-bold text-lg flex items-center gap-1">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                  </svg>
-                  +18%
-                </p>
+                <p className="text-slate-400 text-xs mb-1">Orders</p>
+                <p className="text-primary-400 font-bold text-lg">{stats?.total_orders ?? 0}</p>
               </div>
             </div>
           </div>
@@ -693,52 +782,56 @@ export default function DashboardPage() {
                   <th className="text-left text-slate-400 text-xs font-semibold uppercase pb-3">Product</th>
                   <th className="text-center text-slate-400 text-xs font-semibold uppercase pb-3">Qty</th>
                   <th className="text-left text-slate-400 text-xs font-semibold uppercase pb-3">Date</th>
+                  <th className="text-right text-slate-400 text-xs font-semibold uppercase pb-3">Total</th>
                   <th className="text-center text-slate-400 text-xs font-semibold uppercase pb-3">Status</th>
-                  <th className="text-center text-slate-400 text-xs font-semibold uppercase pb-3">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/30">
-                {[
-                  { id: '#ORD-1234', product: 'iPhone 15 Pro Max', qty: 1, date: 'Feb 10, 2026', status: 'done', statusText: 'Delivered' },
-                  { id: '#ORD-1235', product: 'MacBook Pro M3', qty: 1, date: 'Feb 08, 2026', status: 'ship', statusText: 'Shipping' },
-                  { id: '#ORD-1236', product: 'Samsung S24 Ultra', qty: 2, date: 'Feb 05, 2026', status: 'pend', statusText: 'Pending' },
-                  { id: '#ORD-1237', product: 'Dell XPS 15', qty: 1, date: 'Feb 01, 2026', status: 'done', statusText: 'Delivered' },
-                  { id: '#ORD-1238', product: 'Google Pixel 8 Pro', qty: 1, date: 'Jan 28, 2026', status: 'done', statusText: 'Delivered' },
-                ].map((order, index) => (
-                  <tr key={index} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="py-4">
-                      <span className="text-primary-400 font-semibold text-sm">{order.id}</span>
-                    </td>
-                    <td className="py-4">
-                      <span className="text-white font-medium text-sm">{order.product}</span>
-                    </td>
-                    <td className="py-4 text-center">
-                      <span className="text-slate-300 text-sm">×{order.qty}</span>
-                    </td>
-                    <td className="py-4">
-                      <span className="text-slate-400 text-sm">{order.date}</span>
-                    </td>
-                    <td className="py-4 text-center">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${order.status === 'done' ? 'bg-green-400/10 text-green-400 border border-green-400/20' :
-                        order.status === 'ship' ? 'bg-secondary-400/10 text-secondary-400 border border-secondary-400/20' :
-                          'bg-amber-400/10 text-amber-400 border border-amber-400/20'
-                        }`}>
-                        {order.status === 'done' && '✓ '}
-                        {order.status === 'ship' && '🚚 '}
-                        {order.status === 'pend' && '⏳ '}
-                        {order.statusText}
-                      </span>
-                    </td>
-                    <td className="py-4 text-center">
-                      <button className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${order.status === 'done' ? 'bg-slate-700/50 text-slate-300 hover:bg-slate-700' :
-                        order.status === 'ship' ? 'bg-secondary-400/10 text-secondary-400 hover:bg-secondary-400/20 border border-secondary-400/20' :
-                          'bg-amber-400/10 text-amber-400 hover:bg-amber-400/20 border border-amber-400/20'
-                        }`}>
-                        {order.status === 'done' ? 'View' : order.status === 'ship' ? 'Track' : 'Pay'}
-                      </button>
+                {recentOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-10 text-center text-slate-500 text-sm">
+                      No orders yet. <a href="/products" className="text-primary-400 hover:underline">Start shopping!</a>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  recentOrders.map((order) => (
+                    <tr key={order.id} className="hover:bg-slate-800/40 transition-colors">
+                      <td className="py-4">
+                        <span className="text-primary-400 font-semibold text-sm">#{order.id}</span>
+                      </td>
+                      <td className="py-4">
+                        <span className="text-white font-medium text-sm">{order.products}</span>
+                      </td>
+                      <td className="py-4 text-center">
+                        <span className="text-slate-300 text-sm">×{order.total_qty}</span>
+                      </td>
+                      <td className="py-4">
+                        <span className="text-slate-400 text-sm">{order.created_at}</span>
+                      </td>
+                      <td className="py-4 text-right">
+                        <span className="text-white text-sm font-semibold">{formatIDR(order.total)}</span>
+                      </td>
+                      <td className="py-4 text-center">
+                        {(() => {
+                          const s = order.status;
+                          const cfg: Record<string, { style: string; label: string }> = {
+                            pending:    { style: 'bg-amber-400/10 text-amber-400 border border-amber-400/20',   label: '⏳ Pending' },
+                            processing: { style: 'bg-blue-400/10 text-blue-400 border border-blue-400/20',      label: '🔄 Processing' },
+                            shipped:    { style: 'bg-purple-400/10 text-purple-400 border border-purple-400/20', label: '🚚 Shipped' },
+                            delivered:  { style: 'bg-green-400/10 text-green-400 border border-green-400/20',   label: '✓ Delivered' },
+                            cancelled:  { style: 'bg-red-400/10 text-red-400 border border-red-400/20',         label: '✗ Cancelled' },
+                          };
+                          const c = cfg[s] ?? { style: 'bg-slate-400/10 text-slate-400 border border-slate-400/20', label: s };
+                          return (
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${c.style}`}>
+                              {c.label}
+                            </span>
+                          );
+                        })()}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -761,61 +854,64 @@ export default function DashboardPage() {
 
           {/* Product Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-              { name: 'AirPods Pro 2', category: 'Accessories', price: 3799000, image: '🎧', discount: 15, tag: 'Hot' },
-              { name: 'iPad Air M2', category: 'Tablets', price: 9999000, image: '📱', discount: 10, tag: 'New' },
-              { name: 'Magic Keyboard', category: 'Accessories', price: 4499000, image: '⌨️', discount: 0, tag: '' },
-            ].map((product, index) => (
-              <div
-                key={index}
-                className="group bg-slate-800/50 backdrop-blur-sm border border-slate-700/30 rounded-xl overflow-hidden hover:border-primary-400/40 transition-all duration-300 hover:scale-105"
-              >
-                {/* Product Image */}
-                <div className="relative h-40 bg-gradient-to-br from-slate-700/50 to-slate-800/50 flex items-center justify-center">
-                  <span className="text-6xl">{product.image}</span>
-                  {product.tag && (
-                    <div className="absolute top-3 left-3">
-                      <span className="px-2.5 py-1 bg-accent-400/90 backdrop-blur-sm text-slate-900 text-xs font-bold rounded-full">
-                        {product.tag}
-                      </span>
-                    </div>
-                  )}
-                  {product.discount > 0 && (
-                    <div className="absolute top-3 right-3">
-                      <span className="px-2.5 py-1 bg-red-500/90 backdrop-blur-sm text-white text-xs font-bold rounded-full">
-                        -{product.discount}%
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Product Info */}
-                <div className="p-4">
-                  <p className="text-slate-400 text-xs mb-1">{product.category}</p>
-                  <h4 className="text-white font-semibold mb-2 line-clamp-1">{product.name}</h4>
-
-                  {/* Rating */}
-                  <div className="flex items-center gap-1 mb-3">
-                    {[...Array(5)].map((_, i) => (
-                      <svg key={i} className="w-3 h-3 text-accent-400 fill-current" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    ))}
-                    <span className="text-slate-400 text-xs ml-1">4.8</span>
+            {recommendedProducts.length === 0 ? (
+              <div className="col-span-3 py-8 text-center text-slate-500 text-sm">Loading products...</div>
+            ) : (
+              recommendedProducts.map((product) => (
+                <a
+                  key={product.id}
+                  href={`/products/${product.id}`}
+                  className="group bg-slate-800/50 backdrop-blur-sm border border-slate-700/30 rounded-xl overflow-hidden hover:border-primary-400/40 transition-all duration-300 hover:scale-105"
+                >
+                  {/* Product Image */}
+                  <div className="relative h-40 bg-gradient-to-br from-slate-700/50 to-slate-800/50 flex items-center justify-center overflow-hidden">
+                    {product.image ? (
+                      <img
+                        src={product.image.startsWith('http') ? product.image : `${BACKEND}${product.image}`}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                    ) : (
+                      <span className="text-5xl">📦</span>
+                    )}
+                    {product.stock <= 5 && product.stock > 0 && (
+                      <div className="absolute top-3 left-3">
+                        <span className="px-2.5 py-1 bg-red-500/90 backdrop-blur-sm text-white text-xs font-bold rounded-full">
+                          Low Stock
+                        </span>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Price */}
-                  <p className="text-primary-400 font-bold text-lg mb-3">
-                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(product.price).replace('Rp', 'Rp ')}
-                  </p>
+                  {/* Product Info */}
+                  <div className="p-4">
+                    <p className="text-slate-400 text-xs mb-1">{product.category}</p>
+                    <h4 className="text-white font-semibold mb-2 line-clamp-1">{product.name}</h4>
 
-                  {/* Add to Cart Button */}
-                  <button className="w-full py-2 bg-primary-400/10 text-primary-400 rounded-lg text-sm font-semibold hover:bg-primary-400 hover:text-white transition-all duration-300 border border-primary-400/20">
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
-            ))}
+                    {/* Rating */}
+                    <div className="flex items-center gap-1 mb-3">
+                      {[...Array(5)].map((_, i) => (
+                        <svg key={i} className={`w-3 h-3 fill-current ${i < Math.round(product.rating) ? 'text-accent-400' : 'text-slate-600'}`} viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      ))}
+                      <span className="text-slate-400 text-xs ml-1">{Number(product.rating).toFixed(1)}</span>
+                    </div>
+
+                    {/* Price */}
+                    <p className="text-primary-400 font-bold text-lg mb-3">
+                      {formatIDR(product.price)}
+                    </p>
+
+                    {/* View Button */}
+                    <div className="w-full py-2 bg-primary-400/10 text-primary-400 rounded-lg text-sm font-semibold text-center group-hover:bg-primary-400 group-hover:text-white transition-all duration-300 border border-primary-400/20">
+                      View Product
+                    </div>
+                  </div>
+                </a>
+              ))
+            )}
           </div>
         </div>
 
@@ -828,74 +924,84 @@ export default function DashboardPage() {
 
           {/* Interactive Donut Chart - Larger */}
           <div className="flex items-center justify-center mb-4">
-            <ResponsiveContainer width="100%" height={280}>
-              <PieChart>
-                <Pie
-                  data={[
-                    { name: 'Phones', value: 20340000, percentage: 45 },
-                    { name: 'Laptops', value: 15820000, percentage: 35 },
-                    { name: 'Accessories', value: 9040000, percentage: 20 },
-                  ]}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={75}
-                  outerRadius={110}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  <Cell fill="#a78bfa" />
-                  <Cell fill="#22d3ee" />
-                  <Cell fill="#fbbf24" />
-                </Pie>
-                <Tooltip
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      const data = payload[0].payload;
-                      return (
-                        <div style={{
-                          backgroundColor: 'rgba(15, 23, 42, 0.98)',
-                          border: '1px solid rgba(100, 116, 139, 0.4)',
-                          borderRadius: '12px',
-                          padding: '16px',
-                          boxShadow: '0 8px 16px rgba(0, 0, 0, 0.4)'
-                        }}>
-                          {/* Category Name */}
-                          <div style={{ marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid rgba(148, 163, 184, 0.2)' }}>
-                            <span style={{ color: '#f1f5f9', fontWeight: 'bold', fontSize: '15px' }}>{data.name}</span>
+            {(stats?.category_breakdown ?? []).length === 0 ? (
+              <div className="h-[280px] flex items-center justify-center">
+                <p className="text-slate-500 text-sm">No category data yet</p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie
+                    data={stats?.category_breakdown ?? []}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={75}
+                    outerRadius={110}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {(stats?.category_breakdown ?? []).map((_, i) => (
+                      <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        const total = (stats?.category_breakdown ?? []).reduce((s, d) => s + d.value, 0);
+                        const pct = total > 0 ? ((data.value / total) * 100).toFixed(1) : '0.0';
+                        return (
+                          <div style={{
+                            backgroundColor: 'rgba(15, 23, 42, 0.98)',
+                            border: '1px solid rgba(100, 116, 139, 0.4)',
+                            borderRadius: '12px',
+                            padding: '16px',
+                            boxShadow: '0 8px 16px rgba(0, 0, 0, 0.4)'
+                          }}>
+                            <div style={{ marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid rgba(148, 163, 184, 0.2)' }}>
+                              <span style={{ color: '#f1f5f9', fontWeight: 'bold', fontSize: '15px' }}>{data.name}</span>
+                            </div>
+                            <div style={{ marginBottom: '6px' }}>
+                              <span style={{ color: '#cbd5e1', fontSize: '12px' }}>Amount: </span>
+                              <span style={{ color: '#f1f5f9', fontWeight: 'bold', fontSize: '14px' }}>
+                                {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(data.value).replace('Rp', 'Rp ')}
+                              </span>
+                            </div>
+                            <div>
+                              <span style={{ color: '#cbd5e1', fontSize: '12px' }}>Percentage: </span>
+                              <span style={{ color: '#fbbf24', fontWeight: 'bold', fontSize: '14px' }}>{pct}%</span>
+                            </div>
                           </div>
-                          {/* Amount */}
-                          <div style={{ marginBottom: '6px' }}>
-                            <span style={{ color: '#cbd5e1', fontSize: '12px' }}>Amount: </span>
-                            <span style={{ color: '#f1f5f9', fontWeight: 'bold', fontSize: '14px' }}>
-                              {new Intl.NumberFormat('id-ID', {
-                                style: 'currency',
-                                currency: 'IDR',
-                                minimumFractionDigits: 0
-                              }).format(data.value).replace('Rp', 'Rp ')}
-                            </span>
-                          </div>
-                          {/* Percentage */}
-                          <div>
-                            <span style={{ color: '#cbd5e1', fontSize: '12px' }}>Percentage: </span>
-                            <span style={{ color: '#fbbf24', fontWeight: 'bold', fontSize: '14px' }}>
-                              {data.percentage}%
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </div>
+
+          {/* Legend */}
+          {(stats?.category_breakdown ?? []).length > 0 && (
+            <div className="space-y-2 mb-4">
+              {(stats?.category_breakdown ?? []).map((cat, i) => (
+                <div key={i} className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }}></div>
+                    <span className="text-slate-300">{cat.name}</span>
+                  </div>
+                  <span className="text-slate-400">{formatIDR(cat.value)}</span>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Total Spent Below Chart */}
           <div className="text-center pt-4 border-t border-slate-700/30">
             <p className="text-slate-400 text-xs mb-1">Total Spent</p>
             <p className="text-white font-bold text-2xl">
-              {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(45200000).replace('Rp', 'Rp ')}
+              {formatIDR((stats?.category_breakdown ?? []).reduce((s, d) => s + d.value, 0))}
             </p>
           </div>
         </div>
@@ -921,118 +1027,97 @@ export default function DashboardPage() {
 
         {/* Voucher Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {[
-            {
-              code: 'TECH20',
-              discount: '20% OFF',
-              description: 'Maximum discount Rp 100,000',
-              minPurchase: 500000,
-              expiry: '3 days left',
-              type: 'percentage',
-              tagColor: 'from-purple-500 to-purple-600',
-              glowColor: 'purple-500'
-            },
-            {
-              code: 'FREESHIP',
-              discount: 'FREE SHIPPING',
-              description: 'No minimum purchase required',
-              minPurchase: 0,
-              expiry: '1 week left',
-              type: 'shipping',
-              tagColor: 'from-cyan-500 to-cyan-600',
-              glowColor: 'cyan-500'
-            },
-            {
-              code: 'SAVE50K',
-              discount: 'Rp 50,000',
-              description: 'Discount for all products',
-              minPurchase: 1000000,
-              expiry: '2 weeks left',
-              type: 'fixed',
-              tagColor: 'from-amber-400 to-yellow-500',
-              glowColor: 'amber-400'
-            },
-          ].map((voucher, index) => (
-            <div
-              key={index}
-              className="relative group bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-xl overflow-hidden hover:border-accent-400/50 hover:shadow-xl hover:shadow-accent-400/10 transition-all duration-300"
-            >
-              {/* Animated Gold Shimmer Effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent-400/10 to-transparent shimmer-animation opacity-0 group-hover:opacity-100"></div>
-
-              {/* Gold accent line at top with shimmer */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent-400 to-transparent animate-pulse"></div>
-
-              {/* Decorative corner with sparkle */}
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-accent-400/10 to-transparent rounded-bl-[100px] group-hover:from-accent-400/20 transition-all duration-500"></div>
-
-              <div className="p-5 relative z-10">
-                {/* Voucher Code Tag */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className={`px-2.5 py-1 bg-gradient-to-r ${voucher.tagColor} rounded-lg shadow-lg`}>
-                    <p className="text-white font-bold text-[10px] tracking-wider">{voucher.code}</p>
-                  </div>
-                  <button
-                    className="p-1.5 hover:bg-slate-700/50 rounded-lg transition-all hover:scale-110"
-                    title="Copy code"
-                  >
-                    <svg className="w-3.5 h-3.5 text-slate-400 hover:text-accent-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                  </button>
-                </div>
-
-                {/* Discount Amount - Better Contrast */}
-                <h4 className="text-xl font-bold text-white mb-1.5 drop-shadow-lg">
-                  {voucher.discount}
-                </h4>
-                <p className="text-slate-300 text-xs mb-3 min-h-[32px]">{voucher.description}</p>
-
-                {/* Divider with gold shimmer */}
-                <div className="relative my-3">
-                  <div className="border-t border-slate-700/50 border-dashed"></div>
-                  <div className="absolute inset-0 border-t border-accent-400/20 border-dashed shimmer-animation"></div>
-                </div>
-
-                {/* Details - Better Visibility */}
-                <div className="space-y-2 mb-3">
-                  {voucher.minPurchase > 0 ? (
-                    <div className="flex items-center gap-2 text-[11px] text-slate-300">
-                      <svg className="w-3.5 h-3.5 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                      </svg>
-                      <span>Min. purchase: <span className="text-white font-bold">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(voucher.minPurchase).replace('Rp', 'Rp ')}</span></span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 text-[11px] text-green-400">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span className="font-bold">No Minimum Purchase</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2 text-[11px] text-amber-300">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span className="font-bold">{voucher.expiry}</span>
-                  </div>
-                </div>
-
-                {/* Use Button - Gold Shimmer Theme */}
-                <button className="relative w-full py-2.5 bg-gradient-to-r from-accent-400/20 to-accent-500/20 text-accent-300 rounded-lg text-xs font-bold hover:from-accent-400 hover:to-accent-500 hover:text-slate-900 hover:shadow-xl hover:shadow-accent-400/40 transition-all duration-300 border border-accent-400/40 hover:border-accent-400 group overflow-hidden">
-                  {/* Button shimmer effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent shimmer-animation opacity-0 group-hover:opacity-100"></div>
-                  <span className="relative flex items-center justify-center gap-2">
-                    Use Voucher
-                    <svg className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </span>
-                </button>
-              </div>
+          {activeVouchers.length === 0 ? (
+            <div className="col-span-3 py-10 text-center">
+              <p className="text-slate-500 text-sm">No active vouchers available.</p>
+              <a href="/vouchers" className="mt-2 inline-block text-accent-400 text-sm hover:underline">Browse all vouchers →</a>
             </div>
-          ))}
+          ) : (
+            activeVouchers.map((voucher) => {
+              const daysLeft = Math.ceil((new Date(voucher.valid_until).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+              const expiryText = daysLeft <= 1 ? 'Expires today!' : daysLeft <= 7 ? `${daysLeft} days left` : daysLeft <= 30 ? `${Math.ceil(daysLeft / 7)} weeks left` : new Date(voucher.valid_until).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+              const discountLabel = voucher.type === 'percentage' ? `${voucher.discount_value}% OFF` : voucher.type === 'free_shipping' ? 'FREE SHIPPING' : formatIDR(voucher.discount_value);
+              const tagColor = voucher.type === 'percentage' ? 'from-purple-500 to-purple-600' : voucher.type === 'free_shipping' ? 'from-cyan-500 to-cyan-600' : 'from-amber-400 to-yellow-500';
+
+              return (
+                <div
+                  key={voucher.id}
+                  className="relative group bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-xl overflow-hidden hover:border-accent-400/50 hover:shadow-xl hover:shadow-accent-400/10 transition-all duration-300"
+                >
+                  {/* Animated Gold Shimmer Effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent-400/10 to-transparent shimmer-animation opacity-0 group-hover:opacity-100"></div>
+                  {/* Gold accent line at top */}
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent-400 to-transparent animate-pulse"></div>
+                  {/* Decorative corner */}
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-accent-400/10 to-transparent rounded-bl-[100px] group-hover:from-accent-400/20 transition-all duration-500"></div>
+
+                  <div className="p-5 relative z-10">
+                    {/* Voucher Code Tag */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className={`px-2.5 py-1 bg-gradient-to-r ${tagColor} rounded-lg shadow-lg`}>
+                        <p className="text-white font-bold text-[10px] tracking-wider">{voucher.code}</p>
+                      </div>
+                      <button
+                        onClick={() => navigator.clipboard.writeText(voucher.code)}
+                        className="p-1.5 hover:bg-slate-700/50 rounded-lg transition-all hover:scale-110"
+                        title="Copy code"
+                      >
+                        <svg className="w-3.5 h-3.5 text-slate-400 hover:text-accent-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {/* Discount Amount */}
+                    <h4 className="text-xl font-bold text-white mb-1.5 drop-shadow-lg">{discountLabel}</h4>
+                    <p className="text-slate-300 text-xs mb-3 min-h-[32px]">{voucher.description || voucher.name}</p>
+
+                    {/* Divider */}
+                    <div className="relative my-3">
+                      <div className="border-t border-slate-700/50 border-dashed"></div>
+                      <div className="absolute inset-0 border-t border-accent-400/20 border-dashed shimmer-animation"></div>
+                    </div>
+
+                    {/* Details */}
+                    <div className="space-y-2 mb-3">
+                      {voucher.min_purchase > 0 ? (
+                        <div className="flex items-center gap-2 text-[11px] text-slate-300">
+                          <svg className="w-3.5 h-3.5 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                          </svg>
+                          <span>Min. purchase: <span className="text-white font-bold">{formatIDR(voucher.min_purchase)}</span></span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-[11px] text-green-400">
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span className="font-bold">No Minimum Purchase</span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2 text-[11px] text-amber-300">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="font-bold">{expiryText}</span>
+                      </div>
+                    </div>
+
+                    {/* Use Button */}
+                    <a href="/cart" className="relative w-full py-2.5 bg-gradient-to-r from-accent-400/20 to-accent-500/20 text-accent-300 rounded-lg text-xs font-bold hover:from-accent-400 hover:to-accent-500 hover:text-slate-900 hover:shadow-xl hover:shadow-accent-400/40 transition-all duration-300 border border-accent-400/40 hover:border-accent-400 group overflow-hidden flex items-center justify-center gap-2">
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent shimmer-animation opacity-0 group-hover:opacity-100"></div>
+                      <span className="relative flex items-center justify-center gap-2">
+                        Use Voucher
+                        <svg className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                      </span>
+                    </a>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
     </div>

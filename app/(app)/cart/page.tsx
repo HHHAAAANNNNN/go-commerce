@@ -227,8 +227,36 @@ export default function CartPage() {
 
   const allSelected = validEntries.length > 0 && selectedIds.size === validEntries.length;
 
-  // Suppress unused warning
-  void router;
+  // Checkout handler
+  const handleCheckout = async () => {
+    if (!userId || selectedEntries.length === 0) return;
+    if (balance < total) return;
+    try {
+      const res = await fetch(`${BACKEND}/api/users/${userId}/checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          product_ids: selectedEntries.map((e) => e.productId),
+          voucher_id: selectedVoucher ? String(selectedVoucher.id) : "",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || data.message || "Checkout gagal");
+        return;
+      }
+      // Update local balance
+      setBalance((prev) => prev - total);
+      const raw = localStorage.getItem("user");
+      if (raw) {
+        try { localStorage.setItem("user", JSON.stringify({ ...JSON.parse(raw), balance: balance - total })); } catch { }
+      }
+      // Redirect to dashboard
+      router.push("/dashboard?checkout=success");
+    } catch {
+      alert("Network error. Coba lagi.");
+    }
+  };
 
   // Top-up handler
   const handleTopup = async () => {
@@ -685,6 +713,7 @@ export default function CartPage() {
 
                       {/* Checkout Button */}
                       <button
+                        onClick={handleCheckout}
                         disabled={selectedEntries.length === 0 || balance < total}
                         className="w-full py-3.5 bg-gradient-to-r from-primary-400 to-secondary-400 text-white rounded-xl font-bold hover:from-primary-500 hover:to-secondary-500 transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-primary-400/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
                       >

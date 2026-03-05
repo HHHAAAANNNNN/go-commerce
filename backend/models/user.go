@@ -3,15 +3,16 @@ package models
 import "time"
 
 type User struct {
-	ID        int       `json:"id"`
-	FullName  string    `json:"full_name"`
-	Email     string    `json:"email"`
-	Phone     string    `json:"phone,omitempty"`
-	Password  string    `json:"password,omitempty"`
-	AvatarURL string    `json:"avatar_url,omitempty"`
-	Balance   int       `json:"balance"`
-	IsMember  bool      `json:"is_member"`
-	CreatedAt time.Time `json:"created_at"`
+	ID         int       `json:"id"`
+	FullName   string    `json:"full_name"`
+	Email      string    `json:"email"`
+	Phone      string    `json:"phone,omitempty"`
+	Password   string    `json:"password,omitempty"`
+	AvatarURL  string    `json:"avatar_url,omitempty"`
+	Balance    int       `json:"balance"`
+	IsMember   bool      `json:"is_member"`
+	TotalSpent int       `json:"total_spent"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 type UserCreateRequest struct {

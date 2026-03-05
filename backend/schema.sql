@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
     phone VARCHAR(20),
     balance INT DEFAULT 0,
     is_member BOOLEAN DEFAULT FALSE,
+    total_spent INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -67,6 +68,16 @@ CREATE TABLE IF NOT EXISTS product_specifications (
     os_name VARCHAR(20),
     os_version VARCHAR(20),
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+-- Cart Items Table
+CREATE TABLE IF NOT EXISTS cart_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    product_id VARCHAR(50) NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_user_product (user_id, product_id)
 );
 
 -- Sample data for testing

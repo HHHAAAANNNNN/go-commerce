@@ -108,9 +108,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	var hashedPassword string
 	var avatarURL sql.NullString
 	var emailVerified bool
-	query := `SELECT id, full_name, email, password, phone, created_at, avatar_url, email_verified FROM users WHERE email = ?`
+	query := `SELECT id, full_name, email, password, phone, created_at, avatar_url, email_verified, total_spent FROM users WHERE email = ?`
 	err = config.DB.QueryRow(query, req.Email).Scan(
-		&user.ID, &user.FullName, &user.Email, &hashedPassword, &user.Phone, &user.CreatedAt, &avatarURL, &emailVerified,
+		&user.ID, &user.FullName, &user.Email, &hashedPassword, &user.Phone, &user.CreatedAt, &avatarURL, &emailVerified, &user.TotalSpent,
 	)
 	if err != nil {
 		log.Printf("❌ Login query error: %v", err)

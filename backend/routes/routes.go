@@ -38,8 +38,20 @@ func SetupRoutes() *mux.Router {
 	api.HandleFunc("/users/{id}/profile", controllers.UpdateProfile).Methods("PUT", "OPTIONS")
 	api.HandleFunc("/users/{id}/balance", controllers.GetBalance).Methods("GET", "OPTIONS")
 	api.HandleFunc("/users/{id}/topup", controllers.TopUp).Methods("POST", "OPTIONS")
+	api.HandleFunc("/users/{id}/total-spent", controllers.GetTotalSpent).Methods("GET", "OPTIONS")
 	api.HandleFunc("/users/{id}", controllers.UpdateUser).Methods("PUT", "OPTIONS")
 	api.HandleFunc("/users/{id}", controllers.DeleteUser).Methods("DELETE", "OPTIONS")
+
+	// Cart routes
+	api.HandleFunc("/users/{id}/cart", controllers.GetCartItems).Methods("GET", "OPTIONS")
+	api.HandleFunc("/users/{id}/cart", controllers.AddToCart).Methods("POST", "OPTIONS")
+	api.HandleFunc("/users/{id}/cart/{productId}", controllers.UpdateCartItem).Methods("PUT", "OPTIONS")
+	api.HandleFunc("/users/{id}/cart/{productId}", controllers.RemoveFromCart).Methods("DELETE", "OPTIONS")
+
+	// Checkout & order routes
+	api.HandleFunc("/users/{id}/checkout", controllers.Checkout).Methods("POST", "OPTIONS")
+	api.HandleFunc("/users/{id}/stats", controllers.GetUserStats).Methods("GET", "OPTIONS")
+	api.HandleFunc("/users/{id}/orders", controllers.GetUserOrders).Methods("GET", "OPTIONS")
 
 	// Product routes
 	api.HandleFunc("/products", controllers.GetAllProducts).Methods("GET", "OPTIONS")

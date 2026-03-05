@@ -7,10 +7,10 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 const BACKEND = "http://localhost:8080";
 
 const PAYMENT_METHODS = [
-  { id: "gopay", label: "GoPay", icon: "💚" },
-  { id: "ovo", label: "OVO", icon: "💜" },
-  { id: "debit", label: "Kartu Debit", icon: "💳" },
-  { id: "kredit", label: "Kartu Kredit", icon: "🏦" },
+  { id: "gopay", label: "GoPay" },
+  { id: "ovo", label: "OVO" },
+  { id: "debit", label: "Kartu Debit" },
+  { id: "kredit", label: "Kartu Kredit" },
 ];
 
 function formatIDR(n: number) {
@@ -45,6 +45,7 @@ export default function DashboardPage() {
   const [topupLoading, setTopupLoading] = useState(false);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+  const [totalSpent, setTotalSpent] = useState(0);
 
   const showToast = (msg: string, ok: boolean) => {
     setToast({ msg, ok });
@@ -62,6 +63,10 @@ export default function DashboardPage() {
         fetch(`${BACKEND}/api/users/${parsed.id}/balance`)
           .then(r => r.json())
           .then(d => { if (d.success) setBalance(d.data.balance); })
+          .catch(() => { });
+        fetch(`${BACKEND}/api/users/${parsed.id}/total-spent`)
+          .then(r => r.json())
+          .then(d => { if (d.success) setTotalSpent(d.data.total_spent); })
           .catch(() => { });
       }
     } catch {
@@ -136,22 +141,60 @@ export default function DashboardPage() {
   const currentHour = new Date().getHours();
   const greeting = currentHour < 12 ? "Good Morning" : currentHour < 18 ? "Good Afternoon" : "Good Evening";
 
-  // Mock data for membership
+  // Dynamic tier calculation
+  const TIER_BRONZE_MIN = 0;
+  const TIER_GOLD_MIN = 10000000;
+  const TIER_VIP_MIN = 50000000;
+
+  const getTier = (spent: number) => {
+    if (spent >= TIER_VIP_MIN) return 'VIP';
+    if (spent >= TIER_GOLD_MIN) return 'Gold';
+    return 'Bronze';
+  };
+
+  const currentTier = getTier(totalSpent);
+
+  const getNextTier = (tier: string) => {
+    if (tier === 'Bronze') return { name: 'Gold', target: TIER_GOLD_MIN };
+    if (tier === 'Gold') return { name: 'VIP', target: TIER_VIP_MIN };
+    return null; // VIP is max
+  };
+
+  const nextTierInfo = getNextTier(currentTier);
+
   const membershipData = {
-    currentTier: user.is_member ? "Premium" : "Free",
+    currentTier,
     memberSince: new Date(user.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" }),
-    totalSpent: 45200000,
-    nextTier: "VIP",
-    nextTierTarget: 50000000,
+    totalSpent,
+    nextTier: nextTierInfo?.name ?? 'MAX',
+    nextTierTarget: nextTierInfo?.target ?? totalSpent,
     benefits: [
-      { name: "Discount", value: user.is_member ? "10% Off" : "None", active: user.is_member },
-      { name: "Free Shipping", value: user.is_member ? "Unlimited" : "Standard", active: user.is_member },
-      { name: "Priority Support", value: "24/7", active: true },
-      { name: "Early Access", value: "New Products", active: user.is_member },
+      {
+        name: "Discount Vouchers",
+        value: "Unlocked",
+        active: true, // All tiers
+      },
+      {
+        name: "Free Shipping",
+        value: "Unlocked",
+        active: true, // All tiers
+      },
+      {
+        name: "Priority Support",
+        value: currentTier === 'Gold' || currentTier === 'VIP' ? '24/7' : 'Locked',
+        active: currentTier === 'Gold' || currentTier === 'VIP',
+      },
+      {
+        name: "Early Access",
+        value: currentTier === 'VIP' ? 'Unlocked' : 'Locked',
+        active: currentTier === 'VIP',
+      },
     ]
   };
 
-  const progress = (membershipData.totalSpent / membershipData.nextTierTarget) * 100;
+  const progress = nextTierInfo
+    ? Math.min(100, (totalSpent / nextTierInfo.target) * 100)
+    : 100;
 
   return (
     <div className="space-y-6">
@@ -171,7 +214,7 @@ export default function DashboardPage() {
 
       {/* Top-up Modal */}
       {showTopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div ref={modalRef} className="w-full max-w-md mx-4 bg-slate-900 border border-slate-700/60 rounded-2xl shadow-2xl overflow-hidden">
             {/* Modal header */}
             <div className="p-6 border-b border-slate-700/50 bg-gradient-to-r from-primary-400/10 to-secondary-400/10">
@@ -200,11 +243,10 @@ export default function DashboardPage() {
                       key={m.id}
                       onClick={() => setPaymentMethod(m.id)}
                       className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-all ${paymentMethod === m.id
-                          ? "bg-primary-400/20 border-primary-400/60 text-white shadow-md shadow-primary-400/20"
-                          : "bg-slate-800/60 border-slate-700/50 text-slate-400 hover:border-slate-600"
+                        ? "bg-primary-400/20 border-primary-400/60 text-white shadow-md shadow-primary-400/20"
+                        : "bg-slate-800/60 border-slate-700/50 text-slate-400 hover:border-slate-600"
                         }`}
                     >
-                      <span className="text-lg">{m.icon}</span>
                       {m.label}
                     </button>
                   ))}
@@ -225,18 +267,15 @@ export default function DashboardPage() {
                     placeholder="50.000"
                   />
                 </div>
-                {/* Quick amounts */}
+                {/* Quick amounts — cumulative */}
                 <div className="flex flex-wrap gap-2 mt-3">
                   {[50000, 100000, 200000, 500000].map(amt => (
                     <button
                       key={amt}
-                      onClick={() => setTopupAmount(String(amt))}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${topupAmount === String(amt)
-                          ? "bg-primary-400/20 border-primary-400/50 text-primary-300"
-                          : "bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500"
-                        }`}
+                      onClick={() => setTopupAmount(prev => String((parseInt(prev) || 0) + amt))}
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all bg-slate-800 border-slate-700 text-slate-400 hover:border-primary-400/50 hover:text-primary-300 hover:bg-primary-400/10"
                     >
-                      {formatIDR(amt)}
+                      +{formatIDR(amt)}
                     </button>
                   ))}
                 </div>
@@ -261,7 +300,7 @@ export default function DashboardPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                ) : "💰 Topup!"}
+                ) : "Topup!"}
               </button>
             </div>
           </div>
@@ -284,7 +323,7 @@ export default function DashboardPage() {
           </div>
           <div className="hidden md:flex flex-col items-end gap-2">
             <div className="px-4 py-2 bg-gradient-to-r from-accent-400/20 to-accent-400/10 border border-accent-400/30 rounded-full">
-              <p className="text-accent-400 font-semibold text-sm">✨ {user.is_member ? "Premium Member" : "Free Member"}</p>
+              <p className="text-accent-400 font-semibold text-sm">✨ {currentTier} Member</p>
             </div>
             <p className="text-slate-400 text-sm">Member since {membershipData.memberSince}</p>
             {/* Balance row */}
@@ -367,22 +406,31 @@ export default function DashboardPage() {
             {membershipData.benefits.map((benefit, index) => (
               <div
                 key={index}
-                className="relative group bg-gradient-to-br from-purple-900/40 via-indigo-900/30 to-slate-900/40 backdrop-blur-sm rounded-xl p-4 border border-amber-500/20 hover:border-amber-400/50 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-amber-500/20 overflow-hidden"
+                className={`relative group backdrop-blur-sm rounded-xl p-4 border transition-all duration-300 hover:scale-105 overflow-hidden ${benefit.active
+                  ? 'bg-gradient-to-br from-purple-900/40 via-indigo-900/30 to-slate-900/40 border-amber-500/20 hover:border-amber-400/50 hover:shadow-lg hover:shadow-amber-500/20'
+                  : 'bg-gradient-to-br from-slate-900/60 via-slate-900/40 to-slate-900/60 border-slate-700/30 opacity-60'
+                  }`}
               >
                 {/* Shimmer effect on hover */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent shimmer-animation opacity-0 group-hover:opacity-100"></div>
+                {benefit.active && <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent shimmer-animation opacity-0 group-hover:opacity-100"></div>}
                 {/* Corner accent */}
-                <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-amber-400/10 to-transparent rounded-bl-3xl"></div>
+                <div className={`absolute top-0 right-0 w-16 h-16 rounded-bl-3xl ${benefit.active ? 'bg-gradient-to-br from-amber-400/10 to-transparent' : 'bg-gradient-to-br from-slate-600/10 to-transparent'}`}></div>
                 <div className="relative z-10">
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="p-1.5 bg-amber-500/20 rounded-lg border border-amber-400/30">
-                      <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
+                    <div className={`p-1.5 rounded-lg border ${benefit.active ? 'bg-amber-500/20 border-amber-400/30' : 'bg-slate-700/30 border-slate-600/30'}`}>
+                      {benefit.active ? (
+                        <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                      )}
                     </div>
-                    <p className="text-amber-50 font-semibold text-sm">{benefit.name}</p>
+                    <p className={`font-semibold text-sm ${benefit.active ? 'text-amber-50' : 'text-slate-400'}`}>{benefit.name}</p>
                   </div>
-                  <p className="text-amber-400 font-bold text-lg">{benefit.value}</p>
+                  <p className={`font-bold text-lg ${benefit.active ? 'text-amber-400' : 'text-slate-500'}`}>{benefit.value}</p>
                 </div>
               </div>
             ))}
@@ -415,7 +463,11 @@ export default function DashboardPage() {
                       </span>
                     </span>
                   </div>
-                  <p className="text-purple-200/60 text-xs">Unlock VIP exclusive benefits and priority support</p>
+                  <p className="text-purple-200/60 text-xs">
+                    {nextTierInfo
+                      ? `Unlock ${nextTierInfo.name} exclusive benefits`
+                      : 'You have reached the highest tier!'}
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="text-white font-bold text-xl bg-gradient-to-r from-amber-200 to-amber-400 bg-clip-text text-transparent">
@@ -448,11 +500,16 @@ export default function DashboardPage() {
 
               <div className="flex items-center justify-between">
                 <p className="text-amber-100/80 text-sm">
-                  <span className="text-white font-bold text-base">{progress.toFixed(1)}%</span> Complete •
-                  <span className="text-amber-400 font-bold ml-1">
-                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(membershipData.nextTierTarget - membershipData.totalSpent)}
-                  </span>
-                  <span className="text-purple-300/60"> to VIP!</span>
+                  <span className="text-white font-bold text-base">{progress.toFixed(1)}%</span> Complete
+                  {nextTierInfo && (
+                    <>
+                      {' • '}
+                      <span className="text-amber-400 font-bold ml-1">
+                        {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(nextTierInfo.target - totalSpent)}
+                      </span>
+                      <span className="text-purple-300/60"> to {nextTierInfo.name}!</span>
+                    </>
+                  )}
                 </p>
                 <a
                   href="/products"
@@ -537,7 +594,7 @@ export default function DashboardPage() {
             <span className="text-secondary-400/60 text-xs font-semibold">THIS YEAR</span>
           </div>
           <h3 className="text-3xl font-bold text-white mb-1">
-            {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(45200000).replace('Rp', 'Rp ')}
+            {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(totalSpent).replace('Rp', 'Rp ')}
           </h3>
           <p className="text-slate-400 text-sm">Total Spent</p>
           <div className="mt-3 flex items-center gap-1 text-xs">
@@ -663,8 +720,8 @@ export default function DashboardPage() {
                     </td>
                     <td className="py-4 text-center">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${order.status === 'done' ? 'bg-green-400/10 text-green-400 border border-green-400/20' :
-                          order.status === 'ship' ? 'bg-secondary-400/10 text-secondary-400 border border-secondary-400/20' :
-                            'bg-amber-400/10 text-amber-400 border border-amber-400/20'
+                        order.status === 'ship' ? 'bg-secondary-400/10 text-secondary-400 border border-secondary-400/20' :
+                          'bg-amber-400/10 text-amber-400 border border-amber-400/20'
                         }`}>
                         {order.status === 'done' && '✓ '}
                         {order.status === 'ship' && '🚚 '}
@@ -674,8 +731,8 @@ export default function DashboardPage() {
                     </td>
                     <td className="py-4 text-center">
                       <button className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${order.status === 'done' ? 'bg-slate-700/50 text-slate-300 hover:bg-slate-700' :
-                          order.status === 'ship' ? 'bg-secondary-400/10 text-secondary-400 hover:bg-secondary-400/20 border border-secondary-400/20' :
-                            'bg-amber-400/10 text-amber-400 hover:bg-amber-400/20 border border-amber-400/20'
+                        order.status === 'ship' ? 'bg-secondary-400/10 text-secondary-400 hover:bg-secondary-400/20 border border-secondary-400/20' :
+                          'bg-amber-400/10 text-amber-400 hover:bg-amber-400/20 border border-amber-400/20'
                         }`}>
                         {order.status === 'done' ? 'View' : order.status === 'ship' ? 'Track' : 'Pay'}
                       </button>

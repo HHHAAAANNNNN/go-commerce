@@ -70,8 +70,35 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     return path.startsWith("http") ? path : `${BACKEND}${path}`;
   };
 
-  const handleAddToCart = () => {
-    console.log(`Adding ${quantity} x ${product?.name} to cart`);
+  const handleAddToCart = async () => {
+    if (!product) return;
+    try {
+      const storedUser = localStorage.getItem("user");
+      if (!storedUser) {
+        setSuccessMsg("Please login first");
+        setTimeout(() => setSuccessMsg(''), 3000);
+        return;
+      }
+      const user = JSON.parse(storedUser);
+      const res = await fetch(`${BACKEND}/api/users/${user.id}/cart`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product_id: String(product.id), quantity }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        window.dispatchEvent(new Event("cartUpdated"));
+        setSuccessMsg(`${product.name} (×${quantity}) ditambahkan ke keranjang!`);
+        setTimeout(() => setSuccessMsg(''), 3000);
+      } else {
+        setSuccessMsg(data.message || "Failed to add to cart");
+        setTimeout(() => setSuccessMsg(''), 3000);
+      }
+    } catch (err) {
+      console.error("Failed to add to cart:", err);
+      setSuccessMsg("Error: could not reach server");
+      setTimeout(() => setSuccessMsg(''), 3000);
+    }
   };
 
   const handleProductSaved = () => {

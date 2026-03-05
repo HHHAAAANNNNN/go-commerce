@@ -15,7 +15,7 @@ import (
 
 // GetAllUsers - GET /api/users
 func GetAllUsers(w http.ResponseWriter, r *http.Request) {
-	query := `SELECT id, full_name, email, phone, balance, is_member, avatar_url, created_at FROM users ORDER BY id`
+	query := `SELECT id, full_name, email, phone, balance, is_member, total_spent, avatar_url, created_at FROM users ORDER BY id`
 
 	rows, err := config.DB.Query(query)
 	if err != nil {
@@ -28,7 +28,7 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var user models.User
 		var avatarURL sql.NullString
-		err := rows.Scan(&user.ID, &user.FullName, &user.Email, &user.Phone, &user.Balance, &user.IsMember, &avatarURL, &user.CreatedAt)
+		err := rows.Scan(&user.ID, &user.FullName, &user.Email, &user.Phone, &user.Balance, &user.IsMember, &user.TotalSpent, &avatarURL, &user.CreatedAt)
 		if err != nil {
 			utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to scan user")
 			return
@@ -51,12 +51,12 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := `SELECT id, full_name, email, phone, balance, is_member, avatar_url, created_at FROM users WHERE id = ?`
+	query := `SELECT id, full_name, email, phone, balance, is_member, total_spent, avatar_url, created_at FROM users WHERE id = ?`
 
 	var user models.User
 	var avatarURL sql.NullString
 	err = config.DB.QueryRow(query, id).Scan(
-		&user.ID, &user.FullName, &user.Email, &user.Phone, &user.Balance, &user.IsMember, &avatarURL, &user.CreatedAt,
+		&user.ID, &user.FullName, &user.Email, &user.Phone, &user.Balance, &user.IsMember, &user.TotalSpent, &avatarURL, &user.CreatedAt,
 	)
 	if err != nil {
 		utils.ErrorResponse(w, http.StatusNotFound, "User not found")
@@ -298,4 +298,23 @@ func TopUp(w http.ResponseWriter, r *http.Request) {
 	config.DB.QueryRow("SELECT balance FROM users WHERE id = ?", id).Scan(&newBalance)
 
 	utils.SuccessResponse(w, "Top-up successful", map[string]int{"balance": newBalance})
+}
+
+// GetTotalSpent - GET /api/users/{id}/total-spent
+func GetTotalSpent(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		utils.ErrorResponse(w, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	var totalSpent int
+	err = config.DB.QueryRow("SELECT total_spent FROM users WHERE id = ?", id).Scan(&totalSpent)
+	if err != nil {
+		utils.ErrorResponse(w, http.StatusNotFound, "User not found")
+		return
+	}
+
+	utils.SuccessResponse(w, "Total spent fetched", map[string]int{"total_spent": totalSpent})
 }

@@ -251,7 +251,8 @@ export default function CartPage() {
       if (raw) {
         try { localStorage.setItem("user", JSON.stringify({ ...JSON.parse(raw), balance: balance - total })); } catch { }
       }
-      // Redirect to dashboard
+      // Notify navbar to clear cart count, then redirect
+      window.dispatchEvent(new Event("cartUpdated"));
       router.push("/dashboard?checkout=success");
     } catch {
       alert("Network error. Coba lagi.");

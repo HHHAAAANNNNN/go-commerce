@@ -811,11 +811,11 @@ export default function DashboardPage() {
                         {(() => {
                           const s = order.status;
                           const cfg: Record<string, { style: string; label: string }> = {
-                            pending:    { style: 'bg-amber-400/10 text-amber-400 border border-amber-400/20',   label: '⏳ Pending' },
-                            processing: { style: 'bg-blue-400/10 text-blue-400 border border-blue-400/20',      label: '🔄 Processing' },
-                            shipped:    { style: 'bg-purple-400/10 text-purple-400 border border-purple-400/20', label: '🚚 Shipped' },
-                            delivered:  { style: 'bg-green-400/10 text-green-400 border border-green-400/20',   label: '✓ Delivered' },
-                            cancelled:  { style: 'bg-red-400/10 text-red-400 border border-red-400/20',         label: '✗ Cancelled' },
+                            pending:    { style: 'bg-amber-400/10 text-amber-400 border border-amber-400/20',   label: 'Pending' },
+                            processing: { style: 'bg-blue-400/10 text-blue-400 border border-blue-400/20',      label: 'Processing' },
+                            shipped:    { style: 'bg-purple-400/10 text-purple-400 border border-purple-400/20', label: 'Shipped' },
+                            delivered:  { style: 'bg-green-400/10 text-green-400 border border-green-400/20',   label: 'Delivered' },
+                            cancelled:  { style: 'bg-red-400/10 text-red-400 border border-red-400/20',         label: 'Cancelled' },
                           };
                           const c = cfg[s] ?? { style: 'bg-slate-400/10 text-slate-400 border border-slate-400/20', label: s };
                           return (

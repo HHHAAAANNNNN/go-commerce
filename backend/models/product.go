@@ -42,6 +42,7 @@ type Product struct {
 	Stock          int           `json:"stock"`
 	Category       string        `json:"category"`
 	Rating         Decimal       `json:"rating"`
+	TotalReviews   int           `json:"total_reviews"`
 	Description    string        `json:"description,omitempty"`
 	Image          string        `json:"image,omitempty"`
 	Brand          string        `json:"brand,omitempty"`

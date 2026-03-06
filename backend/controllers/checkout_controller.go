@@ -323,7 +323,8 @@ func GetUserOrders(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := config.DB.Query(`
 		SELECT o.order_number, GROUP_CONCAT(p.name ORDER BY oi.id SEPARATOR ', ') as products,
-			SUM(oi.quantity) as total_qty, o.total_amount, o.status, o.created_at
+			SUM(oi.quantity) as total_qty, o.total_amount, o.status, o.created_at,
+			(SELECT COUNT(*) FROM reviews r WHERE r.order_id = o.id AND r.user_id = ?) > 0 as has_reviewed
 		FROM orders o
 		JOIN order_items oi ON oi.order_id = o.id
 		JOIN products p ON p.id = oi.product_id
@@ -331,7 +332,7 @@ func GetUserOrders(w http.ResponseWriter, r *http.Request) {
 		GROUP BY o.id, o.order_number, o.total_amount, o.status, o.created_at
 		ORDER BY o.created_at DESC
 		LIMIT ?
-	`, userID, limit)
+	`, userID, userID, limit)
 	if err != nil {
 		utils.SuccessResponse(w, "Orders fetched", []interface{}{})
 		return
@@ -339,21 +340,24 @@ func GetUserOrders(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type OrderRow struct {
-		ID        string `json:"id"`
-		Products  string `json:"products"`
-		TotalQty  int    `json:"total_qty"`
-		Total     int    `json:"total"`
-		Status    string `json:"status"`
-		CreatedAt string `json:"created_at"`
+		ID          string `json:"id"`
+		Products    string `json:"products"`
+		TotalQty    int    `json:"total_qty"`
+		Total       int    `json:"total"`
+		Status      string `json:"status"`
+		CreatedAt   string `json:"created_at"`
+		HasReviewed bool   `json:"has_reviewed"`
 	}
 	var orders []OrderRow
 	for rows.Next() {
 		var o OrderRow
 		var createdAt time.Time
 		var totalF float64
-		rows.Scan(&o.ID, &o.Products, &o.TotalQty, &totalF, &o.Status, &createdAt)
+		var hasReviewed int
+		rows.Scan(&o.ID, &o.Products, &o.TotalQty, &totalF, &o.Status, &createdAt, &hasReviewed)
 		o.Total = int(totalF)
 		o.CreatedAt = createdAt.Format("Jan 02, 2006")
+		o.HasReviewed = hasReviewed == 1
 		orders = append(orders, o)
 	}
 	if orders == nil {
@@ -397,6 +401,7 @@ func GetOrderDetail(w http.ResponseWriter, r *http.Request) {
 	header.CreatedAt = createdAt.Format("Jan 02, 2006")
 
 	type ItemRow struct {
+		ProductID    int    `json:"product_id"`
 		ProductName  string `json:"product_name"`
 		ProductImage string `json:"product_image"`
 		Quantity     int    `json:"quantity"`
@@ -404,7 +409,8 @@ func GetOrderDetail(w http.ResponseWriter, r *http.Request) {
 		Subtotal     int    `json:"subtotal"`
 	}
 	iRows, err := config.DB.Query(`
-		SELECT oi.product_name,
+		SELECT COALESCE(oi.product_id, 0),
+		       oi.product_name,
 		       COALESCE(NULLIF(oi.product_image,''), p.image_url, '') as img,
 		       oi.quantity, oi.price, oi.subtotal
 		FROM order_items oi
@@ -423,7 +429,7 @@ func GetOrderDetail(w http.ResponseWriter, r *http.Request) {
 	for iRows.Next() {
 		var item ItemRow
 		var pf, sf float64
-		iRows.Scan(&item.ProductName, &item.ProductImage, &item.Quantity, &pf, &sf)
+		iRows.Scan(&item.ProductID, &item.ProductName, &item.ProductImage, &item.Quantity, &pf, &sf)
 		item.Price = int(pf)
 		item.Subtotal = int(sf)
 		orderItems = append(orderItems, item)

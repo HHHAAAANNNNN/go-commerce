@@ -16,7 +16,7 @@ import (
 
 // GetAllProducts - GET /api/products
 func GetAllProducts(w http.ResponseWriter, r *http.Request) {
-	query := `SELECT p.id, p.name, p.price, p.stock, c.name, p.rating, p.description, p.image_url, p.brand, p.created_at 
+	query := `SELECT p.id, p.name, p.price, p.stock, c.name, p.rating, COALESCE(p.total_reviews,0), p.description, p.image_url, p.brand, p.created_at 
 			  FROM products p 
 			  LEFT JOIN categories c ON p.category_id = c.id 
 			  ORDER BY p.id ASC`
@@ -37,7 +37,7 @@ func GetAllProducts(w http.ResponseWriter, r *http.Request) {
 		var ratingFloat float64
 
 		err := rows.Scan(&product.ID, &product.Name, &priceFloat, &product.Stock,
-			&category, &ratingFloat, &description, &imageURL, &brand, &product.CreatedAt)
+			&category, &ratingFloat, &product.TotalReviews, &description, &imageURL, &brand, &product.CreatedAt)
 		if err != nil {
 			utils.ErrorResponse(w, http.StatusInternalServerError, "Scan error: "+err.Error())
 			return
@@ -74,7 +74,7 @@ func GetProductByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := `SELECT p.id, p.name, p.price, p.stock, c.name, p.rating, p.description, p.image_url, p.brand, p.created_at 
+	query := `SELECT p.id, p.name, p.price, p.stock, c.name, p.rating, COALESCE(p.total_reviews,0), p.description, p.image_url, p.brand, p.created_at 
 			  FROM products p 
 			  LEFT JOIN categories c ON p.category_id = c.id 
 			  WHERE p.id = ?`
@@ -87,7 +87,7 @@ func GetProductByID(w http.ResponseWriter, r *http.Request) {
 
 	err = config.DB.QueryRow(query, productID).Scan(
 		&product.ID, &product.Name, &priceFloat, &product.Stock,
-		&category, &ratingFloat, &description, &imageURL, &brand, &product.CreatedAt,
+		&category, &ratingFloat, &product.TotalReviews, &description, &imageURL, &brand, &product.CreatedAt,
 	)
 	if err != nil {
 		utils.ErrorResponse(w, http.StatusNotFound, "Product not found")

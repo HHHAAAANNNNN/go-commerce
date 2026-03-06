@@ -55,11 +55,13 @@ func SetupRoutes() *mux.Router {
 	api.HandleFunc("/users/{id}/orders", controllers.GetUserOrders).Methods("GET", "OPTIONS")
 	api.HandleFunc("/users/{id}/orders/{orderNumber}", controllers.GetOrderDetail).Methods("GET", "OPTIONS")
 	api.HandleFunc("/users/{id}/orders/{orderNumber}/status", controllers.UpdateOrderStatus).Methods("PATCH", "OPTIONS")
+	api.HandleFunc("/users/{id}/orders/{orderNumber}/reviews", controllers.SubmitReviews).Methods("POST", "OPTIONS")
 
 	// Product routes
 	api.HandleFunc("/products", controllers.GetAllProducts).Methods("GET", "OPTIONS")
 	api.HandleFunc("/products/search", controllers.SearchProducts).Methods("GET", "OPTIONS")
 	api.HandleFunc("/products/{id}", controllers.GetProductByID).Methods("GET", "OPTIONS")
+	api.HandleFunc("/products/{id}/reviews", controllers.GetProductReviews).Methods("GET", "OPTIONS")
 	api.HandleFunc("/products", controllers.CreateProduct).Methods("POST", "OPTIONS")
 	api.HandleFunc("/products/{id}", controllers.UpdateProduct).Methods("PUT", "OPTIONS")
 	api.HandleFunc("/products/{id}", controllers.DeleteProduct).Methods("DELETE", "OPTIONS")

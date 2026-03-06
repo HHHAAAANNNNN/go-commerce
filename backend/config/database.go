@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -12,170 +13,230 @@ var DB *sql.DB
 
 // ConnectDatabase - Connect to MySQL database and run migrations
 func ConnectDatabase() error {
-	// First, connect without database to create it if not exists
-	dsnNoDB := "root:@tcp(localhost:3306)/?parseTime=true"
+	dsnNoDB := "root:@tcp(127.0.0.1:3306)/?parseTime=true&timeout=5s&readTimeout=5s&writeTimeout=5s"
 	db, err := sql.Open("mysql", dsnNoDB)
 	if err != nil {
-		return fmt.Errorf("failed to connect to database: %w", err)
+		return fmt.Errorf("failed to open db: %w", err)
 	}
 	defer db.Close()
 
-	// Create database if not exists
 	_, err = db.Exec("CREATE DATABASE IF NOT EXISTS go_commerce")
 	if err != nil {
 		return fmt.Errorf("failed to create database: %w", err)
 	}
 
-	// Now connect to the actual database
-	dsn := "root:@tcp(localhost:3306)/go_commerce?parseTime=true"
+	dsn := "root:@tcp(127.0.0.1:3306)/go_commerce?parseTime=true&timeout=5s&readTimeout=5s&writeTimeout=5s"
 	DB, err = sql.Open("mysql", dsn)
 	if err != nil {
-		return fmt.Errorf("failed to connect to go_commerce database: %w", err)
+		return fmt.Errorf("failed to connect to go_commerce: %w", err)
 	}
 
-	err = DB.Ping()
-	if err != nil {
+	if err = DB.Ping(); err != nil {
 		return fmt.Errorf("failed to ping database: %w", err)
 	}
 
+	// Connection pool limits — prevents MySQL from being overwhelmed
+	DB.SetMaxOpenConns(10)
+	DB.SetMaxIdleConns(5)
+	DB.SetConnMaxLifetime(3 * time.Minute)
+	DB.SetConnMaxIdleTime(1 * time.Minute)
+
 	log.Println("✅ Database connected successfully")
 
-	// Run migrations
-	err = runMigrations()
-	if err != nil {
-		return fmt.Errorf("failed to run migrations: %w", err)
+	if err = runMigrations(); err != nil {
+		return fmt.Errorf("migrations failed: %w", err)
 	}
-
 	return nil
 }
 
-// runMigrations - Create tables if they don't exist
+// tableHasColumn checks whether `col` exists on `table`.
+func tableHasColumn(table, col string) bool {
+	var n string
+	err := DB.QueryRow(
+		`SELECT COLUMN_NAME FROM information_schema.COLUMNS
+		 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?`,
+		table, col,
+	).Scan(&n)
+	return err == nil
+}
+
+// dropIfSchemaMismatch drops `table` when a required column is missing.
+// CREATE TABLE IF NOT EXISTS will then recreate it correctly.
+func dropIfSchemaMismatch(table string, requiredCols ...string) {
+	for _, col := range requiredCols {
+		if !tableHasColumn(table, col) {
+			log.Printf("⚠️  Table '%s' is missing column '%s' — dropping to recreate", table, col)
+			DB.Exec("SET FOREIGN_KEY_CHECKS = 0")
+			DB.Exec("DROP TABLE IF EXISTS " + table)
+			DB.Exec("SET FOREIGN_KEY_CHECKS = 1")
+			return
+		}
+	}
+}
+
 func runMigrations() error {
 	log.Println("🔄 Running database migrations...")
 
-	// Users table
-	createUsersTable := `
-	CREATE TABLE IF NOT EXISTS users (
-		id INT AUTO_INCREMENT PRIMARY KEY,
-		full_name VARCHAR(100) NOT NULL,
-		email VARCHAR(100) UNIQUE NOT NULL,
-		password VARCHAR(255) NOT NULL,
-		phone VARCHAR(20),
-		balance INT DEFAULT 0,
-		is_member BOOLEAN DEFAULT FALSE,
-		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-	)`
-	_, err := DB.Exec(createUsersTable)
+	// --- users ---
+	_, err := DB.Exec(`
+		CREATE TABLE IF NOT EXISTS users (
+			id         INT AUTO_INCREMENT PRIMARY KEY,
+			full_name  VARCHAR(100) NOT NULL,
+			email      VARCHAR(100) UNIQUE NOT NULL,
+			password   VARCHAR(255) NOT NULL,
+			phone      VARCHAR(20),
+			balance    INT DEFAULT 0,
+			total_spent INT DEFAULT 0,
+			is_member  BOOLEAN DEFAULT FALSE,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		)`)
 	if err != nil {
-		return fmt.Errorf("failed to create users table: %w", err)
+		return fmt.Errorf("users table: %w", err)
 	}
-	log.Println("✅ Users table ready")
+	// Add total_spent if this is an old users table
+	if !tableHasColumn("users", "total_spent") {
+		DB.Exec("ALTER TABLE users ADD COLUMN total_spent INT DEFAULT 0")
+	}
+	if !tableHasColumn("users", "avatar_url") {
+		DB.Exec("ALTER TABLE users ADD COLUMN avatar_url VARCHAR(500)")
+	}
+	log.Println("✅ users table ready")
 
-	// Products table
-	createProductsTable := `
-	CREATE TABLE IF NOT EXISTS products (
-		id VARCHAR(50) PRIMARY KEY,
-		name VARCHAR(200) NOT NULL,
-		price INT NOT NULL,
-		stock INT DEFAULT 0,
-		category VARCHAR(100),
-		rating DECIMAL(3,2) DEFAULT 0.00,
-		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-	)`
-	_, err = DB.Exec(createProductsTable)
+	// --- products ---
+	_, err = DB.Exec(`
+		CREATE TABLE IF NOT EXISTS products (
+			id         VARCHAR(50) PRIMARY KEY,
+			name       VARCHAR(200) NOT NULL,
+			price      INT NOT NULL,
+			stock      INT DEFAULT 0,
+			category   VARCHAR(100),
+			rating     DECIMAL(3,2) DEFAULT 0.00,
+			image_url  VARCHAR(500),
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		)`)
 	if err != nil {
-		return fmt.Errorf("failed to create products table: %w", err)
+		return fmt.Errorf("products table: %w", err)
 	}
-	log.Println("✅ Products table ready")
+	if !tableHasColumn("products", "image_url") {
+		DB.Exec("ALTER TABLE products ADD COLUMN image_url VARCHAR(500)")
+	}
+	log.Println("✅ products table ready")
 
-	// Orders table
-	createOrdersTable := `
-	CREATE TABLE IF NOT EXISTS orders (
-		id VARCHAR(50) PRIMARY KEY,
-		customer_id INT NOT NULL,
-		total INT NOT NULL,
-		status VARCHAR(50) DEFAULT 'pending',
-		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		FOREIGN KEY (customer_id) REFERENCES users(id)
-	)`
-	_, err = DB.Exec(createOrdersTable)
+	// --- orders: drop if schema is from old version ---
+	dropIfSchemaMismatch("orders", "order_number", "user_id", "subtotal", "total_amount")
+	// Also drop order_items first (FK child), then orders
+	if !tableHasColumn("orders", "order_number") {
+		DB.Exec("SET FOREIGN_KEY_CHECKS = 0")
+		DB.Exec("DROP TABLE IF EXISTS order_items")
+		DB.Exec("DROP TABLE IF EXISTS orders")
+		DB.Exec("SET FOREIGN_KEY_CHECKS = 1")
+	}
+	_, err = DB.Exec(`
+		CREATE TABLE IF NOT EXISTS orders (
+			id              INT AUTO_INCREMENT PRIMARY KEY,
+			order_number    VARCHAR(100) NOT NULL UNIQUE,
+			user_id         INT NOT NULL,
+			address_id      INT DEFAULT NULL,
+			subtotal        INT NOT NULL DEFAULT 0,
+			discount_amount INT NOT NULL DEFAULT 0,
+			total_amount    INT NOT NULL DEFAULT 0,
+			status          VARCHAR(50) DEFAULT 'pending',
+			created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (user_id) REFERENCES users(id)
+		)`)
 	if err != nil {
-		return fmt.Errorf("failed to create orders table: %w", err)
+		return fmt.Errorf("orders table: %w", err)
 	}
-	log.Println("✅ Orders table ready")
+	log.Println("✅ orders table ready")
 
-	// Order items table
-	createOrderItemsTable := `
-	CREATE TABLE IF NOT EXISTS order_items (
-		id INT AUTO_INCREMENT PRIMARY KEY,
-		order_id VARCHAR(50) NOT NULL,
-		product_id VARCHAR(50) NOT NULL,
-		quantity INT NOT NULL,
-		price INT NOT NULL,
-		FOREIGN KEY (order_id) REFERENCES orders(id),
-		FOREIGN KEY (product_id) REFERENCES products(id)
-	)`
-	_, err = DB.Exec(createOrderItemsTable)
+	// --- order_items ---
+	dropIfSchemaMismatch("order_items", "product_name", "product_image", "subtotal")
+	_, err = DB.Exec(`
+		CREATE TABLE IF NOT EXISTS order_items (
+			id            INT AUTO_INCREMENT PRIMARY KEY,
+			order_id      INT NOT NULL,
+			product_id    VARCHAR(50) NOT NULL,
+			product_name  VARCHAR(200) NOT NULL DEFAULT '',
+			product_image VARCHAR(500) NOT NULL DEFAULT '',
+			quantity      INT NOT NULL,
+			price         INT NOT NULL,
+			subtotal      INT NOT NULL DEFAULT 0,
+			FOREIGN KEY (order_id) REFERENCES orders(id)
+		)`)
 	if err != nil {
-		return fmt.Errorf("failed to create order_items table: %w", err)
+		return fmt.Errorf("order_items table: %w", err)
 	}
-	log.Println("✅ Order items table ready")
+	log.Println("✅ order_items table ready")
 
-	// Product specifications table (key-value schema)
-	// NOTE: do NOT drop this table on startup — it would wipe all spec data
-	createSpecsTable := `
-	CREATE TABLE IF NOT EXISTS product_specifications (
-		id INT AUTO_INCREMENT PRIMARY KEY,
-		product_id INT NOT NULL,
-		spec_key VARCHAR(100) NOT NULL,
-		spec_value TEXT,
-		display_order INT DEFAULT 0,
-		INDEX idx_product_id (product_id)
-	)`
-	_, err = DB.Exec(createSpecsTable)
+	// --- cart_items ---
+	_, err = DB.Exec(`
+		CREATE TABLE IF NOT EXISTS cart_items (
+			id         INT AUTO_INCREMENT PRIMARY KEY,
+			user_id    INT NOT NULL,
+			product_id VARCHAR(50) NOT NULL,
+			quantity   INT NOT NULL DEFAULT 1,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			UNIQUE KEY unique_cart_item (user_id, product_id),
+			FOREIGN KEY (user_id) REFERENCES users(id)
+		)`)
 	if err != nil {
-		return fmt.Errorf("failed to create product_specifications table: %w", err)
+		return fmt.Errorf("cart_items table: %w", err)
 	}
-	log.Println("✅ Product specifications table ready")
+	log.Println("✅ cart_items table ready")
 
-	// Insert sample products if products table is empty
+	// --- product_specifications ---
+	_, err = DB.Exec(`
+		CREATE TABLE IF NOT EXISTS product_specifications (
+			id            INT AUTO_INCREMENT PRIMARY KEY,
+			product_id    INT NOT NULL,
+			spec_key      VARCHAR(100) NOT NULL,
+			spec_value    TEXT,
+			display_order INT DEFAULT 0,
+			INDEX idx_product_id (product_id)
+		)`)
+	if err != nil {
+		return fmt.Errorf("product_specifications table: %w", err)
+	}
+	log.Println("✅ product_specifications table ready")
+
+	// --- seed products ---
 	var count int
-	err = DB.QueryRow("SELECT COUNT(*) FROM products").Scan(&count)
-	if err == nil && count == 0 {
-		insertProducts := `
-		INSERT INTO products (id, name, price, stock, category, rating) VALUES
-			('LAP001', 'Gaming Laptop', 15000000, 10, 'Electronics', 4.5),
-			('LAP002', 'Business Laptop', 8000000, 25, 'Electronics', 4.2),
-			('HP001', 'Wireless Headphones', 1500000, 50, 'Audio', 4.7),
-			('KB001', 'Mechanical Keyboard', 750000, 30, 'Accessories', 4.6),
-			('MS001', 'Gaming Mouse', 450000, 40, 'Accessories', 4.4)`
-		_, err = DB.Exec(insertProducts)
-		if err != nil {
-			return fmt.Errorf("failed to insert sample products: %w", err)
-		}
-		log.Println("✅ Sample products inserted")
+	DB.QueryRow("SELECT COUNT(*) FROM products").Scan(&count)
+	if count == 0 {
+		DB.Exec(`INSERT INTO products (id, name, price, stock, category, rating) VALUES
+			('LAP001','Gaming Laptop',15000000,10,'Electronics',4.5),
+			('LAP002','Business Laptop',8000000,25,'Electronics',4.2),
+			('HP001','Wireless Headphones',1500000,50,'Audio',4.7),
+			('KB001','Mechanical Keyboard',750000,30,'Accessories',4.6),
+			('MS001','Gaming Mouse',450000,40,'Accessories',4.4)`)
+		log.Println("✅ sample products seeded")
 	}
 
-	// Vouchers table
-	createVouchersTable := `
-	CREATE TABLE IF NOT EXISTS vouchers (
-		id            INT AUTO_INCREMENT PRIMARY KEY,
-		code          VARCHAR(50) NOT NULL UNIQUE,
-		type          ENUM('percentage','fixed','shipping') NOT NULL,
-		amount        DECIMAL(10,2) DEFAULT 0,
-		description   TEXT,
-		min_purchase  INT DEFAULT 0,
-		duration_days INT NOT NULL DEFAULT 30,
-		expires_at    DATETIME,
-		created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-	)`
-	_, err = DB.Exec(createVouchersTable)
+	// --- vouchers: drop if old schema ---
+	dropIfSchemaMismatch("vouchers", "discount_value", "valid_from", "valid_until", "is_active", "used_count")
+	_, err = DB.Exec(`
+		CREATE TABLE IF NOT EXISTS vouchers (
+			id             INT AUTO_INCREMENT PRIMARY KEY,
+			code           VARCHAR(50) NOT NULL UNIQUE,
+			name           VARCHAR(100) NOT NULL DEFAULT '',
+			description    TEXT,
+			type           VARCHAR(50) NOT NULL DEFAULT 'percentage',
+			discount_value DECIMAL(10,2) DEFAULT 0,
+			min_purchase   INT DEFAULT 0,
+			max_discount   DECIMAL(10,2) DEFAULT 0,
+			usage_limit    INT DEFAULT 0,
+			used_count     INT DEFAULT 0,
+			valid_from     DATETIME DEFAULT CURRENT_TIMESTAMP,
+			valid_until    DATETIME,
+			is_active      BOOLEAN DEFAULT TRUE,
+			created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		)`)
 	if err != nil {
-		return fmt.Errorf("failed to create vouchers table: %w", err)
+		return fmt.Errorf("vouchers table: %w", err)
 	}
-	log.Println("✅ Vouchers table ready")
+	log.Println("✅ vouchers table ready")
 
-	log.Println("✅ All migrations completed successfully")
+	log.Println("✅ All migrations completed")
 	return nil
 }
 

@@ -300,6 +300,227 @@ func TopUp(w http.ResponseWriter, r *http.Request) {
 	utils.SuccessResponse(w, "Top-up successful", map[string]int{"balance": newBalance})
 }
 
+// GetDashboard - GET /api/users/{id}/dashboard
+// Returns all dashboard data in a single DB round-trip to prevent connection overload.
+func GetDashboard(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		utils.ErrorResponse(w, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	// 1. User info (balance, total_spent)
+	var balance, totalSpent int
+	config.DB.QueryRow("SELECT balance, total_spent FROM users WHERE id = ?", id).Scan(&balance, &totalSpent)
+
+	// 2. Order stats
+	var totalOrders, pendingOrders, completedOrders, thisYearOrders int
+	config.DB.QueryRow("SELECT COUNT(*) FROM orders WHERE user_id = ?", id).Scan(&totalOrders)
+	config.DB.QueryRow("SELECT COUNT(*) FROM orders WHERE user_id = ? AND status = 'pending'", id).Scan(&pendingOrders)
+	config.DB.QueryRow("SELECT COUNT(*) FROM orders WHERE user_id = ? AND status = 'completed'", id).Scan(&completedOrders)
+	config.DB.QueryRow("SELECT COUNT(*) FROM orders WHERE user_id = ? AND YEAR(created_at) = YEAR(NOW())", id).Scan(&thisYearOrders)
+
+	// 3. Monthly spending
+	type MonthData struct {
+		Month      string  `json:"month"`
+		Amount     int     `json:"amount"`
+		Percentage float64 `json:"percentage"`
+	}
+	var monthly []MonthData
+	mRows, _ := config.DB.Query(`
+		SELECT DATE_FORMAT(created_at,'%b') as month, SUM(total_amount) as amount
+		FROM orders WHERE user_id = ? AND status='delivered' AND created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+		GROUP BY YEAR(created_at), MONTH(created_at), DATE_FORMAT(created_at,'%b')
+		ORDER BY YEAR(created_at), MONTH(created_at)`, id)
+	if mRows != nil {
+		defer mRows.Close()
+		maxAmt := 0
+		for mRows.Next() {
+			var m MonthData
+			var f float64
+			mRows.Scan(&m.Month, &f)
+			m.Amount = int(f)
+			if m.Amount > maxAmt {
+				maxAmt = m.Amount
+			}
+			monthly = append(monthly, m)
+		}
+		for i := range monthly {
+			if maxAmt > 0 {
+				monthly[i].Percentage = float64(monthly[i].Amount) / float64(maxAmt) * 100
+			}
+		}
+	}
+	if monthly == nil {
+		monthly = []MonthData{}
+	}
+
+	// 4. Category breakdown
+	type CategoryData struct {
+		Name       string  `json:"name"`
+		Value      int     `json:"value"`
+		Percentage float64 `json:"percentage"`
+	}
+	var categories []CategoryData
+	cRows, _ := config.DB.Query(`
+		SELECT COALESCE(c.name,'Other') as cat, SUM(oi.price*oi.quantity) as total
+		FROM order_items oi
+		JOIN orders o ON o.id=oi.order_id
+		JOIN products p ON p.id=oi.product_id
+		LEFT JOIN categories c ON c.id=p.category_id
+		WHERE o.user_id=? AND o.status='delivered'
+		GROUP BY cat ORDER BY total DESC LIMIT 5`, id)
+	totalCat := 0
+	if cRows != nil {
+		defer cRows.Close()
+		for cRows.Next() {
+			var c CategoryData
+			var f float64
+			cRows.Scan(&c.Name, &f)
+			c.Value = int(f)
+			totalCat += c.Value
+			categories = append(categories, c)
+		}
+		for i := range categories {
+			if totalCat > 0 {
+				categories[i].Percentage = float64(categories[i].Value) / float64(totalCat) * 100
+			}
+		}
+	}
+	if categories == nil {
+		categories = []CategoryData{}
+	}
+
+	// 5. Recent orders (last 5)
+	type OrderRow struct {
+		ID        string `json:"id"`
+		Products  string `json:"products"`
+		TotalQty  int    `json:"total_qty"`
+		Total     int    `json:"total"`
+		Status    string `json:"status"`
+		CreatedAt string `json:"created_at"`
+	}
+	var orders []OrderRow
+	oRows, _ := config.DB.Query(`
+		SELECT o.order_number, GROUP_CONCAT(p.name ORDER BY oi.id SEPARATOR ', '),
+			SUM(oi.quantity), o.total_amount, o.status, o.created_at
+		FROM orders o
+		JOIN order_items oi ON oi.order_id=o.id
+		JOIN products p ON p.id=oi.product_id
+		WHERE o.user_id=?
+		GROUP BY o.id, o.order_number, o.total_amount, o.status, o.created_at
+		ORDER BY o.created_at DESC LIMIT 5`, id)
+	if oRows != nil {
+		defer oRows.Close()
+		for oRows.Next() {
+			var o OrderRow
+			var createdAt sql.NullTime
+			var f float64
+			oRows.Scan(&o.ID, &o.Products, &o.TotalQty, &f, &o.Status, &createdAt)
+			o.Total = int(f)
+			if createdAt.Valid {
+				o.CreatedAt = createdAt.Time.Format("Jan 02, 2006")
+			}
+			orders = append(orders, o)
+		}
+	}
+	if orders == nil {
+		orders = []OrderRow{}
+	}
+
+	// 6. Products (for recommendations — fetched once)
+	type Product struct {
+		ID       int     `json:"id"`
+		Name     string  `json:"name"`
+		Price    int     `json:"price"`
+		Category string  `json:"category"`
+		Rating   float64 `json:"rating"`
+		Stock    int     `json:"stock"`
+		Image    string  `json:"image"`
+		Brand    string  `json:"brand"`
+	}
+	var products []Product
+	pRows, _ := config.DB.Query(`
+		SELECT p.id, p.name, p.price, COALESCE(c.name,''), COALESCE(p.rating,0),
+		       COALESCE(p.stock,0), COALESCE(p.image_url,''), COALESCE(p.brand,'')
+		FROM products p
+		LEFT JOIN categories c ON c.id = p.category_id
+		WHERE p.is_active = 1
+		LIMIT 20`)
+	if pRows != nil {
+		defer pRows.Close()
+		for pRows.Next() {
+			var p Product
+			var priceF, rf float64
+			pRows.Scan(&p.ID, &p.Name, &priceF, &p.Category, &rf, &p.Stock, &p.Image, &p.Brand)
+			p.Price = int(priceF)
+			p.Rating = rf
+			products = append(products, p)
+		}
+	}
+	if products == nil {
+		products = []Product{}
+	}
+
+	// 7. Active vouchers
+	type VoucherRow struct {
+		ID            int     `json:"id"`
+		Code          string  `json:"code"`
+		Name          string  `json:"name"`
+		Description   string  `json:"description"`
+		Type          string  `json:"type"`
+		DiscountValue float64 `json:"discount_value"`
+		MinPurchase   int     `json:"min_purchase"`
+		MaxDiscount   float64 `json:"max_discount"`
+		UsageLimit    int     `json:"usage_limit"`
+		UsedCount     int     `json:"used_count"`
+		ValidFrom     string  `json:"valid_from"`
+		ValidUntil    string  `json:"valid_until"`
+		IsActive      bool    `json:"is_active"`
+	}
+	var vouchers []VoucherRow
+	vRows, _ := config.DB.Query(`SELECT id, code, name, COALESCE(description,''), type, discount_value, min_purchase, max_discount, usage_limit, used_count, valid_from, valid_until, is_active FROM vouchers WHERE is_active=1 AND valid_until > NOW()`)
+	if vRows != nil {
+		defer vRows.Close()
+		for vRows.Next() {
+			var v VoucherRow
+			var vf, maxD, minPurchaseF float64
+			var vFrom, vUntil sql.NullTime
+			vRows.Scan(&v.ID, &v.Code, &v.Name, &v.Description, &v.Type, &vf, &minPurchaseF, &maxD, &v.UsageLimit, &v.UsedCount, &vFrom, &vUntil, &v.IsActive)
+			v.DiscountValue = vf
+			v.MaxDiscount = maxD
+			v.MinPurchase = int(minPurchaseF)
+			if vFrom.Valid {
+				v.ValidFrom = vFrom.Time.Format("2006-01-02T15:04:05Z")
+			}
+			if vUntil.Valid {
+				v.ValidUntil = vUntil.Time.Format("2006-01-02T15:04:05Z")
+			}
+			vouchers = append(vouchers, v)
+		}
+	}
+	if vouchers == nil {
+		vouchers = []VoucherRow{}
+	}
+
+	utils.SuccessResponse(w, "Dashboard fetched", map[string]interface{}{
+		"balance":     balance,
+		"total_spent": totalSpent,
+		"stats": map[string]interface{}{
+			"total_orders":       totalOrders,
+			"pending_orders":     pendingOrders,
+			"completed_orders":   completedOrders,
+			"this_year_orders":   thisYearOrders,
+			"monthly_spending":   monthly,
+			"category_breakdown": categories,
+		},
+		"recent_orders": orders,
+		"vouchers":      vouchers,
+		"products":      products,
+	})
+}
+
 // GetTotalSpent - GET /api/users/{id}/total-spent
 func GetTotalSpent(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)

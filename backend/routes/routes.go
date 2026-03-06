@@ -39,6 +39,7 @@ func SetupRoutes() *mux.Router {
 	api.HandleFunc("/users/{id}/balance", controllers.GetBalance).Methods("GET", "OPTIONS")
 	api.HandleFunc("/users/{id}/topup", controllers.TopUp).Methods("POST", "OPTIONS")
 	api.HandleFunc("/users/{id}/total-spent", controllers.GetTotalSpent).Methods("GET", "OPTIONS")
+	api.HandleFunc("/users/{id}/dashboard", controllers.GetDashboard).Methods("GET", "OPTIONS")
 	api.HandleFunc("/users/{id}", controllers.UpdateUser).Methods("PUT", "OPTIONS")
 	api.HandleFunc("/users/{id}", controllers.DeleteUser).Methods("DELETE", "OPTIONS")
 

@@ -119,32 +119,28 @@ export default function DashboardPage() {
   };
 
   const fetchDashboardData = useCallback(async (uid: number) => {
-    // Parallel fetch: balance, total-spent, stats, orders, vouchers, products
-    const [balRes, spentRes, statsRes, ordersRes, vouchersRes, prodsRes] = await Promise.allSettled([
-      fetch(`${BACKEND}/api/users/${uid}/balance`).then(r => r.json()),
-      fetch(`${BACKEND}/api/users/${uid}/total-spent`).then(r => r.json()),
-      fetch(`${BACKEND}/api/users/${uid}/stats`).then(r => r.json()),
-      fetch(`${BACKEND}/api/users/${uid}/orders?limit=5`).then(r => r.json()),
-      fetch(`${BACKEND}/api/vouchers`).then(r => r.json()),
-      fetch(`${BACKEND}/api/products`).then(r => r.json()),
-    ]);
+    try {
+      const res = await fetch(`${BACKEND}/api/users/${uid}/dashboard`);
+      const json = await res.json();
+      if (!json.success) return;
+      const d = json.data;
 
-    if (balRes.status === "fulfilled" && balRes.value.success) setBalance(balRes.value.data.balance);
-    if (spentRes.status === "fulfilled" && spentRes.value.success) setTotalSpent(spentRes.value.data.total_spent);
-    if (statsRes.status === "fulfilled" && statsRes.value.success) setStats(statsRes.value.data);
-    if (ordersRes.status === "fulfilled" && ordersRes.value.success) setRecentOrders(ordersRes.value.data || []);
-    if (vouchersRes.status === "fulfilled" && vouchersRes.value.success) {
-      const now = new Date();
-      const active = (vouchersRes.value.data as VoucherRow[]).filter(
-        v => v.is_active && new Date(v.valid_until) > now && (v.usage_limit === 0 || v.used_count < v.usage_limit)
-      );
-      setActiveVouchers(active);
-    }
-    if (prodsRes.status === "fulfilled" && prodsRes.value.success) {
-      // Show up to 3 random products as recommendations
-      const all: RecommendedProduct[] = prodsRes.value.data || [];
-      const shuffled = [...all].sort(() => Math.random() - 0.5).slice(0, 3);
-      setRecommendedProducts(shuffled);
+      setBalance(d.balance ?? 0);
+      setTotalSpent(d.total_spent ?? 0);
+      if (d.stats) setStats(d.stats);
+      if (d.recent_orders) setRecentOrders(d.recent_orders);
+      if (d.vouchers) {
+        const now = new Date();
+        setActiveVouchers((d.vouchers as VoucherRow[]).filter(
+          v => v.is_active && new Date(v.valid_until) > now && (v.usage_limit === 0 || v.used_count < v.usage_limit)
+        ));
+      }
+      if (d.products) {
+        const shuffled = [...d.products].sort(() => Math.random() - 0.5).slice(0, 3);
+        setRecommendedProducts(shuffled);
+      }
+    } catch (e) {
+      console.error("Dashboard fetch failed", e);
     }
   }, []);
 

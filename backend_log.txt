@@ -1,0 +1,71 @@
+╔═══════════════════════════════════════╗
+║   GO-COMMERCE REST API SERVER        ║
+╚═══════════════════════════════════════╝
+
+2026/03/06 17:13:36 ✅ Database connected successfully
+2026/03/06 17:13:36 🔄 Running database migrations...
+2026/03/06 17:13:36 ✅ users table ready
+2026/03/06 17:13:36 ✅ products table ready
+2026/03/06 17:13:36 ✅ orders table ready
+2026/03/06 17:13:36 ✅ order_items table ready
+2026/03/06 17:13:36 ✅ cart_items table ready
+2026/03/06 17:13:36 ✅ product_specifications table ready
+2026/03/06 17:13:36 ✅ vouchers table ready
+2026/03/06 17:13:36 ✅ All migrations completed
+🚀 Server starting on http://localhost:8080
+
+📋 Available Endpoints:
+   GET    /api/health
+   POST   /api/auth/register
+   POST   /api/auth/login
+   GET    /api/users
+   GET    /api/users/{id}
+   POST   /api/users
+   PUT    /api/users/{id}
+   DELETE /api/users/{id}
+   GET    /api/products
+   GET    /api/products/search?q=keyword
+   GET    /api/products/{id}
+   POST   /api/products
+   PUT    /api/products/{id}
+   DELETE /api/products/{id}
+
+📁 Static Files:
+   GET    /assets/{category}/{filename}
+
+⏳ Server is running... Press Ctrl+C to stop
+
+2026/03/06 17:14:24 Started GET /api/users/1/cart
+2026/03/06 17:14:24 Started GET /api/users/1/dashboard
+2026/03/06 17:14:24 Completed in 9.2885ms
+2026/03/06 17:14:24 Completed in 49.6701ms
+2026/03/06 17:14:29 Started GET /api/products
+2026/03/06 17:14:29 Completed in 1.1188ms
+2026/03/06 17:14:29 Started GET /api/products
+2026/03/06 17:14:29 Completed in 1.7009ms
+2026/03/06 17:14:35 Started GET /api/users/1/dashboard
+2026/03/06 17:14:35 Completed in 22.3364ms
+2026/03/06 17:14:35 Started GET /api/users/1/dashboard
+2026/03/06 17:14:35 Completed in 11.2427ms
+2026/03/06 17:14:49 Started GET /api/users/1/orders
+2026/03/06 17:14:49 Completed in 19.3199ms
+2026/03/06 17:14:49 Started GET /api/users/1/orders
+2026/03/06 17:14:49 Completed in 7.2357ms
+2026/03/06 17:14:53 Started GET /api/users/1/dashboard
+2026/03/06 17:14:53 Completed in 46.7855ms
+2026/03/06 17:14:53 Started GET /api/users/1/dashboard
+2026/03/06 17:14:53 Completed in 27.9497ms
+2026/03/06 17:14:55 Started GET /api/products
+2026/03/06 17:14:55 Completed in 862.8µs
+2026/03/06 17:14:55 Started GET /api/products
+2026/03/06 17:14:55 Completed in 576µs
+2026/03/06 17:15:00 Started GET /api/products/27
+2026/03/06 17:15:00 Completed in 4.5483ms
+2026/03/06 17:15:00 Started GET /api/products/27
+2026/03/06 17:15:00 Completed in 3.2974ms
+2026/03/06 17:15:04 Started GET /api/users/1/orders
+2026/03/06 17:15:05 Completed in 17.2958ms
+2026/03/06 17:15:05 Started GET /api/users/1/orders
+2026/03/06 17:15:05 Completed in 13.0743ms
+2026/03/06 17:15:06 Started GET /api/users/1/orders/ORD-1-1772699271876
+2026/03/06 17:15:06 Completed in 6.1665ms

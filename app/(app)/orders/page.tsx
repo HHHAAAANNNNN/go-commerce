@@ -9,6 +9,8 @@ interface Order {
   id: string;
   products: string;
   total_qty: number;
+  subtotal: number;
+  discount: number;
   total: number;
   status: string;
   created_at: string;
@@ -319,7 +321,15 @@ export default function OrdersPage() {
                     <span className="text-slate-400">
                       {order.total_qty} item{order.total_qty > 1 ? "s" : ""}
                     </span>
-                    <span className="text-white font-semibold">{formatIDR(order.total)}</span>
+                    {order.discount > 0 ? (
+                      <span className="flex items-center gap-2">
+                        <span className="text-slate-500 line-through text-xs">{formatIDR(order.subtotal)}</span>
+                        <span className="text-white font-semibold">{formatIDR(order.total)}</span>
+                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-green-500/15 border border-green-500/30 text-green-400 font-medium">-{formatIDR(order.discount)}</span>
+                      </span>
+                    ) : (
+                      <span className="text-white font-semibold">{formatIDR(order.total)}</span>
+                    )}
                   </div>
                 </div>
 

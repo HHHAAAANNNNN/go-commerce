@@ -98,15 +98,18 @@ func Checkout(w http.ResponseWriter, r *http.Request) {
 	discount := 0
 	if req.VoucherID != "" {
 		var discountType string
-		var discountValue, maxDiscount, minPurchase, usageLimit, usedCount int
+		var discountValueF, maxDiscountF, minPurchaseF float64 // all DECIMAL(15,2) in DB — must scan as float64
+		var usageLimit, usedCount int
 		var isActive bool
 		var validUntil time.Time
 		row := tx.QueryRow(`SELECT type, discount_value, COALESCE(max_discount,0), min_purchase, usage_limit, used_count, is_active, valid_until FROM vouchers WHERE id = ?`, req.VoucherID)
-		err = row.Scan(&discountType, &discountValue, &maxDiscount, &minPurchase, &usageLimit, &usedCount, &isActive, &validUntil)
+		err = row.Scan(&discountType, &discountValueF, &maxDiscountF, &minPurchaseF, &usageLimit, &usedCount, &isActive, &validUntil)
 		if err != nil {
 			// Voucher not found — ignore silently
 			err = nil
-		} else if isActive && validUntil.After(time.Now()) && (usageLimit == 0 || usedCount < usageLimit) && subtotal >= minPurchase {
+		} else if isActive && validUntil.After(time.Now()) && (usageLimit == 0 || usedCount < usageLimit) && subtotal >= int(minPurchaseF) {
+			discountValue := int(discountValueF)
+			maxDiscount := int(maxDiscountF)
 			switch discountType {
 			case "percentage":
 				discount = subtotal * discountValue / 100
@@ -323,13 +326,13 @@ func GetUserOrders(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := config.DB.Query(`
 		SELECT o.order_number, GROUP_CONCAT(p.name ORDER BY oi.id SEPARATOR ', ') as products,
-			SUM(oi.quantity) as total_qty, o.total_amount, o.status, o.created_at,
+			SUM(oi.quantity) as total_qty, o.subtotal, o.discount_amount, o.total_amount, o.status, o.created_at,
 			(SELECT COUNT(*) FROM reviews r WHERE r.order_id = o.id AND r.user_id = ?) > 0 as has_reviewed
 		FROM orders o
 		JOIN order_items oi ON oi.order_id = o.id
 		JOIN products p ON p.id = oi.product_id
 		WHERE o.user_id = ?
-		GROUP BY o.id, o.order_number, o.total_amount, o.status, o.created_at
+		GROUP BY o.id, o.order_number, o.subtotal, o.discount_amount, o.total_amount, o.status, o.created_at
 		ORDER BY o.created_at DESC
 		LIMIT ?
 	`, userID, userID, limit)
@@ -343,6 +346,8 @@ func GetUserOrders(w http.ResponseWriter, r *http.Request) {
 		ID          string `json:"id"`
 		Products    string `json:"products"`
 		TotalQty    int    `json:"total_qty"`
+		Subtotal    int    `json:"subtotal"`
+		Discount    int    `json:"discount"`
 		Total       int    `json:"total"`
 		Status      string `json:"status"`
 		CreatedAt   string `json:"created_at"`
@@ -352,9 +357,11 @@ func GetUserOrders(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var o OrderRow
 		var createdAt time.Time
-		var totalF float64
+		var subtotalF, discountF, totalF float64
 		var hasReviewed int
-		rows.Scan(&o.ID, &o.Products, &o.TotalQty, &totalF, &o.Status, &createdAt, &hasReviewed)
+		rows.Scan(&o.ID, &o.Products, &o.TotalQty, &subtotalF, &discountF, &totalF, &o.Status, &createdAt, &hasReviewed)
+		o.Subtotal = int(subtotalF)
+		o.Discount = int(discountF)
 		o.Total = int(totalF)
 		o.CreatedAt = createdAt.Format("Jan 02, 2006")
 		o.HasReviewed = hasReviewed == 1
@@ -470,6 +477,77 @@ func UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Fetch current order state
+	var orderID int
+	var currentStatus string
+	var totalAmountF float64
+	err = config.DB.QueryRow(
+		"SELECT id, status, total_amount FROM orders WHERE order_number = ? AND user_id = ?",
+		orderNumber, userID,
+	).Scan(&orderID, &currentStatus, &totalAmountF)
+	if err != nil {
+		utils.ErrorResponse(w, http.StatusNotFound, "Order not found")
+		return
+	}
+	totalAmount := int(totalAmountF)
+
+	// Cancelling: restore stock + refund balance inside a transaction
+	if req.Status == "cancelled" && currentStatus != "cancelled" {
+		// Collect items to restore BEFORE opening transaction (avoid interleaving Query+Exec on same conn)
+		type stockItem struct {
+			productID string
+			qty       int
+		}
+		var toRestore []stockItem
+		qRows, qErr := config.DB.Query("SELECT product_id, quantity FROM order_items WHERE order_id = ?", orderID)
+		if qErr != nil {
+			utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch order items: "+qErr.Error())
+			return
+		}
+		for qRows.Next() {
+			var si stockItem
+			qRows.Scan(&si.productID, &si.qty)
+			toRestore = append(toRestore, si)
+		}
+		qRows.Close()
+
+		tx, txErr := config.DB.Begin()
+		if txErr != nil {
+			utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to start transaction")
+			return
+		}
+
+		// Update order status
+		if _, txErr = tx.Exec("UPDATE orders SET status = 'cancelled' WHERE id = ?", orderID); txErr != nil {
+			tx.Rollback()
+			utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to update status: "+txErr.Error())
+			return
+		}
+
+		// Restore stock for each item
+		for _, si := range toRestore {
+			tx.Exec("UPDATE products SET stock = stock + ? WHERE id = ?", si.qty, si.productID)
+		}
+
+		// Refund balance and decrement total_spent
+		if _, txErr = tx.Exec(
+			"UPDATE users SET balance = balance + ?, total_spent = GREATEST(0, total_spent - ?) WHERE id = ?",
+			totalAmount, totalAmount, userID,
+		); txErr != nil {
+			tx.Rollback()
+			utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to refund balance: "+txErr.Error())
+			return
+		}
+
+		if txErr = tx.Commit(); txErr != nil {
+			utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to commit: "+txErr.Error())
+			return
+		}
+		utils.SuccessResponse(w, "Order cancelled. Stock restored and balance refunded.", map[string]string{"status": req.Status})
+		return
+	}
+
+	// Non-cancel status update
 	result, err := config.DB.Exec(
 		"UPDATE orders SET status = ? WHERE order_number = ? AND user_id = ?",
 		req.Status, orderNumber, userID,

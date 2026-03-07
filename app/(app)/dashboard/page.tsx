@@ -701,11 +701,6 @@ export default function DashboardPage() {
               <h3 className="text-xl font-bold text-white mb-1">Spending Activity</h3>
               <p className="text-slate-400 text-sm">Last 6 months</p>
             </div>
-            <button className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors">
-              <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-              </svg>
-            </button>
           </div>
 
           {/* Simple Bar Chart */}
@@ -775,7 +770,6 @@ export default function DashboardPage() {
               <thead>
                 <tr className="border-b border-slate-700/50">
                   <th className="text-left text-slate-400 text-xs font-semibold uppercase pb-3">Order ID</th>
-                  <th className="text-left text-slate-400 text-xs font-semibold uppercase pb-3">Product</th>
                   <th className="text-center text-slate-400 text-xs font-semibold uppercase pb-3">Qty</th>
                   <th className="text-left text-slate-400 text-xs font-semibold uppercase pb-3">Date</th>
                   <th className="text-right text-slate-400 text-xs font-semibold uppercase pb-3">Total</th>
@@ -785,7 +779,7 @@ export default function DashboardPage() {
               <tbody className="divide-y divide-slate-700/30">
                 {recentOrders.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-10 text-center text-slate-500 text-sm">
+                    <td colSpan={5} className="py-10 text-center text-slate-500 text-sm">
                       No orders yet. <a href="/products" className="text-primary-400 hover:underline">Start shopping!</a>
                     </td>
                   </tr>
@@ -794,9 +788,6 @@ export default function DashboardPage() {
                     <tr key={order.id} className="hover:bg-slate-800/40 transition-colors">
                       <td className="py-4">
                         <span className="text-primary-400 font-semibold text-sm">#{order.id}</span>
-                      </td>
-                      <td className="py-4">
-                        <span className="text-white font-medium text-sm">{order.products}</span>
                       </td>
                       <td className="py-4 text-center">
                         <span className="text-slate-300 text-sm">×{order.total_qty}</span>

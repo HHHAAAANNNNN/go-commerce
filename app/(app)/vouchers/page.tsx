@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
+import { authFetch } from '../../utils/api';
 
 const BACKEND = "http://localhost:8080";
 
-type VoucherType = 'percentage' | 'fixed_amount' | 'free_shipping';
+type VoucherType = 'percentage' | 'fixed_amount';
 type VoucherCategory = 'all' | VoucherType;
 
 interface Voucher {
@@ -33,8 +34,7 @@ const typeStyle = (type: VoucherType) => {
 
 const formatDiscount = (v: Voucher) => {
   if (v.type === 'percentage') return `${v.discount_value}% OFF`;
-  if (v.type === 'fixed_amount') return `Rp ${new Intl.NumberFormat('id-ID').format(v.discount_value)}`;
-  return 'FREE SHIPPING';
+  return `Rp ${new Intl.NumberFormat('id-ID').format(v.discount_value)}`;
 };
 
 const daysLeft = (validUntil: string) => {
@@ -59,7 +59,7 @@ function AddVoucherModal({ onClose, onAdded }: { onClose: () => void; onAdded: (
     e.preventDefault();
     setError('');
     if (!form.code.trim()) { setError('Kode voucher wajib diisi.'); return; }
-    if (form.type !== 'free_shipping' && (!form.discount_value || parseFloat(form.discount_value) <= 0)) {
+    if (!form.discount_value || parseFloat(form.discount_value) <= 0) {
       setError('Jumlah diskon wajib diisi.'); return;
     }
     if (!form.duration_days || parseInt(form.duration_days) <= 0) {
@@ -67,15 +67,14 @@ function AddVoucherModal({ onClose, onAdded }: { onClose: () => void; onAdded: (
     }
     setLoading(true);
     try {
-      const res = await fetch(`${BACKEND}/api/vouchers`, {
+      const res = await authFetch(`${BACKEND}/api/vouchers`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           code: form.code.toUpperCase(),
           name: form.name,
           description: form.description,
           type: form.type,
-          discount_value: form.type === 'free_shipping' ? 0 : parseFloat(form.discount_value),
+          discount_value: parseFloat(form.discount_value),
           max_discount: form.max_discount ? parseFloat(form.max_discount) : 0,
           min_purchase: form.min_purchase ? parseFloat(form.min_purchase) : 0,
           usage_limit: form.usage_limit ? parseInt(form.usage_limit) : 0,
@@ -135,11 +134,10 @@ function AddVoucherModal({ onClose, onAdded }: { onClose: () => void; onAdded: (
           {/* Type */}
           <div>
             <label className={labelCls}>Tipe Voucher *</label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {([
                 { v: 'percentage', label: 'Persentase', icon: '%', sel: 'purple' },
                 { v: 'fixed_amount', label: 'Fixed Amount', icon: 'Rp', sel: 'amber' },
-                { v: 'free_shipping', label: 'Free Shipping', icon: '🚚', sel: 'cyan' },
               ] as const).map(({ v, label, icon, sel }) => (
                 <button key={v} type="button" onClick={() => setForm({ ...form, type: v })}
                   className={`flex flex-col items-center gap-1 py-3 rounded-lg border text-sm font-semibold transition-all ${form.type === v
@@ -155,9 +153,8 @@ function AddVoucherModal({ onClose, onAdded }: { onClose: () => void; onAdded: (
             </div>
           </div>
 
-          {/* Discount value — hidden for free_shipping */}
-          {form.type !== 'free_shipping' && (
-            <div className="grid grid-cols-2 gap-4">
+          {/* Discount value */}
+          <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={labelCls}>{form.type === 'percentage' ? 'Persentase (%) *' : 'Jumlah Diskon (Rp) *'}</label>
                 <div className="relative">
@@ -177,7 +174,6 @@ function AddVoucherModal({ onClose, onAdded }: { onClose: () => void; onAdded: (
                 </div>
               )}
             </div>
-          )}
 
           {/* Description */}
           <div>
@@ -251,9 +247,10 @@ export default function VouchersPage() {
     setTimeout(() => setCopiedCode(''), 2000);
   };
 
-  const filtered = selectedCategory === 'all' ? vouchers : vouchers.filter(v => v.type === selectedCategory);
-  const active = vouchers.filter(v => new Date(v.valid_until) > new Date());
-  const expired = vouchers.filter(v => new Date(v.valid_until) <= new Date());
+  const nonFreeShipping = vouchers.filter(v => (v.type as string) !== 'free_shipping');
+  const filtered = selectedCategory === 'all' ? nonFreeShipping : nonFreeShipping.filter(v => v.type === selectedCategory);
+  const active = nonFreeShipping.filter(v => new Date(v.valid_until) > new Date());
+  const expired = nonFreeShipping.filter(v => new Date(v.valid_until) <= new Date());
 
   return (
     <div className="space-y-6">
@@ -307,7 +304,6 @@ export default function VouchersPage() {
               { v: 'all', l: 'All' },
               { v: 'percentage', l: 'Persentase' },
               { v: 'fixed_amount', l: 'Fixed Amount' },
-              { v: 'free_shipping', l: 'Free Shipping' },
             ].map(({ v, l }) => (
               <button key={v} onClick={() => setSelectedCategory(v as VoucherCategory)}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${selectedCategory === v

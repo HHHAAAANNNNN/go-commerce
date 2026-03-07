@@ -14,6 +14,7 @@ interface User {
   balance: number;
   is_member: boolean;
   avatar_url?: string;
+  role?: string;
 }
 
 interface AppNavbarProps {
@@ -91,6 +92,7 @@ export default function AppNavbar({ onToggleSidebar }: AppNavbarProps) {
 
   const handleLogout = () => {
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
     localStorage.removeItem("rememberMe");
     router.push("/");
   };
@@ -128,7 +130,8 @@ export default function AppNavbar({ onToggleSidebar }: AppNavbarProps) {
 
         {/* Right: Cart + User Profile */}
         <div className="flex items-center gap-3">
-          {/* Cart Button */}
+          {/* Cart Button — only visible for customers */}
+          {user?.role !== 'admin' && (
           <Link
             href="/cart"
             className="relative p-2 hover:bg-slate-800/40 rounded-lg transition-colors text-slate-400 hover:text-white"
@@ -142,6 +145,7 @@ export default function AppNavbar({ onToggleSidebar }: AppNavbarProps) {
               </span>
             )}
           </Link>
+          )}
           <div className="relative">
             <button
               onClick={() => setShowProfileMenu(!showProfileMenu)}
@@ -149,7 +153,7 @@ export default function AppNavbar({ onToggleSidebar }: AppNavbarProps) {
             >
               <div className="text-right hidden md:block">
                 <p className="text-white text-sm font-semibold">{user?.full_name || "Guest User"}</p>
-                <p className="text-slate-400 text-xs">{user?.is_member ? "Premium Member" : "Free Member"}</p>
+                <p className="text-slate-400 text-xs">{user?.role === 'admin' ? 'Administrator' : (user?.is_member ? 'Premium Member' : 'Free Member')}</p>
               </div>
               {/* Avatar: image if available, else initials */}
               <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-r from-primary-400 to-secondary-400 flex items-center justify-center text-white font-semibold shrink-0">

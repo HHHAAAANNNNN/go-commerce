@@ -11,25 +11,36 @@ import Footer from "./components/Footer";
 import FloatingButtons from "./components/FloatingButtons";
 import CartModal, { CartItem } from "./components/CartModal";
 import LoginModal from "./components/LoginModal";
+import RegisterModal from "./components/RegisterModal";
 
 export default function Home() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
   const handleOpenCart = () => {
     setIsLoginModalOpen(false);
+    setIsRegisterModalOpen(false);
     setIsCartModalOpen(true);
   };
 
   const handleOpenLogin = () => {
     setIsCartModalOpen(false);
+    setIsRegisterModalOpen(false);
     setIsLoginModalOpen(true);
+  };
+
+  const handleOpenRegister = () => {
+    setIsCartModalOpen(false);
+    setIsLoginModalOpen(false);
+    setIsRegisterModalOpen(true);
   };
 
   const handleCloseModals = () => {
     setIsCartModalOpen(false);
     setIsLoginModalOpen(false);
+    setIsRegisterModalOpen(false);
   };
 
   const handleRemoveItem = (id: number) => {
@@ -56,24 +67,6 @@ export default function Home() {
     }
   };
 
-  const handleRegisterClick = () => {
-    handleCloseModals();
-    // Scroll to CTA section
-    const ctaElement = document.getElementById("cta");
-    if (ctaElement) {
-      const offsetTop = ctaElement.offsetTop - 80;
-      window.scrollTo({
-        top: offsetTop,
-        behavior: "smooth",
-      });
-      // Trigger the register form to open
-      setTimeout(() => {
-        const registerButton = document.getElementById("register-trigger");
-        if (registerButton) registerButton.click();
-      }, 500);
-    }
-  };
-
   return (
     <>
       <Navbar onLoginClick={handleOpenLogin} />
@@ -85,9 +78,9 @@ export default function Home() {
         <CTASection onLoginClick={handleOpenLogin} />
       </main>
       <Footer />
-      
+
       {/* Floating Buttons */}
-      <FloatingButtons 
+      <FloatingButtons
         onCartClick={handleOpenCart}
         cartItemCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
       />
@@ -106,7 +99,14 @@ export default function Home() {
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={handleCloseModals}
-        onRegisterClick={handleRegisterClick}
+        onRegisterClick={handleOpenRegister}
+      />
+
+      {/* Register Modal */}
+      <RegisterModal
+        isOpen={isRegisterModalOpen}
+        onClose={handleCloseModals}
+        onLoginClick={handleOpenLogin}
       />
     </>
   );

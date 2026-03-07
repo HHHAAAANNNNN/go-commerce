@@ -100,6 +100,12 @@ func runMigrations() error {
 	if !tableHasColumn("users", "avatar_url") {
 		DB.Exec("ALTER TABLE users ADD COLUMN avatar_url VARCHAR(500)")
 	}
+	if !tableHasColumn("users", "role") {
+		DB.Exec("ALTER TABLE users ADD COLUMN role ENUM('admin','customer') NOT NULL DEFAULT 'customer'")
+	}
+	if !tableHasColumn("users", "email_verified") {
+		DB.Exec("ALTER TABLE users ADD COLUMN email_verified BOOLEAN DEFAULT FALSE")
+	}
 	log.Println("✅ users table ready")
 
 	// --- products ---

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { authFetch } from "../../utils/api";
 
 interface Product {
   id: string;
@@ -25,10 +26,15 @@ export default function ProductsPage() {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [role, setRole] = useState<string>("customer");
 
   const categories = ["All", "Smartphones", "Laptops", "Audio"];
 
   useEffect(() => {
+    try {
+      const raw = localStorage.getItem("user");
+      if (raw) setRole((JSON.parse(raw) as { role?: string }).role ?? "customer");
+    } catch { /* ignore */ }
     fetchProducts();
   }, []);
 
@@ -157,7 +163,8 @@ export default function ProductsPage() {
               <p className="text-slate-300 text-lg">Discover amazing products with great deals!</p>
             </div>
             <div className="flex items-center gap-3">
-              {/* Add Button */}
+              {/* Add Button — admin only */}
+              {role === 'admin' && (
               <button
                 onClick={() => setShowAddModal(true)}
                 className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-primary-400 to-secondary-400 hover:from-primary-500 hover:to-secondary-500 text-white rounded-lg font-semibold transition-all shadow-lg shadow-primary-400/20 hover:shadow-primary-400/40 hover:scale-105"
@@ -167,6 +174,7 @@ export default function ProductsPage() {
                 </svg>
                 <span className="hidden sm:inline">Add Product</span>
               </button>
+              )}
             </div>
           </div>
         </div>
@@ -363,6 +371,7 @@ export default function ProductsPage() {
             </div>
             <h3 className="text-xl font-bold text-white mb-2">No products found</h3>
             <p className="text-slate-400 mb-6">Try adjusting your search or filters</p>
+            {role === 'admin' && (
             <button
               onClick={() => setShowAddModal(true)}
               className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-400 to-secondary-400 text-white rounded-lg font-semibold hover:opacity-90 transition-all"
@@ -372,12 +381,13 @@ export default function ProductsPage() {
               </svg>
               Add New Product
             </button>
+            )}
           </div>
         )}
       </div>
 
-      {/* Add Product Modal */}
-      {showAddModal && (
+      {/* Add Product Modal — admin only */}
+      {showAddModal && role === 'admin' && (
         <AddProductModal
           onClose={() => setShowAddModal(false)}
           onProductAdded={() => {
@@ -561,7 +571,7 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
         };
         formData.append('category', categoryUploadMap[basicData.category] || basicData.category.toLowerCase());
 
-        const uploadResponse = await fetch('http://localhost:8080/api/upload', {
+        const uploadResponse = await authFetch('http://localhost:8080/api/upload', {
           method: 'POST',
           body: formData,
         });
@@ -620,9 +630,8 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
       }
 
       // Create product
-      const response = await fetch('http://localhost:8080/api/products', {
+      const response = await authFetch('http://localhost:8080/api/products', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: basicData.name,
           price: parseInt(basicData.price),

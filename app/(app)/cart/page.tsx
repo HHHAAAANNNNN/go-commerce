@@ -596,7 +596,7 @@ export default function CartPage() {
                                 <p className="text-slate-500 text-xs">No vouchers available</p>
                               </div>
                             ) : (
-                              vouchers.map((v) => {
+                              vouchers.filter((v) => v.type !== "free_shipping").map((v) => {
                                 const isDisabled = subtotal < v.min_purchase;
                                 const typeLabel =
                                   v.type === "percentage"
@@ -692,13 +692,6 @@ export default function CartPage() {
                           <div className="flex justify-between text-sm">
                             <span className="text-green-400">Voucher Discount</span>
                             <span className="text-green-400 font-medium">-{formatPrice(discount)}</span>
-                          </div>
-                        )}
-
-                        {selectedVoucher?.type === "free_shipping" && subtotal >= selectedVoucher.min_purchase && (
-                          <div className="flex justify-between text-sm">
-                            <span className="text-purple-400">Shipping</span>
-                            <span className="text-purple-400 font-medium">Free</span>
                           </div>
                         )}
 

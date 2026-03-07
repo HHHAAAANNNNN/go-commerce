@@ -3,6 +3,7 @@
 import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { authFetch } from "../../../utils/api";
 
 const BACKEND = "http://localhost:8080";
 
@@ -36,6 +37,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [role, setRole] = useState<string>("customer");
 
   // Reviews state
   interface Review {
@@ -51,6 +53,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [reviewsFetched, setReviewsFetched] = useState(false);
 
   useEffect(() => {
+    try {
+      const raw = localStorage.getItem("user");
+      if (raw) setRole((JSON.parse(raw) as { role?: string }).role ?? "customer");
+    } catch { /* ignore */ }
     fetchProduct();
   }, [resolvedParams.id]);
 
@@ -178,9 +184,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
   return (
     <>
-      {/* Success Toast */}
+      {/* Success Toast — below navbar */}
       {successMsg && (
-        <div className="fixed top-6 right-6 z-[60] flex items-center gap-3 px-5 py-4 bg-green-500/20 border border-green-500/40 rounded-xl shadow-2xl backdrop-blur-sm">
+        <div className="fixed top-[85px] right-6 z-[60] flex items-center gap-3 px-5 py-4 bg-green-500/20 border border-green-500/40 rounded-xl shadow-2xl backdrop-blur-sm">
           <svg className="w-5 h-5 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
@@ -188,7 +194,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         </div>
       )}
 
-      {/* Floating Edit Button */}
+      {/* Floating Edit Button — admin only */}
+      {role === 'admin' && (
       <button
         onClick={() => setShowEditModal(true)}
         title="Edit Product"
@@ -198,16 +205,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
         </svg>
       </button>
+      )}
 
       <div className="space-y-6">
         {/* Breadcrumb */}
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <Link href="/products" className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white rounded-lg transition-all group">
-            <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Back to Products
-          </Link>
+        <div className="flex items-center justify-end flex-wrap gap-4">
           <div className="text-slate-400 text-sm">
             <Link href="/" className="hover:text-primary-400 transition-colors">Home</Link>
             <span className="mx-2">/</span>
@@ -216,6 +218,17 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <span className="text-white">{product.name}</span>
           </div>
         </div>
+
+        {/* Floating Back to Products — fixed, stays visible on scroll */}
+        <Link
+          href="/products"
+          className="fixed top-[85px] left-72 z-50 inline-flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 hover:border-slate-500 text-slate-300 hover:text-white rounded-xl shadow-2xl shadow-black/40 hover:shadow-black/60 hover:scale-105 active:scale-95 backdrop-blur-sm transition-all duration-200 group"
+        >
+          <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to Products
+        </Link>
 
         {/* Product Details */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -248,6 +261,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 <span className="px-4 py-2 bg-gradient-to-r from-primary-400/20 to-secondary-400/20 border border-primary-400/30 text-primary-400 rounded-full text-sm font-semibold">{product.category}</span>
                 {product.brand && <span className="text-slate-400 text-sm">by <span className="text-white font-semibold">{product.brand}</span></span>}
               </div>
+              {/* Delete button — admin only */}
+              {role === 'admin' && (
               <button
                 onClick={() => setShowDeleteModal(true)}
                 className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/60 text-red-400 hover:text-red-300 rounded-lg text-sm transition-all"
@@ -256,6 +271,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
               </button>
+              )}
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-white">{product.name}</h1>
             <div className="flex items-center gap-4">
@@ -275,6 +291,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               <p className="text-4xl font-bold bg-gradient-to-r from-primary-400 to-secondary-400 bg-clip-text text-transparent">{formatPrice(product.price)}</p>
               <p className="text-slate-400 text-sm mt-1">Inclusive of all taxes</p>
             </div>
+            {/* Quantity + Add to Cart — customer only */}
+            {role === 'customer' && (
+            <>
             <div className="space-y-3">
               <label className="text-white font-semibold">Quantity</label>
               <div className="flex items-center gap-3">
@@ -293,6 +312,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
               </button>
             </div>
+            </>
+            )}
             <div className="grid grid-cols-2 gap-3 pt-4">
               {[
                 { icon: 'M5 13l4 4L19 7', text: 'Free Shipping' },
@@ -404,12 +425,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         </div>
       </div>
 
-      {/* Edit Modal */}
-      {showEditModal && product && (
+      {/* Edit Modal — admin only */}
+      {showEditModal && product && role === 'admin' && (
         <EditProductModal product={product} onClose={() => setShowEditModal(false)} onSaved={handleProductSaved} />
       )}
 
-      {showDeleteModal && product && (
+      {/* Delete Modal — admin only */}
+      {showDeleteModal && product && role === 'admin' && (
         <DeleteConfirmModal
           productName={product.name}
           productId={product.id}
@@ -438,7 +460,7 @@ function DeleteConfirmModal({ productName, productId, onClose, onDeleted }: Dele
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${BACKEND}/api/products/${productId}`, { method: 'DELETE' });
+      const res = await authFetch(`${BACKEND}/api/products/${productId}`, { method: 'DELETE' });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Gagal menghapus produk');
       onDeleted();
@@ -659,7 +681,7 @@ function EditProductModal({ product, onClose, onSaved }: EditProductModalProps) 
         fd.append('image', imageFile);
         const catMap: Record<string, string> = { Smartphones: 'smartphones', Laptops: 'laptops', Audio: 'audio' };
         fd.append('category', catMap[category] ?? category.toLowerCase());
-        const uploadRes = await fetch(`${BACKEND}/api/upload`, { method: 'POST', body: fd });
+        const uploadRes = await authFetch(`${BACKEND}/api/upload`, { method: 'POST', body: fd });
         if (uploadRes.ok) {
           const uploadData = await uploadRes.json();
           if (uploadData.data?.url) finalImageUrl = uploadData.data.url;
@@ -709,9 +731,8 @@ function EditProductModal({ product, onClose, onSaved }: EditProductModalProps) 
         };
       }
 
-      const res = await fetch(`${BACKEND}/api/products/${product.id}`, {
+      const res = await authFetch(`${BACKEND}/api/products/${product.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: form.name,
           price: parseInt(form.price),

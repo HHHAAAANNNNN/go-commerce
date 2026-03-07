@@ -8,6 +8,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// adminOnly wraps a handler with RequireAuth + RequireRole("admin")
+func adminOnly(h http.HandlerFunc) http.Handler {
+	return middlewares.RequireAuth(
+		middlewares.RequireRole("admin")(http.HandlerFunc(h)),
+	)
+}
+
 func SetupRoutes() *mux.Router {
 	router := mux.NewRouter()
 
@@ -18,30 +25,30 @@ func SetupRoutes() *mux.Router {
 	// API routes
 	api := router.PathPrefix("/api").Subrouter()
 
-	// Health check
+	// Health check (public)
 	api.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{"status":"OK","message":"Server is running"}`))
 	}).Methods("GET", "OPTIONS")
 
-	// Auth routes
+	// Auth routes (public)
 	api.HandleFunc("/auth/register", controllers.Register).Methods("POST", "OPTIONS")
 	api.HandleFunc("/auth/login", controllers.Login).Methods("POST", "OPTIONS")
 
-	// Upload route
-	api.HandleFunc("/upload", controllers.UploadImage).Methods("POST", "OPTIONS")
+	// Upload — admin only
+	api.Handle("/upload", adminOnly(controllers.UploadImage)).Methods("POST", "OPTIONS")
 
-	// User routes
-	api.HandleFunc("/users", controllers.GetAllUsers).Methods("GET", "OPTIONS")
+	// User routes — list/create/update/delete are admin-only; per-user routes are open
+	api.Handle("/users", adminOnly(controllers.GetAllUsers)).Methods("GET", "OPTIONS")
+	api.Handle("/users", adminOnly(controllers.CreateUser)).Methods("POST", "OPTIONS")
 	api.HandleFunc("/users/{id}", controllers.GetUserByID).Methods("GET", "OPTIONS")
-	api.HandleFunc("/users", controllers.CreateUser).Methods("POST", "OPTIONS")
+	api.Handle("/users/{id}", adminOnly(controllers.UpdateUser)).Methods("PUT", "OPTIONS")
+	api.Handle("/users/{id}", adminOnly(controllers.DeleteUser)).Methods("DELETE", "OPTIONS")
 	api.HandleFunc("/users/{id}/profile", controllers.UpdateProfile).Methods("PUT", "OPTIONS")
 	api.HandleFunc("/users/{id}/balance", controllers.GetBalance).Methods("GET", "OPTIONS")
 	api.HandleFunc("/users/{id}/topup", controllers.TopUp).Methods("POST", "OPTIONS")
 	api.HandleFunc("/users/{id}/total-spent", controllers.GetTotalSpent).Methods("GET", "OPTIONS")
 	api.HandleFunc("/users/{id}/dashboard", controllers.GetDashboard).Methods("GET", "OPTIONS")
-	api.HandleFunc("/users/{id}", controllers.UpdateUser).Methods("PUT", "OPTIONS")
-	api.HandleFunc("/users/{id}", controllers.DeleteUser).Methods("DELETE", "OPTIONS")
 
 	// Cart routes
 	api.HandleFunc("/users/{id}/cart", controllers.GetCartItems).Methods("GET", "OPTIONS")
@@ -57,18 +64,18 @@ func SetupRoutes() *mux.Router {
 	api.HandleFunc("/users/{id}/orders/{orderNumber}/status", controllers.UpdateOrderStatus).Methods("PATCH", "OPTIONS")
 	api.HandleFunc("/users/{id}/orders/{orderNumber}/reviews", controllers.SubmitReviews).Methods("POST", "OPTIONS")
 
-	// Product routes
+	// Product routes — GET is public, mutations are admin only
 	api.HandleFunc("/products", controllers.GetAllProducts).Methods("GET", "OPTIONS")
 	api.HandleFunc("/products/search", controllers.SearchProducts).Methods("GET", "OPTIONS")
 	api.HandleFunc("/products/{id}", controllers.GetProductByID).Methods("GET", "OPTIONS")
 	api.HandleFunc("/products/{id}/reviews", controllers.GetProductReviews).Methods("GET", "OPTIONS")
-	api.HandleFunc("/products", controllers.CreateProduct).Methods("POST", "OPTIONS")
-	api.HandleFunc("/products/{id}", controllers.UpdateProduct).Methods("PUT", "OPTIONS")
-	api.HandleFunc("/products/{id}", controllers.DeleteProduct).Methods("DELETE", "OPTIONS")
+	api.Handle("/products", adminOnly(controllers.CreateProduct)).Methods("POST", "OPTIONS")
+	api.Handle("/products/{id}", adminOnly(controllers.UpdateProduct)).Methods("PUT", "OPTIONS")
+	api.Handle("/products/{id}", adminOnly(controllers.DeleteProduct)).Methods("DELETE", "OPTIONS")
 
-	// Voucher routes
+	// Voucher routes — GET is public, creation is admin only
 	api.HandleFunc("/vouchers", controllers.ListVouchers).Methods("GET", "OPTIONS")
-	api.HandleFunc("/vouchers", controllers.CreateVoucher).Methods("POST", "OPTIONS")
+	api.Handle("/vouchers", adminOnly(controllers.CreateVoucher)).Methods("POST", "OPTIONS")
 
 	return router
 }

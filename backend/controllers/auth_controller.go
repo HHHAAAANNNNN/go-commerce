@@ -13,6 +13,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// LoginResponse - Response for successful login
+type loginResponse struct {
+	User  models.User `json:"user"`
+	Token string      `json:"token"`
+}
+
 // RegisterRequest - Request body for registration
 type RegisterRequest struct {
 	FullName string `json:"full_name"`
@@ -25,12 +31,6 @@ type RegisterRequest struct {
 type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
-}
-
-// LoginResponse - Response for successful login
-type LoginResponse struct {
-	User  models.User `json:"user"`
-	Token string      `json:"token,omitempty"` // For future JWT implementation
 }
 
 // Register - POST /api/auth/register
@@ -103,14 +103,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get user from database (matching actual table schema)
+	// Get user from database
 	var user models.User
 	var hashedPassword string
 	var avatarURL sql.NullString
 	var emailVerified bool
-	query := `SELECT id, full_name, email, password, phone, created_at, avatar_url, email_verified, total_spent FROM users WHERE email = ?`
+	query := `SELECT id, full_name, email, password, phone, created_at, avatar_url, email_verified, total_spent, role FROM users WHERE email = ?`
 	err = config.DB.QueryRow(query, req.Email).Scan(
-		&user.ID, &user.FullName, &user.Email, &hashedPassword, &user.Phone, &user.CreatedAt, &avatarURL, &emailVerified, &user.TotalSpent,
+		&user.ID, &user.FullName, &user.Email, &hashedPassword, &user.Phone, &user.CreatedAt, &avatarURL, &emailVerified, &user.TotalSpent, &user.Role,
 	)
 	if err != nil {
 		log.Printf("❌ Login query error: %v", err)
@@ -118,7 +118,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Assign optional nullable fields
 	if avatarURL.Valid {
 		user.AvatarURL = avatarURL.String
 	}
@@ -131,9 +130,18 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Generate JWT
+	token, err := utils.GenerateToken(user.ID, user.Role)
+	if err != nil {
+		log.Printf("❌ Token generation error: %v", err)
+		utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to generate token")
+		return
+	}
+
 	// Successful login
-	response := LoginResponse{
-		User: user,
+	response := loginResponse{
+		User:  user,
+		Token: token,
 	}
 
 	utils.SuccessResponse(w, "Login berhasil", response)

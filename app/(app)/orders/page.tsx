@@ -48,7 +48,7 @@ const STATUS_STYLE: Record<string, string> = {
   cancelled:  "bg-red-500/20 border border-red-500/40 text-red-400",
 };
 
-const STATUS_NEXT: Record<string, { label: string; next: string; style: string }[]> = {
+const STATUS_NEXT_ADMIN: Record<string, { label: string; next: string; style: string }[]> = {
   pending:    [
     { label: "Mark as Processing", next: "processing", style: "border-blue-500/40 text-blue-400 hover:bg-blue-500/20" },
     { label: "Cancel Order",       next: "cancelled",  style: "border-red-500/40 text-red-400 hover:bg-red-500/20" },
@@ -64,6 +64,16 @@ const STATUS_NEXT: Record<string, { label: string; next: string; style: string }
   cancelled:  [],
 };
 
+const STATUS_NEXT_CUSTOMER: Record<string, { label: string; next: string; style: string }[]> = {
+  pending:    [
+    { label: "Cancel Order",       next: "cancelled",  style: "border-red-500/40 text-red-400 hover:bg-red-500/20" },
+  ],
+  processing: [],
+  shipped:    [],
+  delivered:  [],
+  cancelled:  [],
+};
+
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,6 +84,7 @@ export default function OrdersPage() {
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState("");
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [role, setRole] = useState<string>("customer");
 
   // Rating modal state
   const [ratingModal, setRatingModal] = useState<{
@@ -88,6 +99,10 @@ export default function OrdersPage() {
   const [reviewedOrders, setReviewedOrders] = useState<Set<string>>(new Set());
 
   useEffect(() => {
+    try {
+      const raw = localStorage.getItem("user");
+      if (raw) setRole((JSON.parse(raw) as { role?: string }).role ?? "customer");
+    } catch { /* ignore */ }
     fetchOrders();
   }, []);
 
@@ -464,11 +479,13 @@ export default function OrdersPage() {
             </div>
 
             {/* Modal Footer — Status Actions */}
-            {!detailLoading && selectedOrder && (
+            {!detailLoading && selectedOrder && (() => {
+              const statusNext = role === 'admin' ? STATUS_NEXT_ADMIN : STATUS_NEXT_CUSTOMER;
+              return (
               <div className="border-t border-slate-700/80 p-4">
-                {STATUS_NEXT[selectedOrder.order.status]?.length > 0 ? (
+                {statusNext[selectedOrder.order.status]?.length > 0 ? (
                   <div className="flex gap-3">
-                    {STATUS_NEXT[selectedOrder.order.status].map((action) => (
+                    {statusNext[selectedOrder.order.status].map((action) => (
                       <button
                         key={action.next}
                         onClick={() => updateOrderStatus(selectedOrder.order.order_number, action.next)}
@@ -487,7 +504,8 @@ export default function OrdersPage() {
                   </p>
                 )}
               </div>
-            )}
+              );
+            })()}
           </div>
         </div>
       )}

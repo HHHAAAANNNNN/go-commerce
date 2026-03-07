@@ -12,6 +12,7 @@ type User struct {
 	Balance    int       `json:"balance"`
 	IsMember   bool      `json:"is_member"`
 	TotalSpent int       `json:"total_spent"`
+	Role       string    `json:"role"`
 	CreatedAt  time.Time `json:"created_at"`
 }
 

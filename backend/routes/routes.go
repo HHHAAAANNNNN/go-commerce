@@ -19,6 +19,7 @@ func SetupRoutes() *mux.Router {
 	router := mux.NewRouter()
 
 	// Apply global middlewares
+	router.Use(middlewares.RecoverPanic)
 	router.Use(middlewares.Logger)
 	router.Use(middlewares.CORS)
 
@@ -41,28 +42,28 @@ func SetupRoutes() *mux.Router {
 	// User routes — list/create/update/delete are admin-only; per-user routes are open
 	api.Handle("/users", adminOnly(controllers.GetAllUsers)).Methods("GET", "OPTIONS")
 	api.Handle("/users", adminOnly(controllers.CreateUser)).Methods("POST", "OPTIONS")
-	api.HandleFunc("/users/{id}", controllers.GetUserByID).Methods("GET", "OPTIONS")
+	api.Handle("/users/{id}", middlewares.RequireAuth(http.HandlerFunc(controllers.GetUserByID))).Methods("GET", "OPTIONS")
 	api.Handle("/users/{id}", adminOnly(controllers.UpdateUser)).Methods("PUT", "OPTIONS")
 	api.Handle("/users/{id}", adminOnly(controllers.DeleteUser)).Methods("DELETE", "OPTIONS")
-	api.HandleFunc("/users/{id}/profile", controllers.UpdateProfile).Methods("PUT", "OPTIONS")
-	api.HandleFunc("/users/{id}/balance", controllers.GetBalance).Methods("GET", "OPTIONS")
-	api.HandleFunc("/users/{id}/topup", controllers.TopUp).Methods("POST", "OPTIONS")
-	api.HandleFunc("/users/{id}/total-spent", controllers.GetTotalSpent).Methods("GET", "OPTIONS")
-	api.HandleFunc("/users/{id}/dashboard", controllers.GetDashboard).Methods("GET", "OPTIONS")
+	api.Handle("/users/{id}/profile", middlewares.RequireAuth(http.HandlerFunc(controllers.UpdateProfile))).Methods("PUT", "OPTIONS")
+	api.Handle("/users/{id}/balance", middlewares.RequireAuth(http.HandlerFunc(controllers.GetBalance))).Methods("GET", "OPTIONS")
+	api.Handle("/users/{id}/topup", middlewares.RequireAuth(http.HandlerFunc(controllers.TopUp))).Methods("POST", "OPTIONS")
+	api.Handle("/users/{id}/total-spent", middlewares.RequireAuth(http.HandlerFunc(controllers.GetTotalSpent))).Methods("GET", "OPTIONS")
+	api.Handle("/users/{id}/dashboard", middlewares.RequireAuth(http.HandlerFunc(controllers.GetDashboard))).Methods("GET", "OPTIONS")
 
 	// Cart routes
-	api.HandleFunc("/users/{id}/cart", controllers.GetCartItems).Methods("GET", "OPTIONS")
-	api.HandleFunc("/users/{id}/cart", controllers.AddToCart).Methods("POST", "OPTIONS")
-	api.HandleFunc("/users/{id}/cart/{productId}", controllers.UpdateCartItem).Methods("PUT", "OPTIONS")
-	api.HandleFunc("/users/{id}/cart/{productId}", controllers.RemoveFromCart).Methods("DELETE", "OPTIONS")
+	api.Handle("/users/{id}/cart", middlewares.RequireAuth(http.HandlerFunc(controllers.GetCartItems))).Methods("GET", "OPTIONS")
+	api.Handle("/users/{id}/cart", middlewares.RequireAuth(http.HandlerFunc(controllers.AddToCart))).Methods("POST", "OPTIONS")
+	api.Handle("/users/{id}/cart/{productId}", middlewares.RequireAuth(http.HandlerFunc(controllers.UpdateCartItem))).Methods("PUT", "OPTIONS")
+	api.Handle("/users/{id}/cart/{productId}", middlewares.RequireAuth(http.HandlerFunc(controllers.RemoveFromCart))).Methods("DELETE", "OPTIONS")
 
 	// Checkout & order routes
-	api.HandleFunc("/users/{id}/checkout", controllers.Checkout).Methods("POST", "OPTIONS")
-	api.HandleFunc("/users/{id}/stats", controllers.GetUserStats).Methods("GET", "OPTIONS")
-	api.HandleFunc("/users/{id}/orders", controllers.GetUserOrders).Methods("GET", "OPTIONS")
-	api.HandleFunc("/users/{id}/orders/{orderNumber}", controllers.GetOrderDetail).Methods("GET", "OPTIONS")
-	api.HandleFunc("/users/{id}/orders/{orderNumber}/status", controllers.UpdateOrderStatus).Methods("PATCH", "OPTIONS")
-	api.HandleFunc("/users/{id}/orders/{orderNumber}/reviews", controllers.SubmitReviews).Methods("POST", "OPTIONS")
+	api.Handle("/users/{id}/checkout", middlewares.RequireAuth(http.HandlerFunc(controllers.Checkout))).Methods("POST", "OPTIONS")
+	api.Handle("/users/{id}/stats", middlewares.RequireAuth(http.HandlerFunc(controllers.GetUserStats))).Methods("GET", "OPTIONS")
+	api.Handle("/users/{id}/orders", middlewares.RequireAuth(http.HandlerFunc(controllers.GetUserOrders))).Methods("GET", "OPTIONS")
+	api.Handle("/users/{id}/orders/{orderNumber}", middlewares.RequireAuth(http.HandlerFunc(controllers.GetOrderDetail))).Methods("GET", "OPTIONS")
+	api.Handle("/users/{id}/orders/{orderNumber}/status", middlewares.RequireAuth(http.HandlerFunc(controllers.UpdateOrderStatus))).Methods("PATCH", "OPTIONS")
+	api.Handle("/users/{id}/orders/{orderNumber}/reviews", middlewares.RequireAuth(http.HandlerFunc(controllers.SubmitReviews))).Methods("POST", "OPTIONS")
 
 	// Admin-only order management
 	api.Handle("/orders", adminOnly(http.HandlerFunc(controllers.GetAllOrders))).Methods("GET", "OPTIONS")

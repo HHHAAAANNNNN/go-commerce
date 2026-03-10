@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -13,22 +14,41 @@ var DB *sql.DB
 
 // ConnectDatabase - Connect to MySQL database and run migrations
 func ConnectDatabase() error {
-	dsnNoDB := "root:@tcp(127.0.0.1:3306)/?parseTime=true&timeout=5s&readTimeout=5s&writeTimeout=5s"
+	dbUser := os.Getenv("DB_USER")
+	if dbUser == "" {
+		dbUser = "root"
+	}
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbHost := os.Getenv("DB_HOST")
+	if dbHost == "" {
+		dbHost = "127.0.0.1"
+	}
+	dbPort := os.Getenv("DB_PORT")
+	if dbPort == "" {
+		dbPort = "3306"
+	}
+	dbName := os.Getenv("DB_NAME")
+	if dbName == "" {
+		dbName = "go_commerce"
+	}
+
+	// Example: "root:@tcp(127.0.0.1:3306)/?parseTime=true..."
+	dsnNoDB := fmt.Sprintf("%s:%s@tcp(%s:%s)/?parseTime=true&timeout=5s&readTimeout=5s&writeTimeout=5s", dbUser, dbPassword, dbHost, dbPort)
 	db, err := sql.Open("mysql", dsnNoDB)
 	if err != nil {
 		return fmt.Errorf("failed to open db: %w", err)
 	}
 	defer db.Close()
 
-	_, err = db.Exec("CREATE DATABASE IF NOT EXISTS go_commerce")
+	_, err = db.Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s", dbName))
 	if err != nil {
 		return fmt.Errorf("failed to create database: %w", err)
 	}
 
-	dsn := "root:@tcp(127.0.0.1:3306)/go_commerce?parseTime=true&timeout=5s&readTimeout=5s&writeTimeout=5s"
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&timeout=5s&readTimeout=5s&writeTimeout=5s", dbUser, dbPassword, dbHost, dbPort, dbName)
 	DB, err = sql.Open("mysql", dsn)
 	if err != nil {
-		return fmt.Errorf("failed to connect to go_commerce: %w", err)
+		return fmt.Errorf("failed to connect to %s: %w", dbName, err)
 	}
 
 	if err = DB.Ping(); err != nil {

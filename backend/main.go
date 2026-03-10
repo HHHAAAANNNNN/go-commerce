@@ -9,12 +9,18 @@ import (
 
 	"github.com/HHHAAAANNNNN/go-commerce-backend/config"
 	"github.com/HHHAAAANNNNN/go-commerce-backend/routes"
+	"github.com/joho/godotenv"
 )
 
 func main() {
 	fmt.Println("╔═══════════════════════════════════════╗")
 	fmt.Println("║   GO-COMMERCE REST API SERVER        ║")
-	fmt.Println("╚═══════════════════════════════════════╝\n")
+	fmt.Println("╚═══════════════════════════════════════╝")
+
+	// Load .env file
+	if err := godotenv.Load(); err != nil {
+		log.Println("⚠️  No .env file found. Using default environment variables.")
+	}
 
 	// Connect to database
 	err := config.ConnectDatabase()
@@ -57,7 +63,7 @@ func main() {
 	fmt.Println("   DELETE /api/products/{id}")
 	fmt.Println("\n📁 Static Files:")
 	fmt.Println("   GET    /assets/{category}/{filename}")
-	fmt.Println("\n⏳ Server is running... Press Ctrl+C to stop\n")
+	fmt.Println("\n⏳ Server is running... Press Ctrl+C to stop")
 
 	log.Fatal(http.ListenAndServe(port, router))
 }

@@ -44,3 +44,18 @@ func ContentTypeJSON(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+// RecoverPanic - Catch panics and return 500 JSON
+func RecoverPanic(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if err := recover(); err != nil {
+				log.Printf("❌ PANIC RECOVERED: %v\n", err)
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(`{"success":false,"message":"Internal Server Error"}`))
+			}
+		}()
+		next.ServeHTTP(w, r)
+	})
+}

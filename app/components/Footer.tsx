@@ -77,26 +77,26 @@ export default function Footer() {
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-400/5 rounded-full filter blur-3xl"></div>
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-secondary-400/5 rounded-full filter blur-3xl"></div>
 
-      <div className="relative container mx-auto px-4 py-16">
+      <div className="relative container mx-auto px-4 py-10 sm:py-16">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-6 gap-6 sm:gap-8 mb-8 sm:mb-12">
           {/* Brand Section */}
-          <div className="lg:col-span-2">
-            <Link href="/" className="inline-block mb-4">
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-primary-400 to-secondary-400 bg-clip-text text-transparent">
+          <div className="col-span-2 lg:col-span-2">
+            <Link href="/" className="inline-block mb-3 sm:mb-4">
+              <h3 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary-400 to-secondary-400 bg-clip-text text-transparent">
                 Logo Ipsum
               </h3>
             </Link>
-            <p className="text-slate-400 mb-6 leading-relaxed">
+            <p className="text-slate-400 mb-4 sm:mb-6 leading-relaxed text-sm">
               Your trusted destination for premium tech products. Original, authentic, and guaranteed quality.
             </p>
             {/* Social Media */}
-            <div className="flex gap-4">
+            <div className="flex gap-3 sm:gap-4">
               {socialMedia.map((social) => (
                 <a
                   key={social.name}
                   href={social.href}
-                  className="w-10 h-10 flex items-center justify-center bg-slate-800/40 backdrop-blur-sm rounded-lg text-slate-400 hover:text-white hover:bg-primary-400/20 hover:border-primary-400/50 border border-slate-700/50 transition-all duration-300 hover:scale-110"
+                  className="w-10 h-10 sm:w-10 sm:h-10 flex items-center justify-center bg-slate-800/40 backdrop-blur-sm rounded-lg text-slate-400 hover:text-white hover:bg-primary-400/20 hover:border-primary-400/50 border border-slate-700/50 transition-all duration-300 hover:scale-110"
                   aria-label={social.name}
                 >
                   {social.icon}
@@ -175,12 +175,12 @@ export default function Footer() {
         </div>
 
         {/* Newsletter Section */}
-        <div className="border-t border-b border-slate-800/50 py-8 mb-8">
+        <div className="border-t border-b border-slate-800/50 py-6 sm:py-8 mb-6 sm:mb-8">
           <div className="max-w-2xl mx-auto text-center">
-            <h4 className="text-white font-semibold text-lg mb-2">
+            <h4 className="text-white font-semibold text-base sm:text-lg mb-2">
               Subscribe to Our Newsletter
             </h4>
-            <p className="text-slate-400 mb-4">
+            <p className="text-slate-400 text-sm mb-4">
               Get exclusive deals and latest updates delivered to your inbox
             </p>
             <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">

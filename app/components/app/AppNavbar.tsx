@@ -107,29 +107,30 @@ export default function AppNavbar({ onToggleSidebar }: AppNavbarProps) {
 
   return (
     <nav className="bg-[#0A0A0F] border-b border-slate-800/50 sticky top-0 z-50 backdrop-blur-sm">
-      <div className="px-6 py-4 flex items-center justify-between">
+      <div className="px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
         {/* Left Section: Logo + Menu Toggle */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
           <button
             onClick={onToggleSidebar}
             className="p-2 hover:bg-slate-800/40 rounded-lg transition-colors text-slate-400 hover:text-white"
+            aria-label="Toggle sidebar"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <div className="text-xl font-bold bg-gradient-to-r from-primary-400 to-secondary-400 bg-clip-text text-transparent">
+          <div className="text-lg md:text-xl font-bold bg-gradient-to-r from-primary-400 to-secondary-400 bg-clip-text text-transparent">
             [Logo Ipsum]
           </div>
         </div>
 
-        {/* Center: Page Title */}
-        <div className="text-white text-lg font-semibold">
+        {/* Center: Page Title — hidden on small mobile */}
+        <div className="hidden sm:block text-white text-base md:text-lg font-semibold truncate max-w-[200px] md:max-w-none">
           {getPageTitle()}
         </div>
 
         {/* Right: Cart + User Profile */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1 md:gap-3">
           {/* Cart Button — only visible for customers */}
           {user?.role !== 'admin' && (
           <Link

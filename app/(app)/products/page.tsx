@@ -152,15 +152,15 @@ export default function ProductsPage() {
 
       <div className="space-y-6">
         {/* Header with Add Button */}
-        <div className="relative bg-gradient-to-r from-primary-400/10 via-accent-400/10 to-secondary-400/10 border border-primary-400/20 rounded-2xl p-6 overflow-hidden">
+        <div className="relative bg-gradient-to-r from-primary-400/10 via-accent-400/10 to-secondary-400/10 border border-primary-400/20 rounded-2xl p-5 sm:p-6 overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary-400/10 rounded-full filter blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary-400/10 rounded-full filter blur-3xl"></div>
-          <div className="relative z-10 flex items-center justify-between">
+          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary-400 via-accent-400 to-secondary-400 bg-clip-text text-transparent mb-2">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary-400 via-accent-400 to-secondary-400 bg-clip-text text-transparent mb-1 sm:mb-2">
                 Browse Products
               </h1>
-              <p className="text-slate-300 text-lg">Discover amazing products with great deals!</p>
+              <p className="text-slate-300 text-sm sm:text-lg">Discover amazing products with great deals!</p>
             </div>
             <div className="flex items-center gap-3">
               {/* Add Button — admin only */}
@@ -196,15 +196,15 @@ export default function ProductsPage() {
           </div>
 
           {/* Filter Controls */}
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 md:gap-3">
             {/* Categories */}
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-slate-400 text-sm font-medium">Category:</span>
+              <span className="text-slate-400 text-xs md:text-sm font-medium">Category:</span>
               {categories.map((category) => (
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${selectedCategory === category
+                  className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all ${selectedCategory === category
                     ? "bg-gradient-to-r from-primary-400/20 to-secondary-400/20 text-primary-400 border border-primary-400/30"
                     : "bg-slate-800 text-slate-400 border border-slate-700 hover:text-white hover:border-slate-600"
                     }`}
@@ -214,7 +214,7 @@ export default function ProductsPage() {
               ))}
             </div>
 
-            <div className="h-6 w-px bg-slate-700"></div>
+            <div className="hidden md:block h-6 w-px bg-slate-700"></div>
 
             {/* Price Filter */}
             <button
@@ -235,7 +235,7 @@ export default function ProductsPage() {
               )}
             </button>
 
-            <div className="h-6 w-px bg-slate-700"></div>
+            <div className="hidden md:block h-6 w-px bg-slate-700"></div>
 
             {/* Sort */}
             <button
@@ -282,7 +282,7 @@ export default function ProductsPage() {
         </div>
 
         {/* Product Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
           {filteredProducts.map((product) => (
             <Link
               key={product.id}

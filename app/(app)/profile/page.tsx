@@ -194,17 +194,17 @@ export default function ProfilePage() {
       <div className="max-w-2xl mx-auto space-y-6 pb-10">
         {/* Header */}
         <div className="fade-up">
-          <h1 className="text-3xl font-bold text-white">Profile Settings</h1>
-          <p className="text-slate-400 mt-1 text-sm">Update your personal information and account security.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Profile Settings</h1>
+          <p className="text-slate-400 mt-1 text-xs sm:text-sm">Update your personal information and account security.</p>
         </div>
 
         {/* Avatar Section */}
-        <div className="fade-up bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6" style={{ animationDelay: "0.05s" }}>
-          <h2 className="text-white font-semibold mb-4">Profile Picture</h2>
-          <div className="flex items-center gap-6">
+        <div className="fade-up bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 sm:p-6" style={{ animationDelay: "0.05s" }}>
+          <h2 className="text-white font-semibold mb-3 sm:mb-4">Profile Picture</h2>
+          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
             {/* Avatar circle */}
             <div className="relative group">
-              <div className="w-24 h-24 rounded-full overflow-hidden ring-4 ring-primary-400/30 bg-gradient-to-br from-primary-400 to-secondary-400 flex items-center justify-center">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden ring-4 ring-primary-400/30 bg-gradient-to-br from-primary-400 to-secondary-400 flex items-center justify-center">
                 {avatarPreview ? (
                   <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
@@ -223,17 +223,17 @@ export default function ProfilePage() {
               </button>
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
             </div>
-            <div>
+            <div className="text-center sm:text-left">
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="px-4 py-2 bg-primary-500/20 hover:bg-primary-500/30 border border-primary-400/40 text-primary-300 rounded-lg text-sm font-medium transition-colors"
+                className="px-4 py-2 bg-primary-500/20 hover:bg-primary-500/30 border border-primary-400/40 text-primary-300 rounded-lg text-sm font-medium transition-colors min-h-[44px]"
               >
                 Change Photo
               </button>
               {avatarFile && (
                 <button
                   onClick={() => { setAvatarFile(null); setAvatarPreview(form.avatar_url ? `${BACKEND}${form.avatar_url}` : ""); }}
-                  className="ml-2 px-4 py-2 bg-slate-700/50 hover:bg-slate-700 text-slate-400 rounded-lg text-sm transition-colors"
+                  className="ml-2 px-4 py-2 bg-slate-700/50 hover:bg-slate-700 text-slate-400 rounded-lg text-sm transition-colors min-h-[44px]"
                 >
                   Remove
                 </button>
@@ -244,8 +244,8 @@ export default function ProfilePage() {
         </div>
 
         {/* Personal Info */}
-        <div className="fade-up bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6" style={{ animationDelay: "0.1s" }}>
-          <h2 className="text-white font-semibold mb-5">Personal Information</h2>
+        <div className="fade-up bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 sm:p-6" style={{ animationDelay: "0.1s" }}>
+          <h2 className="text-white font-semibold mb-4 sm:mb-5">Personal Information</h2>
           <div className="space-y-4">
             {/* Full Name */}
             <div>
@@ -310,7 +310,7 @@ export default function ProfilePage() {
         <div className="fade-up bg-slate-800/40 border border-slate-700/50 rounded-2xl overflow-hidden" style={{ animationDelay: "0.15s" }}>
           <button
             onClick={() => setChangePassword(!changePassword)}
-            className="w-full p-6 flex items-center justify-between text-left hover:bg-slate-700/20 transition-colors"
+            className="w-full p-4 sm:p-6 flex items-center justify-between text-left hover:bg-slate-700/20 transition-colors"
           >
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-amber-500/20 flex items-center justify-center">
@@ -332,7 +332,7 @@ export default function ProfilePage() {
           </button>
 
           {changePassword && (
-            <div className="px-6 pb-6 space-y-4 border-t border-slate-700/50">
+            <div className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-4 border-t border-slate-700/50">
               <div className="pt-4 space-y-4">
                 <div>
                   <label className="block text-slate-300 text-sm font-medium mb-2">Current Password</label>
@@ -377,18 +377,18 @@ export default function ProfilePage() {
         </div>
 
         {/* Action Buttons */}
-        <div className="fade-up flex items-center gap-3 justify-end" style={{ animationDelay: "0.2s" }}>
+        <div className="fade-up flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 sm:justify-end" style={{ animationDelay: "0.2s" }}>
           <button
             onClick={handleCancel}
             disabled={loading}
-            className="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white font-medium transition-all disabled:opacity-50"
+            className="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white text-sm font-medium transition-all disabled:opacity-50 min-h-[44px]"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={loading}
-            className="px-8 py-3 rounded-xl bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-400 hover:to-secondary-400 text-white font-semibold shadow-lg shadow-primary-500/25 transition-all disabled:opacity-60 flex items-center gap-2"
+            className="px-6 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-400 hover:to-secondary-400 text-white text-sm font-semibold shadow-lg shadow-primary-500/25 transition-all disabled:opacity-60 flex items-center justify-center gap-2 min-h-[44px]"
           >
             {loading ? (
               <>

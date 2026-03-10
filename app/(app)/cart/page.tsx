@@ -300,8 +300,8 @@ export default function CartPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-white">Shopping Cart</h1>
-          <div className="text-slate-400 text-sm mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Shopping Cart</h1>
+          <div className="text-slate-400 text-xs sm:text-sm mt-1">
             <Link href="/" className="hover:text-primary-400 transition-colors">Home</Link>
             <span className="mx-2">/</span>
             <span className="text-white">Shopping Cart</span>
@@ -380,7 +380,7 @@ export default function CartPage() {
                       : "border-slate-700/50 hover:border-slate-600/60"
                       }`}
                   >
-                    <div className="flex items-start gap-4 p-4">
+                    <div className="flex flex-wrap items-start gap-3 sm:gap-4 p-3 sm:p-4">
                       {/* Checkbox */}
                       <div className="pt-1 flex-shrink-0">
                         <label className="cursor-pointer" onClick={(e) => e.stopPropagation()}>
@@ -406,7 +406,7 @@ export default function CartPage() {
                         className="flex items-start gap-4 flex-1 min-w-0"
                       >
                         {/* Product Image */}
-                        <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-xl overflow-hidden bg-slate-800 flex-shrink-0 border border-slate-700/50">
+                        <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl overflow-hidden bg-slate-800 flex-shrink-0 border border-slate-700/50">
                           {imgUrl ? (
                             <img
                               src={imgUrl}
@@ -425,29 +425,29 @@ export default function CartPage() {
                         {/* Product Info */}
                         <div className="flex-1 min-w-0 py-1">
                           {/* Category Badge */}
-                          <span className="inline-block px-2.5 py-0.5 bg-primary-400/10 border border-primary-400/20 text-primary-400 rounded-full text-xs font-semibold mb-2">
+                          <span className="inline-block px-2 sm:px-2.5 py-0.5 bg-primary-400/10 border border-primary-400/20 text-primary-400 rounded-full text-[10px] sm:text-xs font-semibold mb-1.5 sm:mb-2">
                             {product.category}
                           </span>
 
                           {/* Product Name + Brand */}
-                          <h3 className="text-white font-semibold text-base md:text-lg leading-tight mb-1 truncate group-hover:text-primary-400 transition-colors">
+                          <h3 className="text-white font-semibold text-sm sm:text-base md:text-lg leading-tight mb-0.5 sm:mb-1 truncate group-hover:text-primary-400 transition-colors">
                             {product.name}
                           </h3>
                           {product.brand && (
-                            <p className="text-slate-400 text-sm mb-3">
+                            <p className="text-slate-400 text-xs sm:text-sm mb-2 sm:mb-3">
                               by <span className="text-slate-300 font-medium">{product.brand}</span>
                             </p>
                           )}
 
                           {/* Price */}
-                          <p className="text-lg font-bold bg-gradient-to-r from-primary-400 to-secondary-400 bg-clip-text text-transparent">
+                          <p className="text-base sm:text-lg font-bold bg-gradient-to-r from-primary-400 to-secondary-400 bg-clip-text text-transparent">
                             {formatPrice(product.price)}
                           </p>
                         </div>
                       </Link>
 
                       {/* Controls (Quantity + Remove) */}
-                      <div className="flex flex-col items-end gap-3 flex-shrink-0 pt-1">
+                      <div className="flex flex-col items-end gap-2 sm:gap-3 flex-shrink-0 pt-1">
                         {/* Remove Button */}
                         <button
                           onClick={(e) => {
@@ -455,7 +455,7 @@ export default function CartPage() {
                             e.stopPropagation();
                             removeItem(entry.productId);
                           }}
-                          className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
+                          className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center"
                           title="Remove item"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -471,7 +471,7 @@ export default function CartPage() {
                               e.stopPropagation();
                               updateQuantity(entry.productId, entry.quantity - 1);
                             }}
-                            className="px-2.5 py-1.5 text-slate-400 hover:text-white transition-colors"
+                            className="px-2.5 sm:px-2.5 py-2 sm:py-1.5 text-slate-400 hover:text-white transition-colors min-w-[40px] sm:min-w-0 flex items-center justify-center"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -486,7 +486,7 @@ export default function CartPage() {
                               e.stopPropagation();
                               updateQuantity(entry.productId, entry.quantity + 1);
                             }}
-                            className="px-2.5 py-1.5 text-slate-400 hover:text-white transition-colors"
+                            className="px-2.5 sm:px-2.5 py-2 sm:py-1.5 text-slate-400 hover:text-white transition-colors min-w-[40px] sm:min-w-0 flex items-center justify-center"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -502,10 +502,10 @@ export default function CartPage() {
 
             {/* ─── Order Summary Column ─── */}
             <div className="lg:col-span-1">
-              <div className="bg-slate-800/40 backdrop-blur-sm rounded-xl border border-slate-700/50 sticky top-24 overflow-hidden">
+              <div className="bg-slate-800/40 backdrop-blur-sm rounded-xl border border-slate-700/50 lg:sticky lg:top-24 overflow-hidden">
                 {/* Header */}
-                <div className="p-5 border-b border-slate-700/50">
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <div className="p-4 sm:p-5 border-b border-slate-700/50">
+                  <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
                     <svg className="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
@@ -513,7 +513,7 @@ export default function CartPage() {
                   </h2>
                 </div>
 
-                <div className="p-5 space-y-4">
+                <div className="p-4 sm:p-5 space-y-4">
                   {/* Selected Items List */}
                   {selectedEntries.length === 0 ? (
                     <div className="text-center py-6">
@@ -733,15 +733,15 @@ export default function CartPage() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
           <div
             ref={topupModalRef}
-            className="bg-slate-900 border border-slate-700/50 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+            className="bg-slate-900 border border-slate-700/50 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden mx-2 sm:mx-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="p-6 border-b border-slate-700/50 bg-gradient-to-r from-primary-400/10 to-secondary-400/10">
+            <div className="p-4 sm:p-6 border-b border-slate-700/50 bg-gradient-to-r from-primary-400/10 to-secondary-400/10">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-white font-bold text-lg">Top Up Balance</h3>
-                  <p className="text-slate-400 text-sm mt-0.5">Saldo saat ini:&nbsp;
+                  <h3 className="text-white font-bold text-base sm:text-lg">Top Up Balance</h3>
+                  <p className="text-slate-400 text-xs sm:text-sm mt-0.5">Saldo saat ini:&nbsp;
                     <span className="text-primary-400 font-semibold">{formatPrice(balance)}</span>
                   </p>
                 </div>
@@ -753,16 +753,16 @@ export default function CartPage() {
               </div>
             </div>
 
-            <div className="p-6 space-y-5">
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
               {/* Payment method */}
               <div>
-                <label className="block text-slate-300 text-sm font-medium mb-3">Metode Pembayaran</label>
+                <label className="block text-slate-300 text-xs sm:text-sm font-medium mb-2 sm:mb-3">Metode Pembayaran</label>
                 <div className="grid grid-cols-2 gap-2">
                   {PAYMENT_METHODS.map(m => (
                     <button
                       key={m.id}
                       onClick={() => setPaymentMethod(m.id)}
-                      className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-all ${paymentMethod === m.id
+                      className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border text-xs sm:text-sm font-medium transition-all min-h-[44px] ${paymentMethod === m.id
                         ? "bg-primary-400/20 border-primary-400/60 text-white shadow-md shadow-primary-400/20"
                         : "bg-slate-800/60 border-slate-700/50 text-slate-400 hover:border-slate-600"
                         }`}
@@ -803,17 +803,17 @@ export default function CartPage() {
             </div>
 
             {/* Modal footer */}
-            <div className="px-6 pb-6 flex gap-3">
+            <div className="px-4 sm:px-6 pb-4 sm:pb-6 flex gap-2 sm:gap-3">
               <button
                 onClick={() => { setShowTopup(false); setTopupAmount(""); }}
-                className="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-medium transition-all"
+                className="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-sm font-medium transition-all min-h-[44px]"
               >
                 Cancel
               </button>
               <button
                 onClick={handleTopup}
                 disabled={topupLoading || !topupAmount}
-                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-400 hover:to-secondary-400 text-white font-bold shadow-lg shadow-primary-500/25 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-400 hover:to-secondary-400 text-white text-sm font-bold shadow-lg shadow-primary-500/25 transition-all disabled:opacity-50 flex items-center justify-center gap-2 min-h-[44px]"
               >
                 {topupLoading ? (
                   <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">

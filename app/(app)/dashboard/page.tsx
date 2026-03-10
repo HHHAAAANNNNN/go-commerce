@@ -405,20 +405,20 @@ export default function DashboardPage() {
       )}
 
       {/* Welcome Banner */}
-      <div className="relative bg-gradient-to-r from-primary-400/10 via-accent-400/10 to-secondary-400/10 border border-primary-400/20 rounded-2xl p-8 overflow-hidden">
+      <div className="relative bg-gradient-to-r from-primary-400/10 via-accent-400/10 to-secondary-400/10 border border-primary-400/20 rounded-2xl p-5 sm:p-8 overflow-hidden">
         {/* Background decoration */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary-400/10 rounded-full filter blur-3xl"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary-400/10 rounded-full filter blur-3xl"></div>
 
-        <div className="relative z-10 flex items-center justify-between">
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <p className="text-slate-400 text-sm mb-1">{greeting},</p>
-            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary-400 via-accent-400 to-secondary-400 bg-clip-text text-transparent mb-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary-400 via-accent-400 to-secondary-400 bg-clip-text text-transparent mb-2">
               {user.full_name}
             </h1>
-            <p className="text-slate-300 text-lg">Welcome back to your dashboard!</p>
+            <p className="text-slate-300 text-base sm:text-lg">Welcome back to your dashboard!</p>
           </div>
-          <div className="hidden md:flex flex-col items-end gap-2">
+          <div className="flex flex-col items-start sm:items-end gap-2">
             {role === 'admin' ? (
               <>
                 <div className="px-4 py-2 bg-red-500/20 border border-red-400/30 rounded-full">
@@ -686,32 +686,32 @@ export default function DashboardPage() {
       )}
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {/* Total Orders */}
-        <div className="bg-gradient-to-br from-primary-400/10 to-primary-400/5 border border-primary-400/20 rounded-xl p-6 hover:border-primary-400/40 transition-all duration-300 group">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-primary-400/10 rounded-lg group-hover:scale-110 transition-transform">
-              <svg className="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-gradient-to-br from-primary-400/10 to-primary-400/5 border border-primary-400/20 rounded-xl p-4 md:p-6 hover:border-primary-400/40 transition-all duration-300 group">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <div className="p-2 md:p-3 bg-primary-400/10 rounded-lg group-hover:scale-110 transition-transform">
+              <svg className="w-5 h-5 md:w-6 md:h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
             </div>
-            <span className="text-primary-400/60 text-xs font-semibold">ALL TIME</span>
+            <span className="text-primary-400/60 text-[10px] md:text-xs font-semibold">ALL TIME</span>
           </div>
-          <h3 className="text-3xl font-bold text-white mb-1">{stats?.total_orders ?? 0}</h3>
+          <h3 className="text-2xl md:text-3xl font-bold text-white mb-1">{stats?.total_orders ?? 0}</h3>
           <p className="text-slate-400 text-sm">Total Orders</p>
         </div>
 
         {/* Pending Orders */}
-        <div className="bg-gradient-to-br from-amber-400/10 to-amber-400/5 border border-amber-400/20 rounded-xl p-6 hover:border-amber-400/40 transition-all duration-300 group">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-amber-400/10 rounded-lg group-hover:scale-110 transition-transform">
-              <svg className="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-gradient-to-br from-amber-400/10 to-amber-400/5 border border-amber-400/20 rounded-xl p-4 md:p-6 hover:border-amber-400/40 transition-all duration-300 group">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <div className="p-2 md:p-3 bg-amber-400/10 rounded-lg group-hover:scale-110 transition-transform">
+              <svg className="w-5 h-5 md:w-6 md:h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <span className="text-amber-400/60 text-xs font-semibold">PENDING</span>
+            <span className="text-amber-400/60 text-[10px] md:text-xs font-semibold">PENDING</span>
           </div>
-          <h3 className="text-3xl font-bold text-white mb-1">{stats?.pending_orders ?? 0}</h3>
+          <h3 className="text-2xl md:text-3xl font-bold text-white mb-1">{stats?.pending_orders ?? 0}</h3>
           <p className="text-slate-400 text-sm">Pending Orders</p>
           <a href="/orders" className="mt-3 inline-block text-amber-400 text-xs font-semibold hover:text-amber-300 transition-colors">
             Review Now →
@@ -719,16 +719,16 @@ export default function DashboardPage() {
         </div>
 
         {/* Completed Orders */}
-        <div className="bg-gradient-to-br from-green-400/10 to-green-400/5 border border-green-400/20 rounded-xl p-6 hover:border-green-400/40 transition-all duration-300 group">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-green-400/10 rounded-lg group-hover:scale-110 transition-transform">
-              <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-gradient-to-br from-green-400/10 to-green-400/5 border border-green-400/20 rounded-xl p-4 md:p-6 hover:border-green-400/40 transition-all duration-300 group">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <div className="p-2 md:p-3 bg-green-400/10 rounded-lg group-hover:scale-110 transition-transform">
+              <svg className="w-5 h-5 md:w-6 md:h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <span className="text-green-400/60 text-xs font-semibold">SUCCESS</span>
+            <span className="text-green-400/60 text-[10px] md:text-xs font-semibold">SUCCESS</span>
           </div>
-          <h3 className="text-3xl font-bold text-white mb-1">{stats?.completed_orders ?? 0}</h3>
+          <h3 className="text-2xl md:text-3xl font-bold text-white mb-1">{stats?.completed_orders ?? 0}</h3>
           <p className="text-slate-400 text-sm">Completed Orders</p>
           <div className="mt-3 flex items-center gap-1 text-xs">
             <span className="text-slate-500">
@@ -740,16 +740,16 @@ export default function DashboardPage() {
         </div>
 
         {/* Total Spent */}
-        <div className="bg-gradient-to-br from-secondary-400/10 to-secondary-400/5 border border-secondary-400/20 rounded-xl p-6 hover:border-secondary-400/40 transition-all duration-300 group">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-secondary-400/10 rounded-lg group-hover:scale-110 transition-transform">
-              <svg className="w-6 h-6 text-secondary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-gradient-to-br from-secondary-400/10 to-secondary-400/5 border border-secondary-400/20 rounded-xl p-4 md:p-6 hover:border-secondary-400/40 transition-all duration-300 group">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <div className="p-2 md:p-3 bg-secondary-400/10 rounded-lg group-hover:scale-110 transition-transform">
+              <svg className="w-5 h-5 md:w-6 md:h-6 text-secondary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <span className="text-secondary-400/60 text-xs font-semibold">THIS YEAR</span>
+            <span className="text-secondary-400/60 text-[10px] md:text-xs font-semibold">THIS YEAR</span>
           </div>
-          <h3 className="text-3xl font-bold text-white mb-1">
+          <h3 className="text-2xl md:text-3xl font-bold text-white mb-1">
             {formatIDR(totalSpent)}
           </h3>
           <p className="text-slate-400 text-sm">{role === 'admin' ? 'Total Revenue' : 'Total Spent'}</p>
@@ -829,8 +829,8 @@ export default function DashboardPage() {
           </div>
 
           {/* Orders Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div className="overflow-x-auto -mx-6 px-6">
+            <table className="w-full min-w-[500px]">
               <thead>
                 <tr className="border-b border-slate-700/50">
                   <th className="text-left text-slate-400 text-xs font-semibold uppercase pb-3">Order ID</th>

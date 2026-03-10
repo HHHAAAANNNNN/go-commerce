@@ -222,12 +222,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         {/* Floating Back to Products — fixed, stays visible on scroll */}
         <Link
           href="/products"
-          className="fixed top-[85px] left-72 z-50 inline-flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 hover:border-slate-500 text-slate-300 hover:text-white rounded-xl shadow-2xl shadow-black/40 hover:shadow-black/60 hover:scale-105 active:scale-95 backdrop-blur-sm transition-all duration-200 group"
+          className="fixed top-[85px] left-4 md:left-72 z-50 inline-flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 hover:border-slate-500 text-slate-300 hover:text-white rounded-xl shadow-2xl shadow-black/40 hover:shadow-black/60 hover:scale-105 active:scale-95 backdrop-blur-sm transition-all duration-200 group"
         >
           <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          Back to Products
+          <span className="hidden sm:inline">Back to Products</span>
         </Link>
 
         {/* Product Details */}
@@ -273,7 +273,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               </button>
               )}
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-white">{product.name}</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">{product.name}</h1>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
@@ -287,8 +287,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 {product.total_reviews > 0 ? `(${product.total_reviews} review${product.total_reviews !== 1 ? 's' : ''})` : '(No reviews yet)'}
               </span>
             </div>
-            <div className="border-t border-b border-slate-700 py-6">
-              <p className="text-4xl font-bold bg-gradient-to-r from-primary-400 to-secondary-400 bg-clip-text text-transparent">{formatPrice(product.price)}</p>
+            <div className="border-t border-b border-slate-700 py-4 md:py-6">
+              <p className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary-400 to-secondary-400 bg-clip-text text-transparent">{formatPrice(product.price)}</p>
               <p className="text-slate-400 text-sm mt-1">Inclusive of all taxes</p>
             </div>
             {/* Quantity + Add to Cart — customer only */}
@@ -334,7 +334,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         <div className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden">
           <div className="flex border-b border-slate-700">
             {[{ id: 'description', label: 'Description' }, { id: 'specs', label: 'Specifications' }, { id: 'reviews', label: 'Reviews' }].map((tab) => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id as typeof activeTab)} className={`flex-1 px-6 py-4 font-semibold transition-all ${activeTab === tab.id ? 'bg-primary-400/10 text-white border-b-2 border-primary-400' : 'text-slate-400 hover:text-white hover:bg-slate-700/50'}`}>
+              <button key={tab.id} onClick={() => setActiveTab(tab.id as typeof activeTab)} className={`flex-1 px-3 md:px-6 py-3 md:py-4 text-sm md:text-base font-semibold transition-all ${activeTab === tab.id ? 'bg-primary-400/10 text-white border-b-2 border-primary-400' : 'text-slate-400 hover:text-white hover:bg-slate-700/50'}`}>
                 {tab.label}
               </button>
             ))}

@@ -99,15 +99,15 @@ function AddVoucherModal({ onClose, onAdded }: { onClose: () => void; onAdded: (
       className="fixed inset-0 top-[73px] bg-black/70 z-40 flex items-center justify-center p-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-lg max-h-[calc(100vh-73px-2rem)] overflow-y-auto">
-        <div className="sticky top-0 bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center justify-between z-10">
-          <h2 className="text-xl font-bold text-white">Add Voucher</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white p-1 hover:bg-slate-800 rounded-lg transition-colors">
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-lg max-h-[calc(100vh-73px-2rem)] overflow-y-auto mx-2 sm:mx-auto">
+        <div className="sticky top-0 bg-slate-900 border-b border-slate-700 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-10">
+          <h2 className="text-lg sm:text-xl font-bold text-white">Add Voucher</h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-white p-2 hover:bg-slate-800 rounded-lg transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4">
           {error && <div className="bg-amber-500/10 border border-amber-500/30 text-amber-400 px-4 py-3 rounded-lg text-sm">{error}</div>}
 
           {/* Code */}
@@ -154,7 +154,7 @@ function AddVoucherModal({ onClose, onAdded }: { onClose: () => void; onAdded: (
           </div>
 
           {/* Discount value */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className={labelCls}>{form.type === 'percentage' ? 'Persentase (%) *' : 'Jumlah Diskon (Rp) *'}</label>
                 <div className="relative">
@@ -183,7 +183,7 @@ function AddVoucherModal({ onClose, onAdded }: { onClose: () => void; onAdded: (
           </div>
 
           {/* Min purchase / Usage limit / Duration */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className={labelCls}>Min. Pembelian (Rp)</label>
               <input type="number" min="0" step="1000" value={form.min_purchase}
@@ -206,13 +206,13 @@ function AddVoucherModal({ onClose, onAdded }: { onClose: () => void; onAdded: (
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 pt-2 border-t border-slate-700">
+          <div className="flex gap-2 sm:gap-3 pt-2 border-t border-slate-700">
             <button type="button" onClick={onClose}
-              className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium transition-colors">
+              className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-medium transition-colors min-h-[44px]">
               Batal
             </button>
             <button type="submit" disabled={loading}
-              className="flex-1 py-3 bg-gradient-to-r from-primary-400 to-secondary-400 hover:from-primary-500 hover:to-secondary-500 disabled:opacity-60 text-white rounded-lg font-semibold transition-all">
+              className="flex-1 py-3 bg-gradient-to-r from-primary-400 to-secondary-400 hover:from-primary-500 hover:to-secondary-500 disabled:opacity-60 text-white rounded-lg text-sm font-semibold transition-all min-h-[44px]">
               {loading ? 'Menyimpan...' : '+ Add Voucher'}
             </button>
           </div>
@@ -255,16 +255,16 @@ export default function VouchersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="relative bg-gradient-to-r from-primary-400/10 via-accent-400/10 to-secondary-400/10 border border-primary-400/20 rounded-2xl p-8 overflow-hidden">
+      <div className="relative bg-gradient-to-r from-primary-400/10 via-accent-400/10 to-secondary-400/10 border border-primary-400/20 rounded-2xl p-5 sm:p-8 overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary-400/10 rounded-full filter blur-3xl" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary-400/10 rounded-full filter blur-3xl" />
-        <div className="relative z-10 flex items-center justify-between flex-wrap gap-4">
+        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary-400 via-accent-400 to-secondary-400 bg-clip-text text-transparent mb-2">Vouchers</h1>
-            <p className="text-slate-300">Manage all vouchers in the system.</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary-400 via-accent-400 to-secondary-400 bg-clip-text text-transparent mb-1 sm:mb-2">Vouchers</h1>
+            <p className="text-slate-300 text-sm sm:text-base">Manage all vouchers in the system.</p>
           </div>
           <button onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-primary-400 to-secondary-400 hover:from-primary-500 hover:to-secondary-500 text-white rounded-xl font-semibold shadow-lg shadow-primary-400/25 hover:scale-105 active:scale-95 transition-all">
+            className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-gradient-to-r from-primary-400 to-secondary-400 hover:from-primary-500 hover:to-secondary-500 text-white rounded-xl text-sm sm:text-base font-semibold shadow-lg shadow-primary-400/25 hover:scale-105 active:scale-95 transition-all min-h-[44px]">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
             Add Voucher
           </button>
@@ -272,32 +272,32 @@ export default function VouchersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         {[
           { label: 'Total Vouchers', value: vouchers.length, colorClass: 'primary' },
           { label: 'Active', value: active.length, colorClass: 'green' },
           { label: 'Expired', value: expired.length, colorClass: 'slate' },
         ].map(({ label, value, colorClass }) => (
-          <div key={label} className={`bg-${colorClass}-400/5 border border-${colorClass}-400/20 rounded-xl p-4 flex items-center gap-3`}>
-            <div className={`p-2 bg-${colorClass}-400/10 rounded-lg`}>
+          <div key={label} className={`bg-${colorClass}-400/5 border border-${colorClass}-400/20 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-center sm:items-center gap-1.5 sm:gap-3`}>
+            <div className={`p-1.5 sm:p-2 bg-${colorClass}-400/10 rounded-lg hidden sm:block`}>
               <svg className={`w-5 h-5 text-${colorClass}-400`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
               </svg>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-white">{value}</p>
-              <p className="text-slate-400 text-sm">{label}</p>
+            <div className="text-center sm:text-left">
+              <p className="text-xl sm:text-2xl font-bold text-white">{value}</p>
+              <p className="text-slate-400 text-[10px] sm:text-sm">{label}</p>
             </div>
           </div>
         ))}
       </div>
 
       {/* Filters */}
-      <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4">
-        <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-3 sm:p-4">
+        <div className="flex items-center justify-between flex-wrap gap-2 sm:gap-3">
           <div className="flex items-center gap-2">
             <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
-            <span className="text-white font-semibold text-sm">Filter</span>
+            <span className="text-white font-semibold text-xs sm:text-sm">Filter</span>
           </div>
           <div className="flex gap-2 flex-wrap">
             {[
@@ -306,7 +306,7 @@ export default function VouchersPage() {
               { v: 'fixed_amount', l: 'Fixed Amount' },
             ].map(({ v, l }) => (
               <button key={v} onClick={() => setSelectedCategory(v as VoucherCategory)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${selectedCategory === v
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all min-h-[36px] sm:min-h-0 ${selectedCategory === v
                     ? 'bg-gradient-to-r from-primary-400/20 to-secondary-400/20 text-white border border-primary-400/40'
                     : 'bg-slate-700/30 text-slate-400 hover:text-white hover:bg-slate-700/50'
                   }`}>{l}</button>

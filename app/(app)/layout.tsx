@@ -18,6 +18,7 @@ export default function AppLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [authed, setAuthed] = useState(false);
 
   useEffect(() => {
@@ -46,21 +47,44 @@ export default function AppLayout({
     }
   }, [router, pathname]);
 
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setIsMobileDrawerOpen(false);
+  }, [pathname]);
+
+  const handleToggleSidebar = () => {
+    // On mobile: toggle drawer. On desktop: toggle collapse.
+    if (window.innerWidth < 768) {
+      setIsMobileDrawerOpen(!isMobileDrawerOpen);
+    } else {
+      setIsSidebarCollapsed(!isSidebarCollapsed);
+    }
+  };
+
   if (!authed) return null;
 
   return (
     <div className="min-h-screen bg-[#0A0A0F]">
-      <AppNavbar onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
+      <AppNavbar onToggleSidebar={handleToggleSidebar} />
       
-      {/* Fixed Sidebar */}
-      <div className="fixed left-0 top-[73px] h-[calc(100vh-73px)] z-30">
+      {/* Sidebar — hidden on mobile, fixed on desktop */}
+      <div className="hidden md:block fixed left-0 top-[73px] h-[calc(100vh-73px)] z-30">
         <Sidebar isCollapsed={isSidebarCollapsed} />
       </div>
+
+      {/* Mobile Sidebar Drawer */}
+      <div className="md:hidden">
+        <Sidebar
+          isCollapsed={false}
+          isMobileOpen={isMobileDrawerOpen}
+          onMobileClose={() => setIsMobileDrawerOpen(false)}
+        />
+      </div>
       
-      {/* Main Content with margin to avoid overlap */}
+      {/* Main Content — no margin on mobile, sidebar margin on desktop */}
       <main 
-        className={`pb-6 px-6 transition-all duration-300 ${
-          isSidebarCollapsed ? "ml-20" : "ml-64"
+        className={`pb-6 px-4 md:px-6 transition-all duration-300 ${
+          isSidebarCollapsed ? "md:ml-20" : "md:ml-64"
         }`}
         style={{ marginTop: '20px' }}
       >

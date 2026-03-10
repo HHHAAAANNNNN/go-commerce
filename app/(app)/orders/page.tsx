@@ -263,25 +263,25 @@ export default function OrdersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">Order History</h1>
-          <p className="text-slate-400 mt-1">{orders.length} total order{orders.length !== 1 ? "s" : ""}</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Order History</h1>
+          <p className="text-slate-400 mt-1 text-sm sm:text-base">{orders.length} total order{orders.length !== 1 ? "s" : ""}</p>
         </div>
       </div>
 
       {/* Filter Tabs + Search */}
-      <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-4">
-        <div className="flex flex-wrap gap-2">
+      <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-3 sm:p-4 space-y-3 sm:space-y-4">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2">
           {STATUS_TABS.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${activeTab === tab
+              className={`px-2.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all border ${activeTab === tab
                   ? "bg-gradient-to-r from-primary-400/20 to-secondary-400/20 border-primary-400/40 text-primary-400"
                   : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white hover:border-slate-600"
                 }`}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              <span className="ml-1.5 text-xs opacity-60">({countFor(tab)})</span>
+              <span className="ml-1 sm:ml-1.5 text-[10px] sm:text-xs opacity-60">({countFor(tab)})</span>
             </button>
           ))}
         </div>
@@ -328,40 +328,40 @@ export default function OrdersPage() {
           {filtered.map((order) => (
             <div
               key={order.id}
-              className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-5 hover:border-slate-600 transition-all"
+              className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 sm:p-5 hover:border-slate-600 transition-all"
             >
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
                 <div className="flex-1 min-w-0 space-y-2">
                   {/* Top row */}
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <span className="font-bold text-white text-sm font-mono tracking-wide">{order.id}</span>
+                  <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                    <span className="font-bold text-white text-xs sm:text-sm font-mono tracking-wide">{order.id}</span>
                     {role === 'admin' && order.user_name && (
                       <span className="text-slate-400 text-xs">
                         👤 {order.user_name}
                       </span>
                     )}
                     <span
-                      className={`px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${STATUS_STYLE[order.status] ?? "bg-slate-700 border border-slate-600 text-slate-300"
+                      className={`px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold capitalize ${STATUS_STYLE[order.status] ?? "bg-slate-700 border border-slate-600 text-slate-300"
                         }`}
                     >
                       {order.status}
                     </span>
-                    <span className="text-slate-500 text-xs">{order.created_at}</span>
+                    <span className="text-slate-500 text-[10px] sm:text-xs">{order.created_at}</span>
                   </div>
 
                   {/* Products */}
-                  <p className="text-slate-300 text-sm truncate">{order.products}</p>
+                  <p className="text-slate-300 text-xs sm:text-sm truncate">{order.products}</p>
 
                   {/* Bottom row */}
-                  <div className="flex items-center gap-4 text-sm">
+                  <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm">
                     <span className="text-slate-400">
                       {order.total_qty} item{order.total_qty > 1 ? "s" : ""}
                     </span>
                     {order.discount > 0 ? (
-                      <span className="flex items-center gap-2">
-                        <span className="text-slate-500 line-through text-xs">{formatIDR(order.subtotal)}</span>
+                      <span className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                        <span className="text-slate-500 line-through text-[10px] sm:text-xs">{formatIDR(order.subtotal)}</span>
                         <span className="text-white font-semibold">{formatIDR(order.total)}</span>
-                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-green-500/15 border border-green-500/30 text-green-400 font-medium">-{formatIDR(order.discount)}</span>
+                        <span className="text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full bg-green-500/15 border border-green-500/30 text-green-400 font-medium">-{formatIDR(order.discount)}</span>
                       </span>
                     ) : (
                       <span className="text-white font-semibold">{formatIDR(order.total)}</span>
@@ -369,10 +369,10 @@ export default function OrdersPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2 flex-shrink-0">
+                <div className="flex flex-row sm:flex-col gap-2 flex-shrink-0">
                   <button
                     onClick={() => openDetail(order.id)}
-                    className="px-4 py-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 hover:border-slate-500 text-white text-sm font-medium rounded-xl transition-all"
+                    className="flex-1 sm:flex-none px-4 py-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 hover:border-slate-500 text-white text-xs sm:text-sm font-medium rounded-xl transition-all min-h-[44px] sm:min-h-0"
                   >
                     View Detail
                   </button>
@@ -380,12 +380,12 @@ export default function OrdersPage() {
                     <button
                       onClick={() => openRatingModal(order.id)}
                       disabled={order.has_reviewed || reviewedOrders.has(order.id)}
-                      className={`px-4 py-2 border text-sm font-medium rounded-xl transition-all ${order.has_reviewed || reviewedOrders.has(order.id)
+                      className={`flex-1 sm:flex-none px-4 py-2 border text-xs sm:text-sm font-medium rounded-xl transition-all min-h-[44px] sm:min-h-0 ${order.has_reviewed || reviewedOrders.has(order.id)
                           ? "bg-slate-800 border-slate-700 text-slate-500 cursor-not-allowed"
                           : "bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 hover:border-amber-500/60 text-amber-400"
                         }`}
                     >
-                      {order.has_reviewed || reviewedOrders.has(order.id) ? "✓ Reviewed" : "⭐ Rate Products"}
+                      {order.has_reviewed || reviewedOrders.has(order.id) ? "✓ Reviewed" : "⭐ Rate"}
                     </button>
                   )}
                 </div>
@@ -402,18 +402,18 @@ export default function OrdersPage() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setShowModal(false)}
           />
-          <div className="relative bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+          <div className="relative bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg max-h-[90vh] sm:max-h-[85vh] flex flex-col overflow-hidden shadow-2xl mx-2 sm:mx-auto">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-5 border-b border-slate-700/80">
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-700/80">
               <div>
-                <h2 className="text-white font-bold text-lg">Order Detail</h2>
+                <h2 className="text-white font-bold text-base sm:text-lg">Order Detail</h2>
                 {selectedOrder && (
-                  <p className="text-slate-400 text-xs mt-0.5 font-mono">{selectedOrder.order.order_number}</p>
+                  <p className="text-slate-400 text-[10px] sm:text-xs mt-0.5 font-mono truncate max-w-[200px] sm:max-w-none">{selectedOrder.order.order_number}</p>
                 )}
               </div>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-slate-400 hover:text-white transition-colors p-1"
+                className="text-slate-400 hover:text-white transition-colors p-2 -mr-1"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -422,7 +422,7 @@ export default function OrdersPage() {
             </div>
 
             {/* Modal Body */}
-            <div className="overflow-y-auto flex-1 p-5 space-y-4">
+            <div className="overflow-y-auto flex-1 p-4 sm:p-5 space-y-3 sm:space-y-4">
               {detailLoading ? (
                 <div className="flex justify-center py-10">
                   <div className="w-8 h-8 border-4 border-primary-400 border-t-transparent rounded-full animate-spin" />
@@ -501,15 +501,15 @@ export default function OrdersPage() {
             {!detailLoading && selectedOrder && (() => {
               const statusNext = role === 'admin' ? STATUS_NEXT_ADMIN : STATUS_NEXT_CUSTOMER;
               return (
-                <div className="border-t border-slate-700/80 p-4">
+                <div className="border-t border-slate-700/80 p-3 sm:p-4">
                   {statusNext[selectedOrder.order.status]?.length > 0 ? (
-                    <div className="flex gap-3">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                       {statusNext[selectedOrder.order.status].map((action) => (
                         <button
                           key={action.next}
                           onClick={() => updateOrderStatus(selectedOrder.order.order_number, action.next)}
                           disabled={updatingStatus}
-                          className={`flex-1 py-2 rounded-xl text-sm font-semibold border transition-all disabled:opacity-50 disabled:cursor-not-allowed ${action.style}`}
+                          className={`flex-1 py-2.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold border transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] sm:min-h-0 ${action.style}`}
                         >
                           {updatingStatus ? "Updating..." : action.label}
                         </button>
@@ -534,16 +534,16 @@ export default function OrdersPage() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setRatingModal({ open: false, orderNumber: "", items: [] })}
           />
-          <div className="relative bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+          <div className="relative bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg max-h-[90vh] sm:max-h-[85vh] flex flex-col overflow-hidden shadow-2xl mx-2 sm:mx-auto">
             {/* Header */}
-            <div className="flex items-center justify-between p-5 border-b border-slate-700/80">
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-700/80">
               <div>
-                <h2 className="text-white font-bold text-lg">Rate Your Products</h2>
-                <p className="text-slate-400 text-xs mt-0.5">Share your experience with each item</p>
+                <h2 className="text-white font-bold text-base sm:text-lg">Rate Your Products</h2>
+                <p className="text-slate-400 text-[10px] sm:text-xs mt-0.5">Share your experience with each item</p>
               </div>
               <button
                 onClick={() => setRatingModal({ open: false, orderNumber: "", items: [] })}
-                className="text-slate-400 hover:text-white transition-colors p-1"
+                className="text-slate-400 hover:text-white transition-colors p-2 -mr-1"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -552,7 +552,7 @@ export default function OrdersPage() {
             </div>
 
             {/* Product list */}
-            <div className="overflow-y-auto flex-1 p-5 space-y-5">
+            <div className="overflow-y-auto flex-1 p-4 sm:p-5 space-y-4 sm:space-y-5">
               {ratingModal.items.map((item) => {
                 const src = imageSrc(item.product_image);
                 const currentRating = ratings[item.product_id] ?? 0;
@@ -586,10 +586,10 @@ export default function OrdersPage() {
                             onMouseEnter={() => setHoverRatings((prev) => ({ ...prev, [item.product_id]: star }))}
                             onMouseLeave={() => setHoverRatings((prev) => { const n = { ...prev }; delete n[item.product_id]; return n; })}
                             onClick={() => setRatings((prev) => ({ ...prev, [item.product_id]: star }))}
-                            className="transition-transform hover:scale-110 active:scale-95"
+                            className="transition-transform hover:scale-110 active:scale-95 p-0.5"
                           >
                             <svg
-                              className={`w-8 h-8 transition-colors ${star <= displayRating ? "text-amber-400" : "text-slate-600"}`}
+                              className={`w-7 h-7 sm:w-8 sm:h-8 transition-colors ${star <= displayRating ? "text-amber-400" : "text-slate-600"}`}
                               viewBox="0 0 20 20"
                               fill={star <= displayRating ? "currentColor" : "none"}
                               stroke="currentColor"
@@ -621,17 +621,17 @@ export default function OrdersPage() {
             </div>
 
             {/* Footer */}
-            <div className="border-t border-slate-700/80 p-4 flex gap-3">
+            <div className="border-t border-slate-700/80 p-3 sm:p-4 flex gap-2 sm:gap-3">
               <button
                 onClick={() => setRatingModal({ open: false, orderNumber: "", items: [] })}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-slate-600 text-slate-300 hover:bg-slate-800 transition-all"
+                className="flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-semibold border border-slate-600 text-slate-300 hover:bg-slate-800 transition-all min-h-[44px] sm:min-h-0"
               >
                 Cancel
               </button>
               <button
                 onClick={submitRatings}
                 disabled={submittingRating || Object.keys(ratings).length === 0}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-primary-400 to-secondary-400 hover:from-primary-500 hover:to-secondary-500 text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-gradient-to-r from-primary-400 to-secondary-400 hover:from-primary-500 hover:to-secondary-500 text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed min-h-[44px] sm:min-h-0"
               >
                 {submittingRating ? "Saving..." : "Save Ratings"}
               </button>

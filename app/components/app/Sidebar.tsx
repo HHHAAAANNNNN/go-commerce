@@ -6,9 +6,11 @@ import { useEffect, useState } from "react";
 
 interface SidebarProps {
   isCollapsed: boolean;
+  isMobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
-export default function Sidebar({ isCollapsed }: SidebarProps) {
+export default function Sidebar({ isCollapsed, isMobileOpen = false, onMobileClose }: SidebarProps) {
   const pathname = usePathname();
   const [role, setRole] = useState<string>("customer");
 
@@ -23,6 +25,11 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
       setRole("customer");
     }
   }, []);
+
+  // Close mobile drawer on route change
+  useEffect(() => {
+    onMobileClose?.();
+  }, [pathname]);
 
   const isAdmin = role === "admin";
 
@@ -82,11 +89,29 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
   const menuItems = allMenuItems.filter(item => item.roles.includes(role));
 
   return (
-    <aside 
-      className={`bg-[#0A0A0F] border-r border-slate-800/50 h-full transition-all duration-300 flex flex-col ${
-        isCollapsed ? "w-20" : "w-64"
-      }`}
-    >
+    <>
+      {/* Mobile overlay backdrop */}
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+          onClick={onMobileClose}
+        />
+      )}
+
+      <aside
+        className={`
+          bg-[#0A0A0F] border-r border-slate-800/50 h-full transition-all duration-300 flex flex-col
+          
+          /* Mobile: slide-out drawer */
+          fixed top-[73px] left-0 z-50
+          ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
+          w-64
+          
+          /* Desktop: static sidebar controlled by isCollapsed */
+          md:translate-x-0 md:static md:z-auto
+          ${isCollapsed ? "md:w-20" : "md:w-64"}
+        `}
+      >
       {isAdmin && (
         <div className={`px-4 pt-4 ${isCollapsed ? "text-center" : ""}`}>
           <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary-400/10 border border-primary-400/20 text-primary-400 rounded-full text-xs font-semibold ${isCollapsed ? "px-2" : ""}`}>
@@ -109,13 +134,13 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
                   isActive
                     ? "bg-gradient-to-r from-primary-400/10 to-secondary-400/10 text-primary-400 border border-primary-400/20 shadow-lg shadow-primary-400/10"
                     : "text-slate-400 hover:text-white hover:bg-slate-800/40"
-                } ${isCollapsed ? "justify-center" : ""}`}
-                title={isCollapsed ? item.label : ""}
+                } ${isCollapsed && !isMobileOpen ? "justify-center" : ""}`}
+                title={isCollapsed && !isMobileOpen ? item.label : ""}
               >
                 <span className={isActive ? "text-primary-400" : ""}>
                   {item.icon}
                 </span>
-                {!isCollapsed && (
+                {(!isCollapsed || isMobileOpen) && (
                   <span className="font-medium text-sm">{item.label}</span>
                 )}
               </Link>
@@ -126,7 +151,7 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
       
       {/* Profile Section at Bottom */}
       <div className="border-t border-slate-800/50 p-4">
-        {!isCollapsed ? (
+        {(!isCollapsed || isMobileOpen) ? (
           <Link
             href="/profile"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all"
@@ -149,5 +174,6 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
         )}
       </div>
     </aside>
+    </>
   );
 }

@@ -44,37 +44,37 @@ interface OrderDetail {
 const STATUS_TABS = ["All", "pending", "processing", "shipped", "delivered", "cancelled"];
 
 const STATUS_STYLE: Record<string, string> = {
-  pending:    "bg-amber-500/20 border border-amber-500/40 text-amber-400",
+  pending: "bg-amber-500/20 border border-amber-500/40 text-amber-400",
   processing: "bg-blue-500/20 border border-blue-500/40 text-blue-400",
-  shipped:    "bg-purple-500/20 border border-purple-500/40 text-purple-400",
-  delivered:  "bg-green-500/20 border border-green-500/40 text-green-400",
-  cancelled:  "bg-red-500/20 border border-red-500/40 text-red-400",
+  shipped: "bg-purple-500/20 border border-purple-500/40 text-purple-400",
+  delivered: "bg-green-500/20 border border-green-500/40 text-green-400",
+  cancelled: "bg-red-500/20 border border-red-500/40 text-red-400",
 };
 
 const STATUS_NEXT_ADMIN: Record<string, { label: string; next: string; style: string }[]> = {
-  pending:    [
+  pending: [
     { label: "Mark as Processing", next: "processing", style: "border-blue-500/40 text-blue-400 hover:bg-blue-500/20" },
-    { label: "Cancel Order",       next: "cancelled",  style: "border-red-500/40 text-red-400 hover:bg-red-500/20" },
+    { label: "Cancel Order", next: "cancelled", style: "border-red-500/40 text-red-400 hover:bg-red-500/20" },
   ],
   processing: [
-    { label: "Mark as Shipped",    next: "shipped",    style: "border-purple-500/40 text-purple-400 hover:bg-purple-500/20" },
-    { label: "Cancel Order",       next: "cancelled",  style: "border-red-500/40 text-red-400 hover:bg-red-500/20" },
+    { label: "Mark as Shipped", next: "shipped", style: "border-purple-500/40 text-purple-400 hover:bg-purple-500/20" },
+    { label: "Cancel Order", next: "cancelled", style: "border-red-500/40 text-red-400 hover:bg-red-500/20" },
   ],
-  shipped:    [],
-  delivered:  [],
-  cancelled:  [],
+  shipped: [],
+  delivered: [],
+  cancelled: [],
 };
 
 const STATUS_NEXT_CUSTOMER: Record<string, { label: string; next: string; style: string }[]> = {
-  pending:    [
-    { label: "Cancel Order",       next: "cancelled",  style: "border-red-500/40 text-red-400 hover:bg-red-500/20" },
+  pending: [
+    { label: "Cancel Order", next: "cancelled", style: "border-red-500/40 text-red-400 hover:bg-red-500/20" },
   ],
   processing: [],
-  shipped:    [
-    { label: "Confirm Delivery",   next: "delivered",  style: "border-green-500/40 text-green-400 hover:bg-green-500/20" },
+  shipped: [
+    { label: "Confirm Delivery", next: "delivered", style: "border-green-500/40 text-green-400 hover:bg-green-500/20" },
   ],
-  delivered:  [],
-  cancelled:  [],
+  delivered: [],
+  cancelled: [],
 };
 
 export default function OrdersPage() {
@@ -117,10 +117,10 @@ export default function OrdersPage() {
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       const userRole = user.role ?? "customer";
-      const url = userRole === 'admin' 
+      const url = userRole === 'admin'
         ? `${BACKEND}/api/orders?limit=100`
         : `${BACKEND}/api/users/${user.id}/orders?limit=100`;
-      const res = userRole === 'admin' ? await authFetch(url) : await fetch(url);
+      const res = await authFetch(url);
       const data = await res.json();
       if (data.success) setOrders(data.data || []);
     } catch (e) {
@@ -140,7 +140,7 @@ export default function OrdersPage() {
       const url = userRole === 'admin'
         ? `${BACKEND}/api/orders/${orderNumber}`
         : `${BACKEND}/api/users/${user.id}/orders/${orderNumber}`;
-      const res = userRole === 'admin' ? await authFetch(url) : await fetch(url);
+      const res = await authFetch(url);
       const data = await res.json();
       if (data.success) setSelectedOrder(data.data);
     } catch (e) {
@@ -158,9 +158,11 @@ export default function OrdersPage() {
       const url = userRole === 'admin'
         ? `${BACKEND}/api/orders/${orderNumber}/status`
         : `${BACKEND}/api/users/${user.id}/orders/${orderNumber}/status`;
-      const res = userRole === 'admin' 
-        ? await authFetch(url, { method: "PATCH", body: JSON.stringify({ status: newStatus }) })
-        : await fetch(url, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: newStatus }) });
+      const res = await authFetch(url, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus })
+      });
       const data = await res.json();
       if (data.success) {
         setSelectedOrder((prev) =>
@@ -188,7 +190,7 @@ export default function OrdersPage() {
     setDetailLoading(true);
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
-      const res = await fetch(`${BACKEND}/api/users/${user.id}/orders/${orderNumber}`);
+      const res = await authFetch(`${BACKEND}/api/users/${user.id}/orders/${orderNumber}`);
       const data = await res.json();
       if (data.success) {
         setRatingModal({ open: true, orderNumber, items: data.data.items || [] });
@@ -210,7 +212,7 @@ export default function OrdersPage() {
         rating,
         review_text: reviewTexts[Number(productId)] ?? "",
       }));
-      const res = await fetch(
+      const res = await authFetch(
         `${BACKEND}/api/users/${user.id}/orders/${ratingModal.orderNumber}/reviews`,
         { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }
       );
@@ -273,11 +275,10 @@ export default function OrdersPage() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
-                activeTab === tab
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${activeTab === tab
                   ? "bg-gradient-to-r from-primary-400/20 to-secondary-400/20 border-primary-400/40 text-primary-400"
                   : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white hover:border-slate-600"
-              }`}
+                }`}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
               <span className="ml-1.5 text-xs opacity-60">({countFor(tab)})</span>
@@ -340,9 +341,8 @@ export default function OrdersPage() {
                       </span>
                     )}
                     <span
-                      className={`px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${
-                        STATUS_STYLE[order.status] ?? "bg-slate-700 border border-slate-600 text-slate-300"
-                      }`}
+                      className={`px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${STATUS_STYLE[order.status] ?? "bg-slate-700 border border-slate-600 text-slate-300"
+                        }`}
                     >
                       {order.status}
                     </span>
@@ -380,11 +380,10 @@ export default function OrdersPage() {
                     <button
                       onClick={() => openRatingModal(order.id)}
                       disabled={order.has_reviewed || reviewedOrders.has(order.id)}
-                      className={`px-4 py-2 border text-sm font-medium rounded-xl transition-all ${
-                        order.has_reviewed || reviewedOrders.has(order.id)
+                      className={`px-4 py-2 border text-sm font-medium rounded-xl transition-all ${order.has_reviewed || reviewedOrders.has(order.id)
                           ? "bg-slate-800 border-slate-700 text-slate-500 cursor-not-allowed"
                           : "bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 hover:border-amber-500/60 text-amber-400"
-                      }`}
+                        }`}
                     >
                       {order.has_reviewed || reviewedOrders.has(order.id) ? "✓ Reviewed" : "⭐ Rate Products"}
                     </button>
@@ -433,9 +432,8 @@ export default function OrdersPage() {
                   {/* Status + Date */}
                   <div className="flex items-center justify-between">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
-                        STATUS_STYLE[selectedOrder.order.status] ?? "bg-slate-700 border border-slate-600 text-slate-300"
-                      }`}
+                      className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${STATUS_STYLE[selectedOrder.order.status] ?? "bg-slate-700 border border-slate-600 text-slate-300"
+                        }`}
                     >
                       {selectedOrder.order.status}
                     </span>
@@ -503,28 +501,27 @@ export default function OrdersPage() {
             {!detailLoading && selectedOrder && (() => {
               const statusNext = role === 'admin' ? STATUS_NEXT_ADMIN : STATUS_NEXT_CUSTOMER;
               return (
-              <div className="border-t border-slate-700/80 p-4">
-                {statusNext[selectedOrder.order.status]?.length > 0 ? (
-                  <div className="flex gap-3">
-                    {statusNext[selectedOrder.order.status].map((action) => (
-                      <button
-                        key={action.next}
-                        onClick={() => updateOrderStatus(selectedOrder.order.order_number, action.next)}
-                        disabled={updatingStatus}
-                        className={`flex-1 py-2 rounded-xl text-sm font-semibold border transition-all disabled:opacity-50 disabled:cursor-not-allowed ${action.style}`}
-                      >
-                        {updatingStatus ? "Updating..." : action.label}
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <p className={`text-center text-sm font-medium ${
-                    selectedOrder.order.status === "delivered" ? "text-green-400" : "text-slate-500"
-                  }`}>
-                    {selectedOrder.order.status === "delivered" ? "✓ Order Completed" : "✗ Order Cancelled"}
-                  </p>
-                )}
-              </div>
+                <div className="border-t border-slate-700/80 p-4">
+                  {statusNext[selectedOrder.order.status]?.length > 0 ? (
+                    <div className="flex gap-3">
+                      {statusNext[selectedOrder.order.status].map((action) => (
+                        <button
+                          key={action.next}
+                          onClick={() => updateOrderStatus(selectedOrder.order.order_number, action.next)}
+                          disabled={updatingStatus}
+                          className={`flex-1 py-2 rounded-xl text-sm font-semibold border transition-all disabled:opacity-50 disabled:cursor-not-allowed ${action.style}`}
+                        >
+                          {updatingStatus ? "Updating..." : action.label}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className={`text-center text-sm font-medium ${selectedOrder.order.status === "delivered" ? "text-green-400" : "text-slate-500"
+                      }`}>
+                      {selectedOrder.order.status === "delivered" ? "✓ Order Completed" : "✗ Order Cancelled"}
+                    </p>
+                  )}
+                </div>
               );
             })()}
           </div>

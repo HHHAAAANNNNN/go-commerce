@@ -1,0 +1,36 @@
+╔═══════════════════════════════════════╗
+║   GO-COMMERCE REST API SERVER        ║
+╚═══════════════════════════════════════╝
+2026/03/10 14:46:03 ✅ Database connected successfully
+2026/03/10 14:46:03 🔄 Running database migrations...
+2026/03/10 14:46:04 ✅ users table ready
+2026/03/10 14:46:04 ✅ products table ready
+2026/03/10 14:46:04 ✅ orders table ready
+2026/03/10 14:46:04 ✅ order_items table ready
+2026/03/10 14:46:04 ✅ cart_items table ready
+2026/03/10 14:46:04 ✅ product_specifications table ready
+2026/03/10 14:46:04 ✅ vouchers table ready
+2026/03/10 14:46:04 ✅ All migrations completed
+🚀 Server starting on http://localhost:8080
+
+📋 Available Endpoints:
+   GET    /api/health
+   POST   /api/auth/register
+   POST   /api/auth/login
+   GET    /api/users
+   GET    /api/users/{id}
+   POST   /api/users
+   PUT    /api/users/{id}
+   DELETE /api/users/{id}
+   GET    /api/products
+   GET    /api/products/search?q=keyword
+   GET    /api/products/{id}
+   POST   /api/products
+   PUT    /api/products/{id}
+   DELETE /api/products/{id}
+
+📁 Static Files:
+   GET    /assets/{category}/{filename}
+
+⏳ Server is running... Press Ctrl+C to stop
+2026/03/10 14:46:04 listen tcp :8080: bind: Only one usage of each socket address (protocol/network address/port) is normally permitted.

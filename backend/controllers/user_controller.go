@@ -310,16 +310,38 @@ func GetDashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 1. User info (balance, total_spent)
+	// 1. User info (balance, total_spent, role)
 	var balance, totalSpent int
-	config.DB.QueryRow("SELECT balance, total_spent FROM users WHERE id = ?", id).Scan(&balance, &totalSpent)
+	var role string
+	err = config.DB.QueryRow("SELECT balance, total_spent, role FROM users WHERE id = ?", id).Scan(&balance, &totalSpent, &role)
+	if err != nil {
+		utils.ErrorResponse(w, http.StatusNotFound, "User not found")
+		return
+	}
+	var totalUsers int
+	isAdmin := role == "admin"
+	if isAdmin {
+		var gTotal sql.NullInt64
+		config.DB.QueryRow("SELECT SUM(total_amount) FROM orders WHERE status='delivered' OR status='completed'").Scan(&gTotal)
+		if gTotal.Valid {
+			totalSpent = int(gTotal.Int64)
+		}
+		config.DB.QueryRow("SELECT COUNT(*) FROM users WHERE role = 'customer'").Scan(&totalUsers)
+	}
 
 	// 2. Order stats
 	var totalOrders, pendingOrders, completedOrders, thisYearOrders int
-	config.DB.QueryRow("SELECT COUNT(*) FROM orders WHERE user_id = ?", id).Scan(&totalOrders)
-	config.DB.QueryRow("SELECT COUNT(*) FROM orders WHERE user_id = ? AND status = 'pending'", id).Scan(&pendingOrders)
-	config.DB.QueryRow("SELECT COUNT(*) FROM orders WHERE user_id = ? AND status = 'completed'", id).Scan(&completedOrders)
-	config.DB.QueryRow("SELECT COUNT(*) FROM orders WHERE user_id = ? AND YEAR(created_at) = YEAR(NOW())", id).Scan(&thisYearOrders)
+	if isAdmin {
+		config.DB.QueryRow("SELECT COUNT(*) FROM orders").Scan(&totalOrders)
+		config.DB.QueryRow("SELECT COUNT(*) FROM orders WHERE status = 'pending'").Scan(&pendingOrders)
+		config.DB.QueryRow("SELECT COUNT(*) FROM orders WHERE status = 'delivered' OR status = 'completed'").Scan(&completedOrders)
+		config.DB.QueryRow("SELECT COUNT(*) FROM orders WHERE YEAR(created_at) = YEAR(NOW())").Scan(&thisYearOrders)
+	} else {
+		config.DB.QueryRow("SELECT COUNT(*) FROM orders WHERE user_id = ?", id).Scan(&totalOrders)
+		config.DB.QueryRow("SELECT COUNT(*) FROM orders WHERE user_id = ? AND status = 'pending'", id).Scan(&pendingOrders)
+		config.DB.QueryRow("SELECT COUNT(*) FROM orders WHERE user_id = ? AND status = 'delivered' OR status = 'completed'", id).Scan(&completedOrders)
+		config.DB.QueryRow("SELECT COUNT(*) FROM orders WHERE user_id = ? AND YEAR(created_at) = YEAR(NOW())", id).Scan(&thisYearOrders)
+	}
 
 	// 3. Monthly spending
 	type MonthData struct {
@@ -328,11 +350,23 @@ func GetDashboard(w http.ResponseWriter, r *http.Request) {
 		Percentage float64 `json:"percentage"`
 	}
 	var monthly []MonthData
-	mRows, _ := config.DB.Query(`
-		SELECT DATE_FORMAT(created_at,'%b') as month, SUM(total_amount) as amount
-		FROM orders WHERE user_id = ? AND status='delivered' AND created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
-		GROUP BY YEAR(created_at), MONTH(created_at), DATE_FORMAT(created_at,'%b')
-		ORDER BY YEAR(created_at), MONTH(created_at)`, id)
+	var monthlyQuery string
+	var mArgs []interface{}
+	if isAdmin {
+		monthlyQuery = `
+			SELECT DATE_FORMAT(created_at,'%b') as month, SUM(total_amount) as amount
+			FROM orders WHERE status='delivered' AND created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+			GROUP BY YEAR(created_at), MONTH(created_at), DATE_FORMAT(created_at,'%b')
+			ORDER BY YEAR(created_at), MONTH(created_at)`
+	} else {
+		monthlyQuery = `
+			SELECT DATE_FORMAT(created_at,'%b') as month, SUM(total_amount) as amount
+			FROM orders WHERE user_id = ? AND status='delivered' AND created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+			GROUP BY YEAR(created_at), MONTH(created_at), DATE_FORMAT(created_at,'%b')
+			ORDER BY YEAR(created_at), MONTH(created_at)`
+		mArgs = append(mArgs, id)
+	}
+	mRows, _ := config.DB.Query(monthlyQuery, mArgs...)
 	if mRows != nil {
 		defer mRows.Close()
 		maxAmt := 0
@@ -363,14 +397,29 @@ func GetDashboard(w http.ResponseWriter, r *http.Request) {
 		Percentage float64 `json:"percentage"`
 	}
 	var categories []CategoryData
-	cRows, _ := config.DB.Query(`
-		SELECT COALESCE(c.name,'Other') as cat, SUM(oi.price*oi.quantity) as total
-		FROM order_items oi
-		JOIN orders o ON o.id=oi.order_id
-		JOIN products p ON p.id=oi.product_id
-		LEFT JOIN categories c ON c.id=p.category_id
-		WHERE o.user_id=? AND o.status='delivered'
-		GROUP BY cat ORDER BY total DESC LIMIT 5`, id)
+	var catQuery string
+	var cArgs []interface{}
+	if isAdmin {
+		catQuery = `
+			SELECT COALESCE(c.name,'Other') as cat, SUM(oi.price*oi.quantity) as total
+			FROM order_items oi
+			JOIN orders o ON o.id=oi.order_id
+			JOIN products p ON p.id=oi.product_id
+			LEFT JOIN categories c ON c.id=p.category_id
+			WHERE o.status='delivered'
+			GROUP BY cat ORDER BY total DESC LIMIT 5`
+	} else {
+		catQuery = `
+			SELECT COALESCE(c.name,'Other') as cat, SUM(oi.price*oi.quantity) as total
+			FROM order_items oi
+			JOIN orders o ON o.id=oi.order_id
+			JOIN products p ON p.id=oi.product_id
+			LEFT JOIN categories c ON c.id=p.category_id
+			WHERE o.user_id=? AND o.status='delivered'
+			GROUP BY cat ORDER BY total DESC LIMIT 5`
+		cArgs = append(cArgs, id)
+	}
+	cRows, _ := config.DB.Query(catQuery, cArgs...)
 	totalCat := 0
 	if cRows != nil {
 		defer cRows.Close()
@@ -402,15 +451,30 @@ func GetDashboard(w http.ResponseWriter, r *http.Request) {
 		CreatedAt string `json:"created_at"`
 	}
 	var orders []OrderRow
-	oRows, _ := config.DB.Query(`
-		SELECT o.order_number, GROUP_CONCAT(p.name ORDER BY oi.id SEPARATOR ', '),
-			SUM(oi.quantity), o.total_amount, o.status, o.created_at
-		FROM orders o
-		JOIN order_items oi ON oi.order_id=o.id
-		JOIN products p ON p.id=oi.product_id
-		WHERE o.user_id=?
-		GROUP BY o.id, o.order_number, o.total_amount, o.status, o.created_at
-		ORDER BY o.created_at DESC LIMIT 5`, id)
+	var oQuery string
+	var oArgs []interface{}
+	if isAdmin {
+		oQuery = `
+			SELECT o.order_number, GROUP_CONCAT(p.name ORDER BY oi.id SEPARATOR ', '),
+				SUM(oi.quantity), o.total_amount, o.status, o.created_at
+			FROM orders o
+			JOIN order_items oi ON oi.order_id=o.id
+			JOIN products p ON p.id=oi.product_id
+			GROUP BY o.id, o.order_number, o.total_amount, o.status, o.created_at
+			ORDER BY o.created_at DESC LIMIT 5`
+	} else {
+		oQuery = `
+			SELECT o.order_number, GROUP_CONCAT(p.name ORDER BY oi.id SEPARATOR ', '),
+				SUM(oi.quantity), o.total_amount, o.status, o.created_at
+			FROM orders o
+			JOIN order_items oi ON oi.order_id=o.id
+			JOIN products p ON p.id=oi.product_id
+			WHERE o.user_id=?
+			GROUP BY o.id, o.order_number, o.total_amount, o.status, o.created_at
+			ORDER BY o.created_at DESC LIMIT 5`
+		oArgs = append(oArgs, id)
+	}
+	oRows, _ := config.DB.Query(oQuery, oArgs...)
 	if oRows != nil {
 		defer oRows.Close()
 		for oRows.Next() {
@@ -446,7 +510,6 @@ func GetDashboard(w http.ResponseWriter, r *http.Request) {
 		       COALESCE(p.stock,0), COALESCE(p.image_url,''), COALESCE(p.brand,'')
 		FROM products p
 		LEFT JOIN categories c ON c.id = p.category_id
-		WHERE p.is_active = 1
 		LIMIT 20`)
 	if pRows != nil {
 		defer pRows.Close()
@@ -480,17 +543,19 @@ func GetDashboard(w http.ResponseWriter, r *http.Request) {
 		IsActive      bool    `json:"is_active"`
 	}
 	var vouchers []VoucherRow
-	vRows, _ := config.DB.Query(`SELECT id, code, name, COALESCE(description,''), type, discount_value, min_purchase, max_discount, usage_limit, used_count, valid_from, valid_until, is_active FROM vouchers WHERE is_active=1 AND valid_until > NOW()`)
+	vRows, _ := config.DB.Query(`SELECT id, code, name, COALESCE(description,''), type, discount_value, min_purchase, max_discount, usage_limit, used_count, valid_from, valid_until, is_active FROM vouchers WHERE valid_until > NOW()`)
 	if vRows != nil {
 		defer vRows.Close()
 		for vRows.Next() {
 			var v VoucherRow
 			var vf, maxD, minPurchaseF float64
 			var vFrom, vUntil sql.NullTime
-			vRows.Scan(&v.ID, &v.Code, &v.Name, &v.Description, &v.Type, &vf, &minPurchaseF, &maxD, &v.UsageLimit, &v.UsedCount, &vFrom, &vUntil, &v.IsActive)
+			var isActive bool
+			vRows.Scan(&v.ID, &v.Code, &v.Name, &v.Description, &v.Type, &vf, &minPurchaseF, &maxD, &v.UsageLimit, &v.UsedCount, &vFrom, &vUntil, &isActive)
 			v.DiscountValue = vf
 			v.MaxDiscount = maxD
 			v.MinPurchase = int(minPurchaseF)
+			v.IsActive = isActive
 			if vFrom.Valid {
 				v.ValidFrom = vFrom.Time.Format("2006-01-02T15:04:05Z")
 			}
@@ -507,6 +572,7 @@ func GetDashboard(w http.ResponseWriter, r *http.Request) {
 	utils.SuccessResponse(w, "Dashboard fetched", map[string]interface{}{
 		"balance":     balance,
 		"total_spent": totalSpent,
+		"total_users": totalUsers,
 		"stats": map[string]interface{}{
 			"total_orders":       totalOrders,
 			"pending_orders":     pendingOrders,

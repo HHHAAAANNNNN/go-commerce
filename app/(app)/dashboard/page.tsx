@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { authFetch } from "../../utils/api";
 
 const BACKEND = "http://localhost:8080";
 
@@ -106,6 +107,8 @@ export default function DashboardPage() {
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const [totalSpent, setTotalSpent] = useState(0);
+  const [role, setRole] = useState<string>('customer');
+  const [totalUsers, setTotalUsers] = useState(0);
 
   // Live data
   const [stats, setStats] = useState<StatsData | null>(null);
@@ -120,13 +123,14 @@ export default function DashboardPage() {
 
   const fetchDashboardData = useCallback(async (uid: number) => {
     try {
-      const res = await fetch(`${BACKEND}/api/users/${uid}/dashboard`);
+      const res = await authFetch(`${BACKEND}/api/users/${uid}/dashboard`);
       const json = await res.json();
       if (!json.success) return;
       const d = json.data;
 
       setBalance(d.balance ?? 0);
       setTotalSpent(d.total_spent ?? 0);
+      if (d.total_users !== undefined) setTotalUsers(d.total_users);
       if (d.stats) setStats(d.stats);
       if (d.recent_orders) setRecentOrders(d.recent_orders);
       if (d.vouchers) {
@@ -150,6 +154,7 @@ export default function DashboardPage() {
     try {
       const parsed = JSON.parse(storedUser);
       setUser(parsed);
+      setRole(parsed?.role ?? 'customer');
       if (parsed?.id) {
         fetchDashboardData(parsed.id).finally(() => setLoading(false));
       } else {
@@ -189,7 +194,7 @@ export default function DashboardPage() {
     }
     setTopupLoading(true);
     try {
-      const res = await fetch(`${BACKEND}/api/users/${user.id}/topup`, {
+      const res = await authFetch(`${BACKEND}/api/users/${user.id}/topup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount }),
@@ -414,6 +419,15 @@ export default function DashboardPage() {
             <p className="text-slate-300 text-lg">Welcome back to your dashboard!</p>
           </div>
           <div className="hidden md:flex flex-col items-end gap-2">
+            {role === 'admin' ? (
+              <>
+                <div className="px-4 py-2 bg-red-500/20 border border-red-400/30 rounded-full">
+                  <p className="text-red-400 font-semibold text-sm">🛡️ Administrator</p>
+                </div>
+                <p className="text-slate-400 text-sm">Platform Management Access</p>
+              </>
+            ) : (
+              <>
             <div className="px-4 py-2 bg-gradient-to-r from-accent-400/20 to-accent-400/10 border border-accent-400/30 rounded-full">
               <p className="text-accent-400 font-semibold text-sm">✨ {currentTier} Member</p>
             </div>
@@ -449,11 +463,60 @@ export default function DashboardPage() {
                 Top Up
               </button>
             </div>
+              </>
+            )}
           </div>
         </div>
       </div>
 
+      {/* Admin Platform Overview (admin only) */}
+      {role === 'admin' && (
+        <div className="bg-gradient-to-br from-slate-800/60 to-slate-900/60 border border-primary-400/20 rounded-2xl p-6 overflow-hidden">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2.5 bg-primary-400/10 rounded-xl border border-primary-400/30">
+                  <svg className="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-white">Platform Overview</h2>
+              </div>
+              <p className="text-slate-400 text-sm">Real-time business metrics across all users</p>
+            </div>
+            <div className="px-4 py-2 bg-red-500/20 border border-red-400/30 rounded-full">
+              <p className="text-red-400 font-semibold text-sm">🛡️ Admin View</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-slate-900/60 rounded-xl p-4 border border-primary-400/10 hover:border-primary-400/30 transition-all">
+              <p className="text-slate-400 text-xs mb-1">Total Revenue</p>
+              <p className="text-primary-400 font-bold text-xl">{formatIDR(totalSpent)}</p>
+              <p className="text-slate-500 text-xs mt-1">From delivered orders</p>
+            </div>
+            <div className="bg-slate-900/60 rounded-xl p-4 border border-cyan-400/10 hover:border-cyan-400/30 transition-all">
+              <p className="text-slate-400 text-xs mb-1">Total Customers</p>
+              <p className="text-cyan-400 font-bold text-xl">{totalUsers}</p>
+              <p className="text-slate-500 text-xs mt-1">Registered accounts</p>
+            </div>
+            <div className="bg-slate-900/60 rounded-xl p-4 border border-amber-400/10 hover:border-amber-400/30 transition-all">
+              <p className="text-slate-400 text-xs mb-1">Orders This Year</p>
+              <p className="text-amber-400 font-bold text-xl">{stats?.this_year_orders ?? 0}</p>
+              <p className="text-slate-500 text-xs mt-1">Since Jan 1st</p>
+            </div>
+            <div className="bg-slate-900/60 rounded-xl p-4 border border-green-400/10 hover:border-green-400/30 transition-all">
+              <p className="text-slate-400 text-xs mb-1">Avg Order Value</p>
+              <p className="text-green-400 font-bold text-xl">
+                {stats && stats.total_orders > 0 ? formatIDR(Math.round(totalSpent / stats.total_orders)) : 'N/A'}
+              </p>
+              <p className="text-slate-500 text-xs mt-1">Per order average</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Membership Status - Royal Gold & Purple Theme */}
+      {role !== 'admin' && (
       <div className="relative bg-gradient-to-br from-purple-950/90 via-indigo-950/80 to-slate-900/90 backdrop-blur-sm border-2 border-amber-500/40 rounded-2xl p-6 overflow-hidden shadow-2xl shadow-purple-900/20">
         {/* Animated Background Effects */}
         <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-amber-500/15 to-purple-600/15 rounded-full filter blur-3xl animate-pulse"></div>
@@ -620,6 +683,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -688,7 +752,7 @@ export default function DashboardPage() {
           <h3 className="text-3xl font-bold text-white mb-1">
             {formatIDR(totalSpent)}
           </h3>
-          <p className="text-slate-400 text-sm">Total Spent</p>
+          <p className="text-slate-400 text-sm">{role === 'admin' ? 'Total Revenue' : 'Total Spent'}</p>
         </div>
       </div>
 
@@ -698,8 +762,8 @@ export default function DashboardPage() {
         <div className="lg:col-span-1 bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-xl font-bold text-white mb-1">Spending Activity</h3>
-              <p className="text-slate-400 text-sm">Last 6 months</p>
+              <h3 className="text-xl font-bold text-white mb-1">{role === 'admin' ? 'Revenue Activity' : 'Spending Activity'}</h3>
+              <p className="text-slate-400 text-sm">{role === 'admin' ? 'Platform-wide, last 6 months' : 'Last 6 months'}</p>
             </div>
           </div>
 
@@ -754,7 +818,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-xl font-bold text-white mb-1">Recent Orders</h3>
-              <p className="text-slate-400 text-sm">Your latest transactions</p>
+              <p className="text-slate-400 text-sm">{role === 'admin' ? 'Latest orders across all customers' : 'Your latest transactions'}</p>
             </div>
             <a
               href="/orders"
@@ -802,11 +866,11 @@ export default function DashboardPage() {
                         {(() => {
                           const s = order.status;
                           const cfg: Record<string, { style: string; label: string }> = {
-                            pending:    { style: 'bg-amber-400/10 text-amber-400 border border-amber-400/20',   label: 'Pending' },
-                            processing: { style: 'bg-blue-400/10 text-blue-400 border border-blue-400/20',      label: 'Processing' },
-                            shipped:    { style: 'bg-purple-400/10 text-purple-400 border border-purple-400/20', label: 'Shipped' },
-                            delivered:  { style: 'bg-green-400/10 text-green-400 border border-green-400/20',   label: 'Delivered' },
-                            cancelled:  { style: 'bg-red-400/10 text-red-400 border border-red-400/20',         label: 'Cancelled' },
+                            pending: { style: 'bg-amber-400/10 text-amber-400 border border-amber-400/20', label: 'Pending' },
+                            processing: { style: 'bg-blue-400/10 text-blue-400 border border-blue-400/20', label: 'Processing' },
+                            shipped: { style: 'bg-purple-400/10 text-purple-400 border border-purple-400/20', label: 'Shipped' },
+                            delivered: { style: 'bg-green-400/10 text-green-400 border border-green-400/20', label: 'Delivered' },
+                            cancelled: { style: 'bg-red-400/10 text-red-400 border border-red-400/20', label: 'Cancelled' },
                           };
                           const c = cfg[s] ?? { style: 'bg-slate-400/10 text-slate-400 border border-slate-400/20', label: s };
                           return (
@@ -831,8 +895,8 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-xl font-bold text-white mb-1">Recommended for You</h3>
-              <p className="text-slate-400 text-sm">Based on your purchase history</p>
+              <h3 className="text-xl font-bold text-white mb-1">{role === 'admin' ? 'Product Catalog' : 'Recommended for You'}</h3>
+              <p className="text-slate-400 text-sm">{role === 'admin' ? 'Browse all available products' : 'Based on your purchase history'}</p>
             </div>
             <button className="px-4 py-2 bg-primary-400/10 text-primary-400 rounded-lg text-sm font-semibold hover:bg-primary-400/20 transition-colors border border-primary-400/20">
               View All
@@ -840,7 +904,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Product Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
             {recommendedProducts.length === 0 ? (
               <div className="col-span-3 py-8 text-center text-slate-500 text-sm">Loading products...</div>
             ) : (
@@ -848,7 +912,7 @@ export default function DashboardPage() {
                 <a
                   key={product.id}
                   href={`/products/${product.id}`}
-                  className="group bg-slate-800/50 backdrop-blur-sm border border-slate-700/30 rounded-xl overflow-hidden hover:border-primary-400/40 transition-all duration-300 hover:scale-105"
+                  className="group bg-slate-800/50 backdrop-blur-sm border border-slate-700/30 rounded-xl overflow-hidden hover:border-primary-400/40 transition-all duration-300 hover:scale-105 flex flex-col"
                 >
                   {/* Product Image */}
                   <div className="relative h-40 bg-gradient-to-br from-slate-700/50 to-slate-800/50 flex items-center justify-center overflow-hidden">
@@ -872,7 +936,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Product Info */}
-                  <div className="p-4">
+                  <div className="p-4 flex flex-col flex-1">
                     <p className="text-slate-400 text-xs mb-1">{product.category}</p>
                     <h4 className="text-white font-semibold mb-2 line-clamp-1">{product.name}</h4>
 
@@ -892,7 +956,7 @@ export default function DashboardPage() {
                     </p>
 
                     {/* View Button */}
-                    <div className="w-full py-2 bg-primary-400/10 text-primary-400 rounded-lg text-sm font-semibold text-center group-hover:bg-primary-400 group-hover:text-white transition-all duration-300 border border-primary-400/20">
+                    <div className="mt-auto w-full py-2 bg-primary-400/10 text-primary-400 rounded-lg text-sm font-semibold text-center group-hover:bg-primary-400 group-hover:text-white transition-all duration-300 border border-primary-400/20">
                       View Product
                     </div>
                   </div>
@@ -905,8 +969,8 @@ export default function DashboardPage() {
         {/* Spending by Category - Donut Chart */}
         <div className="lg:col-span-1 bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
           <div className="mb-6">
-            <h3 className="text-xl font-bold text-white mb-1">Spending by Category</h3>
-            <p className="text-slate-400 text-sm">This year breakdown</p>
+            <h3 className="text-xl font-bold text-white mb-1">{role === 'admin' ? 'Revenue by Category' : 'Spending by Category'}</h3>
+            <p className="text-slate-400 text-sm">{role === 'admin' ? 'Platform-wide breakdown' : 'This year breakdown'}</p>
           </div>
 
           {/* Interactive Donut Chart - Larger */}
@@ -986,7 +1050,7 @@ export default function DashboardPage() {
 
           {/* Total Spent Below Chart */}
           <div className="text-center pt-4 border-t border-slate-700/30">
-            <p className="text-slate-400 text-xs mb-1">Total Spent</p>
+            <p className="text-slate-400 text-xs mb-1">{role === 'admin' ? 'Total Revenue' : 'Total Spent'}</p>
             <p className="text-white font-bold text-2xl">
               {formatIDR((stats?.category_breakdown ?? []).reduce((s, d) => s + d.value, 0))}
             </p>
@@ -999,7 +1063,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-xl font-bold text-white mb-1">Active Vouchers</h3>
-            <p className="text-slate-400 text-sm">Save more on your next purchase</p>
+            <p className="text-slate-400 text-sm">{role === 'admin' ? 'Currently active vouchers on the platform' : 'Save more on your next purchase'}</p>
           </div>
           <a
             href="/vouchers"

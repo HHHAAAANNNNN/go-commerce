@@ -20,7 +20,16 @@ export function authFetch(url: string, options: RequestInit = {}): Promise<Respo
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  return fetch(url, { ...options, headers });
+  return fetch(url, { ...options, headers }).then((res) => {
+    if (res.status === 401) {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "/login";
+      }
+    }
+    return res;
+  });
 }
 
 /** Retrieve the current user from localStorage, or null if not logged in */

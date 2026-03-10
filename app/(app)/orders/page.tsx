@@ -2,11 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { authFetch } from "../../utils/api";
 
 const BACKEND = "http://localhost:8080";
 
 interface Order {
   id: string;
+  user_id?: number;
+  user_name?: string;
   products: string;
   total_qty: number;
   subtotal: number;
@@ -57,9 +60,7 @@ const STATUS_NEXT_ADMIN: Record<string, { label: string; next: string; style: st
     { label: "Mark as Shipped",    next: "shipped",    style: "border-purple-500/40 text-purple-400 hover:bg-purple-500/20" },
     { label: "Cancel Order",       next: "cancelled",  style: "border-red-500/40 text-red-400 hover:bg-red-500/20" },
   ],
-  shipped:    [
-    { label: "Confirm Delivery",   next: "delivered",  style: "border-green-500/40 text-green-400 hover:bg-green-500/20" },
-  ],
+  shipped:    [],
   delivered:  [],
   cancelled:  [],
 };
@@ -69,7 +70,9 @@ const STATUS_NEXT_CUSTOMER: Record<string, { label: string; next: string; style:
     { label: "Cancel Order",       next: "cancelled",  style: "border-red-500/40 text-red-400 hover:bg-red-500/20" },
   ],
   processing: [],
-  shipped:    [],
+  shipped:    [
+    { label: "Confirm Delivery",   next: "delivered",  style: "border-green-500/40 text-green-400 hover:bg-green-500/20" },
+  ],
   delivered:  [],
   cancelled:  [],
 };
@@ -101,7 +104,10 @@ export default function OrdersPage() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem("user");
-      if (raw) setRole((JSON.parse(raw) as { role?: string }).role ?? "customer");
+      if (raw) {
+        const userRole = (JSON.parse(raw) as { role?: string }).role ?? "customer";
+        setRole(userRole);
+      }
     } catch { /* ignore */ }
     fetchOrders();
   }, []);
@@ -110,7 +116,11 @@ export default function OrdersPage() {
     setLoading(true);
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
-      const res = await fetch(`${BACKEND}/api/users/${user.id}/orders?limit=100`);
+      const userRole = user.role ?? "customer";
+      const url = userRole === 'admin' 
+        ? `${BACKEND}/api/orders?limit=100`
+        : `${BACKEND}/api/users/${user.id}/orders?limit=100`;
+      const res = userRole === 'admin' ? await authFetch(url) : await fetch(url);
       const data = await res.json();
       if (data.success) setOrders(data.data || []);
     } catch (e) {
@@ -126,7 +136,11 @@ export default function OrdersPage() {
     setSelectedOrder(null);
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
-      const res = await fetch(`${BACKEND}/api/users/${user.id}/orders/${orderNumber}`);
+      const userRole = user.role ?? "customer";
+      const url = userRole === 'admin'
+        ? `${BACKEND}/api/orders/${orderNumber}`
+        : `${BACKEND}/api/users/${user.id}/orders/${orderNumber}`;
+      const res = userRole === 'admin' ? await authFetch(url) : await fetch(url);
       const data = await res.json();
       if (data.success) setSelectedOrder(data.data);
     } catch (e) {
@@ -140,11 +154,13 @@ export default function OrdersPage() {
     setUpdatingStatus(true);
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
-      const res = await fetch(`${BACKEND}/api/users/${user.id}/orders/${orderNumber}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
-      });
+      const userRole = user.role ?? "customer";
+      const url = userRole === 'admin'
+        ? `${BACKEND}/api/orders/${orderNumber}/status`
+        : `${BACKEND}/api/users/${user.id}/orders/${orderNumber}/status`;
+      const res = userRole === 'admin' 
+        ? await authFetch(url, { method: "PATCH", body: JSON.stringify({ status: newStatus }) })
+        : await fetch(url, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: newStatus }) });
       const data = await res.json();
       if (data.success) {
         setSelectedOrder((prev) =>
@@ -318,6 +334,11 @@ export default function OrdersPage() {
                   {/* Top row */}
                   <div className="flex items-center gap-3 flex-wrap">
                     <span className="font-bold text-white text-sm font-mono tracking-wide">{order.id}</span>
+                    {role === 'admin' && order.user_name && (
+                      <span className="text-slate-400 text-xs">
+                        👤 {order.user_name}
+                      </span>
+                    )}
                     <span
                       className={`px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${
                         STATUS_STYLE[order.status] ?? "bg-slate-700 border border-slate-600 text-slate-300"

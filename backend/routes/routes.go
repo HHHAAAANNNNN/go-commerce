@@ -64,6 +64,11 @@ func SetupRoutes() *mux.Router {
 	api.HandleFunc("/users/{id}/orders/{orderNumber}/status", controllers.UpdateOrderStatus).Methods("PATCH", "OPTIONS")
 	api.HandleFunc("/users/{id}/orders/{orderNumber}/reviews", controllers.SubmitReviews).Methods("POST", "OPTIONS")
 
+	// Admin-only order management
+	api.Handle("/orders", adminOnly(http.HandlerFunc(controllers.GetAllOrders))).Methods("GET", "OPTIONS")
+	api.Handle("/orders/{orderNumber}", adminOnly(http.HandlerFunc(controllers.GetOrderDetailAdmin))).Methods("GET", "OPTIONS")
+	api.Handle("/orders/{orderNumber}/status", adminOnly(http.HandlerFunc(controllers.UpdateOrderStatusAdmin))).Methods("PATCH", "OPTIONS")
+
 	// Product routes — GET is public, mutations are admin only
 	api.HandleFunc("/products", controllers.GetAllProducts).Methods("GET", "OPTIONS")
 	api.HandleFunc("/products/search", controllers.SearchProducts).Methods("GET", "OPTIONS")

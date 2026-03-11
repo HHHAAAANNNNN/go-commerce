@@ -1,1065 +1,615 @@
 <div align="center">
 
-# 🛒 Go-Commerce Backend
+# 🛒 Go-Commerce
 
 [![Go Version](https://img.shields.io/badge/Go-1.24-00ADD8?style=for-the-badge&logo=go)](https://golang.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge)](CONTRIBUTING.md)
 
-**A comprehensive e-commerce REST API built with Go (Golang)**
+**Platform e-commerce full-stack modern yang dibangun dengan Go (backend) dan Next.js (frontend)**
 
-*A structured learning project demonstrating progressive mastery from Go fundamentals to production-ready backend systems with database integration, RESTful architecture, and clean code principles.*
+*Aplikasi belanja online lengkap dengan manajemen produk, keranjang belanja, sistem pemesanan, voucher diskon, dashboard admin, serta fitur ulasan dan penilaian produk.*
 
-[Features](#-key-features) •
-[Quick Start](#-quick-start) •
-[API Documentation](#-api-endpoints) •
-[Architecture](#-project-structure) •
-[Contributing](#-contributing)
+[Fitur](#-fitur-utama) •
+[Screenshot](#-tampilan-aplikasi) •
+[Instalasi](#-instalasi--menjalankan-aplikasi) •
+[Dependensi](#-dependensi) •
+[Struktur Proyek](#-struktur-proyek) •
+[API](#-api-endpoints)
 
 </div>
 
 ---
 
-## 📋 Table of Contents
+## 📋 Daftar Isi
 
-- [About The Project](#-about-the-project)
-- [Key Features](#-key-features)
-- [Technology Stack](#-technology-stack)
-- [Quick Start](#-quick-start)
-- [Project Structure](#-project-structure)
+- [Tentang Proyek](#-tentang-proyek)
+- [Fitur Utama](#-fitur-utama)
+- [Tampilan Aplikasi](#-tampilan-aplikasi)
+- [Teknologi yang Digunakan](#-teknologi-yang-digunakan)
+- [Dependensi](#-dependensi)
+- [Instalasi & Menjalankan Aplikasi](#-instalasi--menjalankan-aplikasi)
+- [Struktur Proyek](#-struktur-proyek)
 - [API Endpoints](#-api-endpoints)
-- [Database Schema](#-database-schema)
-- [Learning Path](#-learning-objectives--mastered-concepts)
-- [Usage Examples](#-api-usage-examples)
-- [Troubleshooting](#-troubleshooting)
-- [Contributing](#-contributing)
-- [License](#-license)
-- [Contact](#-contact)
+- [Skema Database](#-skema-database)
+- [Lisensi](#-lisensi)
+- [Kontak](#-kontak)
 
 ---
 
-## 🎯 About The Project
+## 🎯 Tentang Proyek
 
-This project was developed as a **systematic learning journey** through Go programming, following a semester-based curriculum that covers essential concepts from basic syntax to advanced web development patterns. 
+**Go-Commerce** adalah aplikasi e-commerce full-stack yang dirancang untuk memberikan pengalaman belanja online yang modern dan responsif. Proyek ini memadukan kekuatan **Go** sebagai backend yang cepat dan efisien dengan **Next.js 16** sebagai frontend yang modern dan interaktif.
 
-The final application is a **fully functional e-commerce backend API** featuring:
-- 👥 User management system
-- 📦 Product inventory management
-- 🛍️ Order processing capabilities
-- 🔍 Advanced search functionality
-- 🔐 Clean architecture with middleware support
+Aplikasi ini mencakup seluruh alur belanja online — mulai dari menjelajahi produk, menambahkan ke keranjang, melakukan checkout, hingga pelacakan pesanan. Dilengkapi pula dengan sistem manajemen admin untuk mengelola produk, pesanan, dan pengguna, serta fitur voucher, ulasan produk, dan sistem keanggotaan.
 
-## 📚 Learning Objectives & Mastered Concepts
+### 🏗️ Arsitektur
 
-<details>
-<summary><h3>📖 Semester 1: Fundamentals (Weeks 1-8)</h3></summary>
-
-#### Core Language Features
-
-- **Variables & Data Types**: Deep understanding of Go's type system, including explicit and implicit declarations, type conversion, and zero values
-- **Operators & Control Flow**: Mastery of arithmetic, comparison, and logical operators; implementation of conditional logic with if-else and switch statements
-- **Loops & Arrays**: Proficiency in Go's for loop variations, array manipulation, and iteration patterns
-- **Functions**: Experience with multiple return values, variadic parameters, named returns, and function closures
-
-**Key Learning Files**:
-- `learning Path/learn_variables.go` - Variable declarations, constants, type conversion
-- `learning Path/learn_operators.go` - Operators, conditionals, switch statements
-- `learning Path/learn_loops.go` - Loop patterns, array operations
-
-</details>
-
-<details>
-<summary><h3>📖 Semester 2: Intermediate Concepts (Weeks 9-14)</h3></summary>
-
-#### Data Structures & Object-Oriented Design
-
-- **Slices & Maps**: Dynamic data structures, slice operations (append, copy, slicing), map manipulation and key-value storage patterns
-- **Structs & Methods**: Custom type definitions, method receivers (value vs pointer), struct composition
-- **Pointers**: Memory management, pointer dereferencing, understanding when to use pointers for efficiency and mutability
-- **Interfaces**: Polymorphism in Go, interface satisfaction, type assertions, and the power of implicit implementation
-- **Error Handling**: Go's explicit error handling pattern, custom error types, error wrapping, panic and recover mechanisms
-
-**Key Learning Files**:
-- `learning Path/learn_slices_maps.go` - Dynamic collections, CRUD operations on data structures
-- `learning Path/learn_functions.go` - Struct methods, advanced function patterns
-- `learning Path/learn_advanced.go` - Interfaces, pointers, custom errors, panic/recover
-
-</details>
-
-<details>
-<summary><h3>📖 Semester 3: Advanced & Production-Ready Concepts (Weeks 15-20)</h3></summary>
-
-#### Database Integration & Web Development
-
-- **File I/O Operations**: Reading and writing files, file handling patterns, resource management with defer
-- **JSON Serialization**: Struct tags, marshaling/unmarshaling, working with JSON data
-- **CSV Processing**: Reading and writing CSV files, data import/export functionality
-- **Database Integration**: MySQL connectivity, SQL query execution, prepared statements, connection pooling
-- **REST API Development**: HTTP server implementation, routing with Gorilla Mux, request/response handling
-- **Middleware Pattern**: Logger middleware, CORS handling, request preprocessing
-- **MVC Architecture**: Separation of concerns with Models, Controllers, and Routes
-- **API Design**: RESTful conventions, proper HTTP status codes, JSON response standardization
-
-**Key Learning Files**:
-- `learning Path/learn_file_json_db.go` - File operations, JSON/CSV handling, database CRUD
-
-</details>
-
-### 🎓 Learning Progression
-
-This project represents a **structured learning path** through Go development:
-
-1. **Foundation Phase** → Understanding Go syntax, types, and control structures
-2. **Intermediate Phase** → Working with complex data structures, functions, and OOP concepts
-3. **Advanced Phase** → Implementing real-world patterns like interfaces, error handling, and pointer usage
-4. **Production Phase** → Building a complete REST API with database integration and clean architecture
-
-Each phase is documented in the `learning Path/` directory with standalone executable examples demonstrating specific concepts.
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        Go-Commerce                          │
+├──────────────────────┬──────────────────────────────────────┤
+│   Frontend (Next.js) │         Backend (Go)                 │
+│   Port: 3000         │         Port: 8080                   │
+│                      │                                      │
+│  ┌────────────────┐  │  ┌─────────────┐  ┌──────────────┐  │
+│  │  React 19 +    │  │  │  Gorilla    │  │    MySQL     │  │
+│  │  TypeScript    │◄─┼─►│  Mux Router │◄─┤   Database   │  │
+│  │  Tailwind CSS  │  │  │  REST API   │  │              │  │
+│  └────────────────┘  │  └─────────────┘  └──────────────┘  │
+└──────────────────────┴──────────────────────────────────────┘
+```
 
 ---
 
----
+## ✨ Fitur Utama
 
-## ✨ Key Features
+### 👤 Autentikasi & Profil Pengguna
+- Registrasi dan login pengguna dengan JWT (JSON Web Token)
+- Manajemen profil: foto profil, informasi pribadi, alamat
+- Sistem keanggotaan bertingkat (Bronze, Silver, Gold, Platinum)
 
-<table>
-<tr>
-<td>
+### 🛍️ Katalog Produk
+- Tampilan produk dengan galeri gambar
+- Filter berdasarkan kategori, harga, dan rating
+- Pencarian produk secara real-time
+- Halaman detail produk dengan ulasan pelanggan
 
-### 🏗️ Architecture
-- Clean MVC pattern
-- RESTful API design
-- Middleware support
-- Modular structure
+### 🛒 Keranjang Belanja & Checkout
+- Tambah, ubah jumlah, dan hapus produk dari keranjang
+- Aplikasi voucher diskon saat checkout
+- Proses checkout 3 langkah: Pengiriman → Pembayaran → Konfirmasi
 
-</td>
-<td>
+### 📦 Manajemen Pesanan
+- Riwayat pesanan dengan filter status (Menunggu Pembayaran, Dikirim, Selesai, Dibatalkan)
+- Detail pesanan lengkap
+- Sistem ulasan dan penilaian produk setelah pesanan selesai
 
-### 🔒 Security
-- SQL injection prevention
-- Prepared statements
-- Input validation
-- CORS configuration
+### 🎟️ Voucher & Diskon
+- Daftar voucher yang tersedia untuk pengguna
+- Filter voucher berdasarkan tipe dan status
 
-</td>
-</tr>
-<tr>
-<td>
-
-### 💾 Database
-- MySQL integration
-- Connection pooling
-- Transaction support
-- Efficient queries
-
-</td>
-<td>
-
-### 📊 Data Management
-- Full CRUD operations
-- Search & filtering
-- Data validation
-- Standardized responses
-
-</td>
-</tr>
-</table>
+### 📊 Dashboard
+- **Dashboard Customer**: statistik pembelian, grafik pengeluaran, pesanan terbaru, voucher aktif
+- **Dashboard Admin**: manajemen produk, manajemen pengguna, laporan penjualan
 
 ---
 
-## 🛠️ Technology Stack
+## 📸 Tampilan Aplikasi
 
-<div align="center">
+### 🏠 Landing Page
 
-| Category | Technology |
+#### Hero Section
+Halaman utama dengan banner yang menarik, menampilkan tagline dan tombol call-to-action untuk memulai belanja.
+
+![Hero Section](screenshots/hero-section.png)
+
+#### Bagian Produk Unggulan
+Menampilkan produk-produk terpilih dan kategori populer langsung di halaman utama.
+
+![Product Section](screenshots/product-section.png)
+
+#### Kenapa Memilih Kami?
+Bagian yang menjelaskan keunggulan dan nilai tambah platform kepada pengunjung baru.
+
+![Why Us Section](screenshots/why-us-section.png)
+
+#### Testimoni Pelanggan
+Ulasan dan pengalaman pelanggan yang telah menggunakan platform, membangun kepercayaan pengguna baru.
+
+![Testimony Section](screenshots/testimony-section.png)
+
+---
+
+### 🔐 Autentikasi
+
+#### Halaman Login
+Form login yang bersih dengan validasi input dan notifikasi error yang informatif.
+
+![Login Section](screenshots/login-section.png)
+
+#### Halaman Registrasi
+Form pendaftaran akun baru dengan validasi lengkap untuk memastikan data pengguna yang valid.
+
+![Registration Section](screenshots/regist-section.png)
+
+---
+
+### 📦 Katalog & Detail Produk
+
+#### Halaman Produk
+Daftar seluruh produk dengan fitur filter kategori, rentang harga, rating, dan pencarian real-time. Dilengkapi pagination untuk navigasi yang nyaman.
+
+![Product Page](screenshots/product-page.png)
+
+#### Detail Produk
+Halaman detail produk yang lengkap dengan galeri gambar, deskripsi, spesifikasi, dan ulasan dari pelanggan lain.
+
+![Product Description](screenshots/product-desc.png)
+
+---
+
+### 🛒 Keranjang & Checkout
+
+#### Halaman Keranjang
+Tampilan keranjang belanja dengan manajemen item — ubah jumlah, hapus produk, lihat total harga, dan terapkan voucher diskon.
+
+![Cart Page](screenshots/cart-page.png)
+
+---
+
+### 📋 Manajemen Pesanan
+
+#### Halaman Riwayat Pesanan
+Daftar seluruh pesanan pengguna yang dapat difilter berdasarkan status: Menunggu Pembayaran, Sedang Dikirim, Selesai, dan Dibatalkan.
+
+![Order Page](screenshots/order-page.png)
+
+#### Detail Pesanan
+Tampilan detail pesanan yang mencakup informasi produk, jumlah, harga, status pengiriman, dan ringkasan pembayaran.
+
+![Order Detail](screenshots/order-detail.png)
+
+#### Modal Penilaian Produk
+Setelah pesanan selesai, pengguna dapat memberikan ulasan dan rating bintang untuk setiap produk yang dibeli.
+
+![Rating Modal](screenshots/rating-modal.png)
+
+---
+
+### 📊 Dashboard
+
+#### Dashboard Customer — Ringkasan Akun
+Halaman utama dashboard pelanggan dengan sambutan personal, status keanggotaan, dan ringkasan statistik belanja.
+
+![Customer Dashboard](screenshots/dashboard-customer.png)
+
+#### Dashboard Customer — Statistik & Grafik
+Visualisasi data pengeluaran bulanan menggunakan grafik interaktif, membantu pelanggan memantau pola belanja mereka.
+
+![Customer Dashboard Statistics](screenshots/dashboard-customer2.png)
+
+#### Dashboard Customer — Riwayat & Voucher
+Tampilan pesanan terbaru beserta voucher aktif yang tersedia untuk digunakan pada transaksi berikutnya.
+
+![Customer Dashboard Orders & Vouchers](screenshots/dashboard-customer3.png)
+
+#### Dashboard Admin
+Panel administrasi penuh untuk mengelola produk, memantau pesanan, dan melihat laporan penjualan secara keseluruhan.
+
+![Admin Dashboard](screenshots/dashboard-admin.png)
+
+---
+
+### 🎟️ Voucher & Profil
+
+#### Halaman Voucher
+Daftar voucher yang tersedia bagi pengguna dengan informasi diskon, syarat penggunaan, dan masa berlaku.
+
+![Voucher Page](screenshots/voucher-page.png)
+
+#### Pengaturan Profil
+Halaman pengaturan akun untuk memperbarui informasi pribadi, foto profil, alamat pengiriman, dan kata sandi.
+
+![Profile Settings](screenshots/profile-setting.png)
+
+---
+
+## 🛠️ Teknologi yang Digunakan
+
+| Komponen | Teknologi |
 |----------|-----------|
-| **Language** | ![Go](https://img.shields.io/badge/Go-1.24-00ADD8?logo=go&logoColor=white) |
-| **Database** | ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white) |
-| **Router** | ![Gorilla Mux](https://img.shields.io/badge/Gorilla-Mux-00ADD8) |
-| **Architecture** | MVC (Model-View-Controller) |
-| **API Style** | RESTful |
-
-**Core Dependencies:**
-```go
-github.com/gorilla/mux v1.8.1          // HTTP router
-github.com/go-sql-driver/mysql v1.9.3  // MySQL driver
-golang.org/x/text v0.34.0              // Text processing
-```
-
-</div>
+| **Frontend Framework** | Next.js 16 |
+| **UI Library** | React 19 |
+| **Bahasa (Frontend)** | TypeScript 5 |
+| **Styling** | Tailwind CSS v4 |
+| **Notifikasi** | React Hot Toast |
+| **Grafik & Visualisasi** | Recharts |
+| **Backend Language** | Go (Golang) 1.24 |
+| **HTTP Router** | Gorilla Mux |
+| **Autentikasi** | JWT (golang-jwt/jwt v5) |
+| **Database** | MySQL 8.0 |
+| **Database Driver** | go-sql-driver/mysql |
+| **Enkripsi Password** | bcrypt (golang.org/x/crypto) |
+| **Env Management** | godotenv |
+| **Deployment (Frontend)** | Vercel |
+| **Deployment (Backend)** | Railway |
 
 ---
 
-## 🚀 Quick Start
+## 📦 Dependensi
 
-### Prerequisites
+### Frontend (`package.json`)
 
-Before you begin, ensure you have the following installed:
+#### Dependencies
+| Paket | Versi | Deskripsi |
+|-------|-------|-----------|
+| `next` | 16.1.6 | Framework React untuk production |
+| `react` | 19.2.3 | Library UI JavaScript |
+| `react-dom` | 19.2.3 | Renderer DOM untuk React |
+| `react-hot-toast` | ^2.6.0 | Notifikasi toast yang elegan |
+| `recharts` | ^3.7.0 | Library grafik berbasis React |
+
+#### Dev Dependencies
+| Paket | Versi | Deskripsi |
+|-------|-------|-----------|
+| `typescript` | ^5 | Superset JavaScript dengan tipe statis |
+| `tailwindcss` | ^4 | Framework CSS utility-first |
+| `@tailwindcss/postcss` | ^4 | Plugin PostCSS untuk Tailwind CSS |
+| `eslint` | ^9 | Linter JavaScript/TypeScript |
+| `eslint-config-next` | 16.1.6 | Konfigurasi ESLint untuk Next.js |
+| `@types/node` | ^20 | Tipe TypeScript untuk Node.js |
+| `@types/react` | ^19 | Tipe TypeScript untuk React |
+| `@types/react-dom` | ^19 | Tipe TypeScript untuk React DOM |
+| `babel-plugin-react-compiler` | 1.0.0 | Plugin Babel untuk React Compiler |
+
+### Backend (`go.mod`)
+
+#### Direct Dependencies
+| Modul | Versi | Deskripsi |
+|-------|-------|-----------|
+| `github.com/go-sql-driver/mysql` | v1.9.3 | Driver MySQL untuk database/sql |
+| `github.com/gorilla/mux` | v1.8.1 | HTTP router dan dispatcher yang powerful |
+| `golang.org/x/text` | v0.34.0 | Paket teks dan encoding untuk Go |
+
+#### Indirect Dependencies
+| Modul | Versi | Deskripsi |
+|-------|-------|-----------|
+| `filippo.io/edwards25519` | v1.1.0 | Implementasi kurva Edwards25519 |
+| `github.com/golang-jwt/jwt/v5` | v5.3.1 | Implementasi JSON Web Token (JWT) |
+| `github.com/joho/godotenv` | v1.5.1 | Membaca file `.env` untuk konfigurasi |
+| `golang.org/x/crypto` | v0.48.0 | Algoritma kriptografi tambahan (bcrypt) |
+
+---
+
+## 🚀 Instalasi & Menjalankan Aplikasi
+
+### Prasyarat
+
+Pastikan perangkat Anda telah menginstal:
+- [Go](https://golang.org/dl/) versi 1.24 atau lebih baru
+- [Node.js](https://nodejs.org/) versi 18 atau lebih baru
+- [MySQL](https://www.mysql.com/downloads/) versi 8.0 atau lebih baru
+- [Git](https://git-scm.com/)
+
+### Langkah 1: Clone Repository
 
 ```bash
-✓ Go 1.21 or higher
-✓ MySQL 5.7+ or 8.0+ (XAMPP recommended for Windows)
-✓ Git
+git clone https://github.com/HHHAAAANNNNN/go-commerce.git
+cd go-commerce
 ```
 
-### Installation
+### Langkah 2: Setup Backend (Go)
 
-**1️⃣ Clone the repository**
 ```bash
-git clone https://github.com/HHHAAAANNNNN/go-commerce-backend.git
-cd go-commerce-backend
-```
+# Masuk ke folder backend
+cd backend
 
-**2️⃣ Install dependencies**
-```bash
+# Install dependensi Go
 go mod download
-go mod tidy
+
+# Buat file konfigurasi environment
+cp .env.example .env
 ```
 
-**3️⃣ Set up the database**
+Edit file `.env` dengan konfigurasi database Anda:
 
-Start your MySQL server (via XAMPP or standalone), then create the database:
-
-```sql
-CREATE DATABASE go_commerce;
-USE go_commerce;
+```env
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=go_commerce
+JWT_SECRET=your_secret_key
+PORT=8080
 ```
 
-Execute the following schema scripts:
-
-<details>
-<summary>📊 Click to expand database schema</summary>
-
-```sql
--- Users Table
-CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    balance INT DEFAULT 0,
-    is_member BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Products Table
-CREATE TABLE products (
-    id VARCHAR(50) PRIMARY KEY,
-    name VARCHAR(200) NOT NULL,
-    price INT NOT NULL,
-    stock INT DEFAULT 0,
-    category VARCHAR(100),
-    rating DECIMAL(3,2) DEFAULT 0.00,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Orders Table
-CREATE TABLE orders (
-    id VARCHAR(50) PRIMARY KEY,
-    customer_id INT NOT NULL,
-    total INT NOT NULL,
-    status VARCHAR(50) DEFAULT 'pending',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (customer_id) REFERENCES users(id)
-);
-
--- Order Items Table
-CREATE TABLE order_items (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    order_id VARCHAR(50) NOT NULL,
-    product_id VARCHAR(50) NOT NULL,
-    quantity INT NOT NULL,
-    price INT NOT NULL,
-    FOREIGN KEY (order_id) REFERENCES orders(id),
-    FOREIGN KEY (product_id) REFERENCES products(id)
-);
-```
-
-</details>
-
-**4️⃣ Configure database connection**
-
-Edit `config/database.go` if your MySQL credentials differ:
-
-```go
-// Default DSN (root user with no password)
-dsn := "root:@tcp(localhost:3306)/go_commerce?parseTime=true"
-
-// If you have a password, update it like this:
-dsn := "root:yourpassword@tcp(localhost:3306)/go_commerce?parseTime=true"
-```
-
-**5️⃣ Run the application**
+### Langkah 3: Setup Database
 
 ```bash
+# Login ke MySQL
+mysql -u root -p
+
+# Buat database
+CREATE DATABASE go_commerce;
+
+# Keluar dari MySQL
+exit
+
+# Jalankan skema database
+mysql -u root -p go_commerce < schema.sql
+```
+
+### Langkah 4: Jalankan Backend
+
+```bash
+# Dari folder backend/
 go run main.go
 ```
 
-You should see:
-```
-╔═══════════════════════════════════════╗
-║   GO-COMMERCE REST API SERVER        ║
-╚═══════════════════════════════════════╝
+Server backend akan berjalan di `http://localhost:8080`
 
-🚀 Server starting on http://localhost:8080
-...
-⏳ Server is running... Press Ctrl+C to stop
-```
+### Langkah 5: Setup Frontend (Next.js)
 
-**6️⃣ Test the API**
+Buka terminal baru, dari root direktori proyek:
 
 ```bash
-# Health check
-curl http://localhost:8080/api/health
+# Install dependensi Node.js
+npm install
+
+# Buat file konfigurasi environment
+cp .env.local.example .env.local
 ```
 
-✅ You're all set! The API is now running at `http://localhost:8080`
+Edit file `.env.local`:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8080
+```
+
+### Langkah 6: Jalankan Frontend
+
+```bash
+npm run dev
+```
+
+Aplikasi frontend akan berjalan di `http://localhost:3000`
+
+### Langkah 7: Seed Data Admin (Opsional)
+
+```bash
+# Dari folder backend/
+go run cmd/seedadmin/main.go
+```
 
 ---
 
-## 📁 Project Structure
+## 📁 Struktur Proyek
 
 ```
-go-commerce-backend/
+go-commerce/
+├── 📁 app/                        # Frontend Next.js
+│   ├── 📁 (app)/                  # Route group aplikasi utama
+│   │   ├── 📁 cart/               # Halaman keranjang belanja
+│   │   ├── 📁 checkout/           # Halaman checkout
+│   │   ├── 📁 dashboard/          # Dashboard pengguna & admin
+│   │   ├── 📁 orders/             # Halaman riwayat pesanan
+│   │   ├── 📁 products/           # Katalog & detail produk
+│   │   ├── 📁 profile/            # Pengaturan profil
+│   │   ├── 📁 vouchers/           # Halaman voucher
+│   │   └── 📄 layout.tsx          # Layout utama aplikasi
+│   ├── 📁 components/             # Komponen React yang dapat digunakan ulang
+│   │   ├── 📄 CartModal.tsx       # Modal keranjang belanja
+│   │   ├── 📄 FloatingButtons.tsx # Tombol mengambang
+│   │   ├── 📄 Footer.tsx          # Footer halaman
+│   │   ├── 📄 LoginModal.tsx      # Modal login
+│   │   ├── 📄 Navbar.tsx          # Navigasi bar
+│   │   ├── 📄 RegisterModal.tsx   # Modal registrasi
+│   │   ├── 📁 app/                # Komponen spesifik aplikasi
+│   │   └── 📁 landing/            # Komponen landing page
+│   ├── 📄 globals.css             # Style global
+│   ├── 📄 layout.tsx              # Root layout
+│   ├── 📄 page.tsx                # Landing page
+│   └── 📁 utils/
+│       └── 📄 api.ts              # Fungsi utilitas API
 │
-├── 📄 main.go                      # Application entry point & server initialization
+├── 📁 backend/                    # Backend Go
+│   ├── 📁 cmd/                    # Command-line utilities
+│   │   ├── 📁 checkorders/        # Melihat data pesanan
+│   │   ├── 📁 checkusers/         # Melihat data pengguna
+│   │   ├── 📁 droptables/         # Menghapus tabel database
+│   │   └── 📁 seedadmin/          # Membuat akun admin
+│   ├── 📁 config/
+│   │   └── 📄 database.go         # Konfigurasi koneksi database
+│   ├── 📁 controllers/            # Handler HTTP (MVC Controller)
+│   │   ├── 📄 auth_controller.go  # Autentikasi (login, register)
+│   │   ├── 📄 cart_controller.go  # Manajemen keranjang
+│   │   ├── 📄 checkout_controller.go # Proses checkout
+│   │   ├── 📄 product_controller.go  # Manajemen produk
+│   │   ├── 📄 review_controller.go   # Ulasan & penilaian
+│   │   ├── 📄 upload_controller.go   # Upload file/gambar
+│   │   ├── 📄 user_controller.go     # Manajemen pengguna
+│   │   └── 📄 voucher_controller.go  # Manajemen voucher
+│   ├── 📁 middlewares/
+│   │   ├── 📄 auth.go             # Middleware autentikasi JWT
+│   │   └── 📄 middleware.go       # Logger & CORS middleware
+│   ├── 📁 models/                 # Definisi struct database
+│   │   ├── 📄 order.go            # Model pesanan
+│   │   ├── 📄 product.go          # Model produk
+│   │   └── 📄 user.go             # Model pengguna
+│   ├── 📁 routes/
+│   │   └── 📄 routes.go           # Definisi semua rute API
+│   ├── 📁 utils/
+│   │   ├── 📄 jwt.go              # Utilitas JWT
+│   │   └── 📄 response.go         # Format respons API standar
+│   ├── 📄 main.go                 # Entry point aplikasi
+│   ├── 📄 schema.sql              # Skema database MySQL
+│   ├── 📄 go.mod                  # Go module definition
+│   └── 📄 Dockerfile              # Docker image untuk backend
 │
-├── 📂 config/
-│   └── database.go                 # Database connection & configuration
-│
-├── 📂 models/
-│   ├── user.go                     # User data model & database operations
-│   ├── product.go                  # Product data model & database operations
-│   └── order.go                    # Order data model & database operations
-│
-├── 📂 controllers/
-│   ├── user_controller.go          # User business logic & HTTP handlers
-│   └── product_controller.go       # Product business logic & HTTP handlers
-│
-├── 📂 routes/
-│   └── routes.go                   # API route definitions & middleware setup
-│
-├── 📂 middlewares/
-│   └── middleware.go               # Logger, CORS, and request processing
-│
-├── 📂 utils/
-│   └── response.go                 # Standardized JSON response helpers
-│
-└── 📂 learning Path/               # Tutorial files documenting learning journey
-    ├── learn_variables.go          # Variables & data types
-    ├── learn_operators.go          # Operators & control flow
-    ├── learn_loops.go              # Loops & arrays
-    ├── learn_slices_maps.go        # Slices & maps
-    ├── learn_functions.go          # Functions & structs
-    ├── learn_advanced.go           # Pointers, interfaces, errors
-    └── learn_file_json_db.go       # File I/O, JSON, database
+├── 📁 screenshots/                # Screenshot tampilan aplikasi
+├── 📁 public/                     # Aset publik Next.js
+├── 📄 package.json                # Dependensi & skrip Node.js
+├── 📄 next.config.ts              # Konfigurasi Next.js
+├── 📄 tsconfig.json               # Konfigurasi TypeScript
+└── 📄 README.md                   # Dokumentasi proyek
 ```
 
 ---
 
 ## 🌐 API Endpoints
 
-### Health Check
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/health` | Check server status |
+### Autentikasi
 
-### 👥 User Management
-| Method | Endpoint | Description | Request Body |
-|--------|----------|-------------|--------------|
-| `GET` | `/api/users` | Get all users | - |
-| `GET` | `/api/users/{id}` | Get user by ID | - |
-| `POST` | `/api/users` | Create new user | `{"name": "string", "email": "string", "balance": int, "is_member": bool}` |
-| `PUT` | `/api/users/{id}` | Update user | `{"name": "string", "email": "string", "balance": int, "is_member": bool}` |
-| `DELETE` | `/api/users/{id}` | Delete user | - |
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| `POST` | `/api/auth/register` | Registrasi pengguna baru |
+| `POST` | `/api/auth/login` | Login dan mendapatkan token JWT |
 
-### 📦 Product Management
-| Method | Endpoint | Description | Request Body |
-|--------|----------|-------------|--------------|
-| `GET` | `/api/products` | Get all products | - |
-| `GET` | `/api/products/{id}` | Get product by ID | - |
-| `GET` | `/api/products/search?q={keyword}` | Search products | - |
-| `POST` | `/api/products` | Create new product | `{"id": "string", "name": "string", "price": int, "stock": int, "category": "string"}` |
-| `PUT` | `/api/products/{id}` | Update product | `{"name": "string", "price": int, "stock": int, "category": "string"}` |
-| `DELETE` | `/api/products/{id}` | Delete product | - |
+### Pengguna
+
+| Method | Endpoint | Deskripsi | Auth |
+|--------|----------|-----------|------|
+| `GET` | `/api/users/profile` | Mendapatkan profil pengguna | ✅ |
+| `PUT` | `/api/users/profile` | Memperbarui profil pengguna | ✅ |
+| `PUT` | `/api/users/password` | Mengubah kata sandi | ✅ |
+
+### Produk
+
+| Method | Endpoint | Deskripsi | Auth |
+|--------|----------|-----------|------|
+| `GET` | `/api/products` | Mendapatkan daftar produk | ❌ |
+| `GET` | `/api/products/{id}` | Mendapatkan detail produk | ❌ |
+| `POST` | `/api/products` | Menambahkan produk baru | ✅ Admin |
+| `PUT` | `/api/products/{id}` | Memperbarui produk | ✅ Admin |
+| `DELETE` | `/api/products/{id}` | Menghapus produk | ✅ Admin |
+
+### Keranjang
+
+| Method | Endpoint | Deskripsi | Auth |
+|--------|----------|-----------|------|
+| `GET` | `/api/cart` | Mendapatkan isi keranjang | ✅ |
+| `POST` | `/api/cart` | Menambahkan item ke keranjang | ✅ |
+| `PUT` | `/api/cart/{id}` | Memperbarui jumlah item | ✅ |
+| `DELETE` | `/api/cart/{id}` | Menghapus item dari keranjang | ✅ |
+
+### Pesanan
+
+| Method | Endpoint | Deskripsi | Auth |
+|--------|----------|-----------|------|
+| `GET` | `/api/orders` | Mendapatkan riwayat pesanan | ✅ |
+| `GET` | `/api/orders/{id}` | Mendapatkan detail pesanan | ✅ |
+| `POST` | `/api/checkout` | Membuat pesanan baru | ✅ |
+
+### Voucher
+
+| Method | Endpoint | Deskripsi | Auth |
+|--------|----------|-----------|------|
+| `GET` | `/api/vouchers` | Mendapatkan daftar voucher | ✅ |
+| `POST` | `/api/vouchers/apply` | Menerapkan voucher | ✅ |
+
+### Ulasan
+
+| Method | Endpoint | Deskripsi | Auth |
+|--------|----------|-----------|------|
+| `POST` | `/api/reviews` | Menambahkan ulasan produk | ✅ |
+| `GET` | `/api/products/{id}/reviews` | Mendapatkan ulasan produk | ❌ |
 
 ---
 
-## 🗄️ Database Schema
-
-<details open>
-<summary><b>Users Table</b></summary>
+## ��️ Skema Database
 
 ```sql
+-- Tabel Pengguna
 CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    balance INT DEFAULT 0,
-    is_member BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    name        VARCHAR(100) NOT NULL,
+    email       VARCHAR(100) UNIQUE NOT NULL,
+    password    VARCHAR(255) NOT NULL,
+    role        ENUM('customer', 'admin') DEFAULT 'customer',
+    membership  ENUM('bronze', 'silver', 'gold', 'platinum') DEFAULT 'bronze',
+    avatar      VARCHAR(255),
+    phone       VARCHAR(20),
+    address     TEXT,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-```
-</details>
 
-<details open>
-<summary><b>Products Table</b></summary>
-
-```sql
+-- Tabel Produk
 CREATE TABLE products (
-    id VARCHAR(50) PRIMARY KEY,
-    name VARCHAR(200) NOT NULL,
-    price INT NOT NULL,
-    stock INT DEFAULT 0,
-    category VARCHAR(100),
-    rating DECIMAL(3,2) DEFAULT 0.00,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    name        VARCHAR(200) NOT NULL,
+    description TEXT,
+    price       DECIMAL(15, 2) NOT NULL,
+    stock       INT NOT NULL DEFAULT 0,
+    category    VARCHAR(100),
+    image       VARCHAR(255),
+    rating      DECIMAL(3, 2) DEFAULT 0,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-```
-</details>
 
-<details open>
-<summary><b>Orders Table</b></summary>
-
-```sql
+-- Tabel Pesanan
 CREATE TABLE orders (
-    id VARCHAR(50) PRIMARY KEY,
-    customer_id INT NOT NULL,
-    total INT NOT NULL,
-    status VARCHAR(50) DEFAULT 'pending',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (customer_id) REFERENCES users(id)
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    user_id         INT NOT NULL,
+    total_amount    DECIMAL(15, 2) NOT NULL,
+    status          ENUM('pending', 'paid', 'shipped', 'completed', 'cancelled') DEFAULT 'pending',
+    voucher_code    VARCHAR(50),
+    discount_amount DECIMAL(15, 2) DEFAULT 0,
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
-```
-</details>
 
-<details open>
-<summary><b>Order Items Table</b></summary>
-
-```sql
+-- Tabel Item Pesanan
 CREATE TABLE order_items (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    order_id VARCHAR(50) NOT NULL,
-    product_id VARCHAR(50) NOT NULL,
-    quantity INT NOT NULL,
-    price INT NOT NULL,
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    order_id    INT NOT NULL,
+    product_id  INT NOT NULL,
+    quantity    INT NOT NULL,
+    price       DECIMAL(15, 2) NOT NULL,
+    reviewed    BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (order_id) REFERENCES orders(id),
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
-```
-</details>
 
-### 📊 Entity Relationship
-
-```
-users (1) ──────< (N) orders (1) ──────< (N) order_items (N) >────── (1) products
-```
-
----
-
-## Installation & Setup
-
-*See the [Quick Start](#-quick-start) section above for detailed installation instructions.*
-
-## 💡 API Usage Examples
-
-### Health Check
-
-**Request:**
-```bash
-curl http://localhost:8080/api/health
-```
-
-**Response:**
-```json
-{
-  "status": "success",
-  "message": "Server is running"
-}
+-- Tabel Voucher
+CREATE TABLE vouchers (
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    code            VARCHAR(50) UNIQUE NOT NULL,
+    discount_type   ENUM('percentage', 'fixed') NOT NULL,
+    discount_value  DECIMAL(15, 2) NOT NULL,
+    min_purchase    DECIMAL(15, 2) DEFAULT 0,
+    max_uses        INT DEFAULT NULL,
+    used_count      INT DEFAULT 0,
+    expires_at      TIMESTAMP,
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 ```
 
 ---
 
-### Get All Users
+## 📄 Lisensi
 
-**Request:**
-```bash
-curl http://localhost:8080/api/users
-```
-
-**Response:**
-```json
-{
-  "status": "success",
-  "data": [
-    {
-      "id": 1,
-      "name": "John Doe",
-      "email": "john@example.com",
-      "balance": 5000000,
-      "is_member": true,
-      "created_at": "2024-01-15T10:30:00Z"
-    }
-  ]
-}
-```
+Proyek ini dilisensikan di bawah **MIT License**. Lihat file [LICENSE](LICENSE) untuk informasi lebih lanjut.
 
 ---
 
-### Create a New User
+## 📞 Kontak
 
-**Request:**
-```bash
-curl -X POST http://localhost:8080/api/users \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Jane Smith",
-    "email": "jane@example.com",
-    "balance": 3000000,
-    "is_member": false
-  }'
-```
+**HHHAAAANNNNN** — Pengembang utama proyek ini.
 
-**Response:**
-```json
-{
-  "status": "success",
-  "message": "User created successfully",
-  "data": {
-    "id": 2,
-    "name": "Jane Smith",
-    "email": "jane@example.com",
-    "balance": 3000000,
-    "is_member": false
-  }
-}
-```
+- 🔗 GitHub: [@HHHAAAANNNNN](https://github.com/HHHAAAANNNNN)
+- 📦 Repository: [go-commerce](https://github.com/HHHAAAANNNNN/go-commerce)
 
 ---
-
-### Get Product by ID
-
-**Request:**
-```bash
-curl http://localhost:8080/api/products/LAP001
-```
-
-**Response:**
-```json
-{
-  "status": "success",
-  "data": {
-    "id": "LAP001",
-    "name": "Gaming Laptop",
-    "price": 15000000,
-    "stock": 10,
-    "category": "Electronics",
-    "rating": 4.5,
-    "created_at": "2024-01-10T08:00:00Z"
-  }
-}
-```
-
----
-
-### Search Products
-
-**Request:**
-```bash
-curl "http://localhost:8080/api/products/search?q=laptop"
-```
-
-**Response:**
-```json
-{
-  "status": "success",
-  "data": [
-    {
-      "id": "LAP001",
-      "name": "Gaming Laptop",
-      "price": 15000000,
-      "stock": 10,
-      "category": "Electronics",
-      "rating": 4.5
-    },
-    {
-      "id": "LAP002",
-      "name": "Business Laptop",
-      "price": 8000000,
-      "stock": 25,
-      "category": "Electronics",
-      "rating": 4.2
-    }
-  ]
-}
-```
-
----
-
-### Update Product
-
-**Request:**
-```bash
-curl -X PUT http://localhost:8080/api/products/LAP001 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Gaming Laptop Pro",
-    "price": 18000000,
-    "stock": 8,
-    "category": "Electronics"
-  }'
-```
-
-**Response:**
-```json
-{
-  "status": "success",
-  "message": "Product updated successfully"
-}
-```
-
----
-
-### Delete User
-
-**Request:**
-```bash
-curl -X DELETE http://localhost:8080/api/users/2
-```
-
-**Response:**
-```json
-{
-  "status": "success",
-  "message": "User deleted successfully"
-}
-```
-
----
-
-## Key Features Implemented
-
-### 1. 🎨 RESTful API Design
-- Proper HTTP methods (GET, POST, PUT, DELETE)
-- Meaningful endpoint naming conventions
-- Appropriate HTTP status codes (200, 201, 400, 404, 500)
-- JSON request/response format
-
-### 2. 🗄️ Database Integration
-- Connection pooling for efficiency
-- Prepared statements to prevent SQL injection
-- Transaction support for data integrity
-- Proper error handling for database operations
-
-### 3. 🔧 Middleware Chain
-- Request logging for debugging and monitoring
-- CORS support for cross-origin requests
-- Extensible middleware pattern for future additions (authentication, rate limiting, etc.)
-
-### 4. 🏛️ Clean Architecture
-- Separation of concerns (MVC pattern)
-- Reusable components (utils, models)
-- Modular design for easy maintenance and testing
-- Consistent error handling across the application
-
-### 5. 📊 Data Management
-- CRUD operations for all entities
-- Search and filter capabilities
-- Data validation at controller level
-- Standardized JSON responses
-
----
-
-## Learning Progression
-
-This project represents a structured learning path through Go development:
-
-1. **Foundation Phase**: Understanding Go syntax, types, and control structures
-2. **Intermediate Phase**: Working with complex data structures, functions, and OOP concepts
-3. **Advanced Phase**: Implementing real-world patterns like interfaces, error handling, and pointer usage
-4. **Production Phase**: Building a complete REST API with database integration and clean architecture
-
-Each phase is documented in the `learning Path/` directory with standalone executable examples demonstrating specific concepts.
-
-## 💻 Technical Highlights
-
-<table>
-<tr>
-<td width="50%">
-
-### Type Safety
-✓ Leveraging Go's static typing  
-✓ Compile-time error detection  
-✓ Strong type system
-
-### Error Handling
-✓ Following Go idioms  
-✓ Explicit error management  
-✓ Robust error propagation
-
-### Interface-Based Design
-✓ Flexible architecture  
-✓ Testable code patterns  
-✓ Polymorphic implementations
-
-</td>
-<td width="50%">
-
-### Pointer Efficiency
-✓ Performance optimization  
-✓ Memory management  
-✓ Controlled mutability
-
-### Concurrency Ready
-✓ Goroutine-friendly design  
-✓ Scalable architecture  
-✓ Concurrent processing support
-
-### Database Best Practices
-✓ Connection pooling  
-✓ Prepared statements  
-✓ Resource cleanup (defer)
-
-</td>
-</tr>
-</table>
-
----
-
-## 🔧 Configuration
-
-### Environment Variables
-
-Currently, the application uses hardcoded configuration in `config/database.go`. For production deployments, consider using environment variables:
-
-```go
-// Recommended configuration structure
-dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
-    os.Getenv("DB_USER"),      // default: "root"
-    os.Getenv("DB_PASSWORD"),  // default: ""
-    os.Getenv("DB_HOST"),      // default: "localhost"
-    os.Getenv("DB_PORT"),      // default: "3306"
-    os.Getenv("DB_NAME"),      // default: "go_commerce"
-)
-```
-
-### Server Configuration
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `SERVER_PORT` | `8080` | HTTP server port |
-| `DB_HOST` | `localhost` | MySQL host address |
-| `DB_PORT` | `3306` | MySQL port |
-| `DB_USER` | `root` | Database username |
-| `DB_PASSWORD` | `` | Database password |
-| `DB_NAME` | `go_commerce` | Database name |
-
----
-
-## 🛠️ Development Environment
-
-### Recommended Tools
-
-| Tool | Purpose | Link |
-|------|---------|------|
-| **Visual Studio Code** | Primary IDE | [Download](https://code.visualstudio.com/) |
-| **Go Extension** | Go language support | [Install](https://marketplace.visualstudio.com/items?itemName=golang.go) |
-| **XAMPP** | Local MySQL server | [Download](https://www.apachefriends.org/) |
-| **Postman** | API testing | [Download](https://www.postman.com/) |
-| **Git** | Version control | [Download](https://git-scm.com/) |
-
-### Useful VS Code Extensions
-
-```json
-{
-  "recommendations": [
-    "golang.go",
-    "humao.rest-client",
-    "eamodio.gitlens",
-    "ms-azuretools.vscode-docker"
-  ]
-}
-```
-
-### Development Workflow
-
-1. **Code** → Write/modify code
-2. **Format** → `go fmt ./...`
-3. **Lint** → `go vet ./...`
-4. **Test** → `go test ./...`
-5. **Run** → `go run main.go`
-
----
-
-## 🚧 Future Enhancements
-
-<table>
-<tr>
-<td width="50%">
-
-### 🔐 Security
-- [ ] JWT authentication
-- [ ] Role-based authorization
-- [ ] API key management
-- [ ] Password encryption
-
-### 🧪 Testing
-- [ ] Unit tests
-- [ ] Integration tests
-- [ ] API endpoint testing
-- [ ] Test coverage reports
-
-### ⚡ Performance
-- [ ] Response caching
-- [ ] Database query optimization
-- [ ] Rate limiting
-- [ ] Request throttling
-
-</td>
-<td width="50%">
-
-### 📊 Features
-- [ ] Pagination support
-- [ ] Advanced filtering
-- [ ] Data export (CSV/Excel)
-- [ ] Email notifications
-
-### 🛠️ DevOps
-- [ ] Docker containerization
-- [ ] CI/CD pipeline (GitHub Actions)
-- [ ] Kubernetes deployment
-- [ ] Monitoring & logging
-
-### 📖 Documentation
-- [ ] Swagger/OpenAPI docs
-- [ ] Postman collection
-- [ ] Integration guides
-- [ ] Video tutorials
-
-</td>
-</tr>
-</table>
-
----
-
-## 🐛 Troubleshooting
-
-<details>
-<summary><b>Database Connection Issues</b></summary>
-
-**Problem:** `Error connecting to database`
-
-**Solutions:**
-1. Verify MySQL is running:
-   ```bash
-   # For XAMPP users
-   # Start XAMPP Control Panel and start MySQL
-   
-   # For Linux users
-   sudo systemctl status mysql
-   ```
-
-2. Check database credentials in `config/database.go`:
-   ```go
-   dsn := "root:yourpassword@tcp(localhost:3306)/go_commerce?parseTime=true"
-   ```
-
-3. Ensure the database exists:
-   ```sql
-   SHOW DATABASES;
-   CREATE DATABASE IF NOT EXISTS go_commerce;
-   ```
-
-4. Test MySQL connection:
-   ```bash
-   mysql -u root -p
-   ```
-
-</details>
-
-<details>
-<summary><b>Port Already in Use</b></summary>
-
-**Problem:** `listen tcp :8080: bind: address already in use`
-
-**Solutions:**
-1. Find and kill the process using port 8080:
-   ```bash
-   # Linux/Mac
-   lsof -i :8080
-   kill -9 <PID>
-   
-   # Windows
-   netstat -ano | findstr :8080
-   taskkill /PID <PID> /F
-   ```
-
-2. Or change the port in `main.go`:
-   ```go
-   port := ":3000"  // Use a different port
-   ```
-
-</details>
-
-<details>
-<summary><b>Module Dependencies Issues</b></summary>
-
-**Problem:** `cannot find package` or module errors
-
-**Solutions:**
-1. Clean and reinstall modules:
-   ```bash
-   go clean -modcache
-   go mod download
-   go mod tidy
-   ```
-
-2. Verify Go version:
-   ```bash
-   go version  # Should be 1.21 or higher
-   ```
-
-</details>
-
-<details>
-<summary><b>CORS Errors</b></summary>
-
-**Problem:** Frontend can't access the API due to CORS
-
-**Solution:**
-The middleware in `middlewares/middleware.go` already handles CORS. Ensure it's properly configured:
-```go
-w.Header().Set("Access-Control-Allow-Origin", "*")
-w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-```
-
-</details>
-
-<details>
-<summary><b>JSON Parsing Errors</b></summary>
-
-**Problem:** `invalid character` or JSON unmarshal errors
-
-**Solutions:**
-1. Validate JSON format using online validators
-2. Ensure Content-Type header is set:
-   ```bash
-   curl -X POST http://localhost:8080/api/users \
-     -H "Content-Type: application/json" \
-     -d '{"name": "Test", "email": "test@example.com"}'
-   ```
-
-</details>
-
----
-
-## 🤝 Contributing
-
-Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**!
-
-### How to Contribute
-
-1. **Fork the Project**
-   ```bash
-   # Click the "Fork" button at the top right of this page
-   ```
-
-2. **Clone your Fork**
-   ```bash
-   git clone https://github.com/your-username/go-commerce-backend.git
-   cd go-commerce-backend
-   ```
-
-3. **Create a Feature Branch**
-   ```bash
-   git checkout -b feature/AmazingFeature
-   ```
-
-4. **Make your Changes**
-   - Write clean, documented code
-   - Follow Go conventions and best practices
-   - Add tests if applicable
-
-5. **Commit your Changes**
-   ```bash
-   git add .
-   git commit -m "Add some AmazingFeature"
-   ```
-
-6. **Push to your Fork**
-   ```bash
-   git push origin feature/AmazingFeature
-   ```
-
-7. **Open a Pull Request**
-   - Go to the original repository
-   - Click "New Pull Request"
-   - Describe your changes in detail
-
-### Contribution Guidelines
-
-- 📝 Write clear commit messages
-- 🧪 Add tests for new features
-- 📖 Update documentation as needed
-- 💡 Follow existing code style
-- 🐛 Report bugs via GitHub Issues
-- ⭐ Star the repo if you find it useful!
-
----
-
-## 🙏 Acknowledgments
-
-This project was developed as a **comprehensive learning exercise** to master Go programming through practical application development. The structured approach from fundamentals to advanced concepts demonstrates a methodical understanding of the language and its ecosystem.
-
-Special thanks to:
-- The Go community for excellent documentation and resources
-- Gorilla toolkit for the robust HTTP router
-- All contributors and supporters of this project
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
-```
-MIT License
-
-Copyright (c) 2024 HHHAAAANNNNN
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-```
-
----
-
-## 📞 Contact
 
 <div align="center">
 
-**HHHAAAANNNNN**
+**⭐ Jika proyek ini bermanfaat, jangan lupa beri bintang!**
 
-[![GitHub](https://img.shields.io/badge/GitHub-HHHAAAANNNNN-181717?style=for-the-badge&logo=github)](https://github.com/HHHAAAANNNNN)
-[![Email](https://img.shields.io/badge/Email-Contact-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:your-email@example.com)
-
-**Project Link:** [https://github.com/HHHAAAANNNNN/go-commerce-backend](https://github.com/HHHAAAANNNNN/go-commerce-backend)
-
----
-
-### ⭐ Star this repo if you find it helpful!
-
-<p align="center">Made with ❤️ and Go</p>
+Made with ❤️ using Go & Next.js
 
 </div>

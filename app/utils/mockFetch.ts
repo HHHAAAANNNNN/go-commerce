@@ -34,9 +34,12 @@ let mockOrderCounter = 100;
 export function mockFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const method = (options.method ?? "GET").toUpperCase();
 
-  // Strip origin so we match only the path
+  // Strip origin and query-string so we match only the path
   let path = url;
-  try { path = new URL(url).pathname; } catch { /* relative url */ }
+  try { path = new URL(url).pathname; } catch {
+    // Relative URL — strip query string and hash manually
+    path = url.split('?')[0].split('#')[0];
+  }
 
   // ── Auth ──────────────────────────────────────────────────────────────────
   if (path === "/api/auth/login" && method === "POST") {

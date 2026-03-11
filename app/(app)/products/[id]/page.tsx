@@ -3,7 +3,7 @@
 import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { authFetch, BACKEND, publicFetch } from "../../../utils/api";
+import { authFetch, BACKEND, publicFetch, DEMO_MODE } from "../../../utils/api";
 
 interface ProductSpec {
   key: string;
@@ -110,6 +110,15 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
   const handleAddToCart = async () => {
     if (!product) return;
+
+    // ── Demo mode: show notification, don't call API ──────────────────────────
+    if (DEMO_MODE) {
+      setSuccessMsg("🛒 Demo Mode — keranjang sudah berisi produk demo. Cek halaman Cart!");
+      setTimeout(() => setSuccessMsg(''), 4000);
+      return;
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     try {
       const storedUser = localStorage.getItem("user");
       if (!storedUser) {
@@ -184,11 +193,21 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     <>
       {/* Success Toast — below navbar */}
       {successMsg && (
-        <div className="fixed top-[85px] right-6 z-[60] flex items-center gap-3 px-5 py-4 bg-green-500/20 border border-green-500/40 rounded-xl shadow-2xl backdrop-blur-sm">
-          <svg className="w-5 h-5 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-          <span className="text-green-300 font-semibold">{successMsg}</span>
+        <div className={`fixed top-[85px] right-6 z-[60] flex items-center gap-3 px-5 py-4 rounded-xl shadow-2xl backdrop-blur-sm border ${
+          successMsg.startsWith("🛒 Demo") 
+            ? "bg-amber-500/20 border-amber-500/40" 
+            : "bg-green-500/20 border-green-500/40"
+        }`}>
+          {successMsg.startsWith("🛒 Demo") ? (
+            <span className="text-amber-300 text-lg shrink-0">ℹ️</span>
+          ) : (
+            <svg className="w-5 h-5 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          )}
+          <span className={`font-semibold ${successMsg.startsWith("🛒 Demo") ? "text-amber-300" : "text-green-300"}`}>
+            {successMsg}
+          </span>
         </div>
       )}
 

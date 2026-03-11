@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { authFetch, BACKEND, publicFetch } from "../../utils/api";
+import { authFetch, BACKEND, publicFetch, DEMO_MODE } from "../../utils/api";
+import toast from "react-hot-toast";
 
 const PAYMENT_METHODS = [
   { id: "gopay", label: "GoPay" },
@@ -230,6 +231,18 @@ export default function CartPage() {
   const handleCheckout = async () => {
     if (!userId || selectedEntries.length === 0) return;
     if (balance < total) return;
+
+    // ── Demo mode: show notification, don't call API ──────────────────────────
+    if (DEMO_MODE) {
+      toast("🛒 Demo Mode — checkout tidak diproses. Ini adalah tampilan demo.", {
+        icon: "ℹ️",
+        duration: 4000,
+        style: { background: "#1e293b", color: "#94a3b8", border: "1px solid #334155" },
+      });
+      return;
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     try {
       const res = await authFetch(`${BACKEND}/api/users/${userId}/checkout`, {
         method: "POST",

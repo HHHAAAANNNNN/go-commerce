@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { BACKEND } from "../utils/api";
+import { BACKEND, DEMO_MODE } from "../utils/api";
+import { MOCK_USER, MOCK_TOKEN } from "../utils/mockData";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -28,6 +29,19 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
     }
 
     setIsLoading(true);
+
+    // ── Demo mode: skip real network call ────────────────────────────────────
+    if (DEMO_MODE) {
+      localStorage.setItem("token", MOCK_TOKEN);
+      localStorage.setItem("user", JSON.stringify(MOCK_USER));
+      window.dispatchEvent(new Event("profileUpdated"));
+      toast.success("Login berhasil! (Demo Mode)");
+      onClose();
+      setTimeout(() => router.push("/dashboard"), 300);
+      setIsLoading(false);
+      return;
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
     try {
       console.log("Sending login request to backend...");
@@ -131,6 +145,27 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
               </svg>
             </button>
           </div>
+
+          {/* Demo mode banner */}
+          {DEMO_MODE && (
+            <div className="mb-5 p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-center">
+              <p className="text-amber-400 text-xs font-semibold mb-2">🚀 DEMO MODE — tidak perlu akun nyata</p>
+              <button
+                type="button"
+                onClick={() => {
+                  localStorage.setItem("token", MOCK_TOKEN);
+                  localStorage.setItem("user", JSON.stringify(MOCK_USER));
+                  window.dispatchEvent(new Event("profileUpdated"));
+                  toast.success("Login berhasil! (Demo Mode)");
+                  onClose();
+                  setTimeout(() => router.push("/dashboard"), 300);
+                }}
+                className="w-full py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-lg text-sm font-semibold transition-colors border border-amber-500/30"
+              >
+                ⚡ Masuk sebagai Demo User
+              </button>
+            </div>
+          )}
 
           {/* Form */}
           <form className="space-y-4" onSubmit={handleSubmit}>

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { BACKEND } from "../../utils/api";
+import { BACKEND, DEMO_MODE } from "../../utils/api";
 
 interface CTASectionProps {
   onLoginClick: () => void;
@@ -38,6 +38,16 @@ export default function CTASection({ onLoginClick }: CTASectionProps) {
     console.log("email:", formData.email);
     console.log("password:", formData.password);
     console.log("phone:", formData.phone);
+
+    // ── Demo mode: skip registration, ask user to just login ─────────────────
+    if (DEMO_MODE) {
+      toast.success("Demo Mode — tidak perlu register! Klik tombol Login untuk masuk.");
+      setShowRegisterForm(false);
+      setCurrentStep(1);
+      setFormData({ name: "", phone: "", email: "", password: "", confirmPassword: "" });
+      return;
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
     setIsLoading(true);
     try {

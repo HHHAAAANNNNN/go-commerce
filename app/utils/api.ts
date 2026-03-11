@@ -1,10 +1,22 @@
+import { mockFetch } from "./mockFetch";
+
 export const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8080";
+
+/** True when NEXT_PUBLIC_DEMO_MODE=true (Vercel demo deployment, no backend needed) */
+export const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
 /**
  * authFetch — fetch wrapper that automatically attaches the JWT Bearer token
  * stored in localStorage. Use for any API call to a protected endpoint.
+ *
+ * In DEMO_MODE all requests are intercepted by mockFetch — no real HTTP calls are made.
  */
 export function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  // ── Demo mode: return mock response without touching the network ──────────
+  if (DEMO_MODE) {
+    return mockFetch(url, options);
+  }
+
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   const headers: Record<string, string> = {

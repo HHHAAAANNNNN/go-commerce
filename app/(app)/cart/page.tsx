@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { authFetch, BACKEND } from "../../utils/api";
+import { authFetch, BACKEND, publicFetch } from "../../utils/api";
 
 const PAYMENT_METHODS = [
   { id: "gopay", label: "GoPay" },
@@ -105,7 +105,7 @@ export default function CartPage() {
       await Promise.all(
         entries.map(async (entry) => {
           try {
-            const res = await fetch(`${BACKEND}/api/products/${entry.productId}`);
+            const res = await publicFetch(`${BACKEND}/api/products/${entry.productId}`);
             if (res.ok) {
               const data = await res.json();
               if (data.success && data.data) {
@@ -136,7 +136,7 @@ export default function CartPage() {
     loadCart();
 
     // Vouchers
-    fetch(`${BACKEND}/api/vouchers`)
+    publicFetch(`${BACKEND}/api/vouchers`)
       .then((r) => r.json())
       .then((d) => {
         if (d.success && d.data) {

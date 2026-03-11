@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { authFetch, BACKEND } from '../../utils/api';
+import { authFetch, BACKEND, publicFetch } from "../../utils/api";
 
 type VoucherType = 'percentage' | 'fixed_amount';
 type VoucherCategory = 'all' | VoucherType;
@@ -231,7 +231,7 @@ export default function VouchersPage() {
   const fetchVouchers = useCallback(async () => {
     setLoadingVouchers(true);
     try {
-      const res = await fetch(`${BACKEND}/api/vouchers`);
+      const res = await publicFetch(`${BACKEND}/api/vouchers`);
       const data = await res.json();
       if (data.success) setVouchers(data.data || []);
     } catch { /* silent */ } finally { setLoadingVouchers(false); }

@@ -1,9 +1,17 @@
 import { mockFetch } from "./mockFetch";
 
-export const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8080";
-
 /** True when NEXT_PUBLIC_DEMO_MODE=true (Vercel demo deployment, no backend needed) */
 export const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+
+/**
+ * Backend base URL.
+ * In DEMO_MODE this is deliberately "" so that:
+ *   - Image paths:  "" + "/assets/products/..." → "/assets/..." served from Next.js public/
+ *   - API paths:    "" + "/api/products"        → "/api/products" handled by mockFetch
+ */
+export const BACKEND = DEMO_MODE
+  ? ""
+  : (process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8080");
 
 /**
  * authFetch — fetch wrapper that automatically attaches the JWT Bearer token
@@ -42,6 +50,15 @@ export function authFetch(url: string, options: RequestInit = {}): Promise<Respo
     }
     return res;
   });
+}
+
+/**
+ * publicFetch — like authFetch but for public (unauthenticated) endpoints.
+ * In DEMO_MODE routes through mockFetch; otherwise plain fetch.
+ */
+export function publicFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  if (DEMO_MODE) return mockFetch(url, options);
+  return fetch(url, options);
 }
 
 /** Retrieve the current user from localStorage, or null if not logged in */

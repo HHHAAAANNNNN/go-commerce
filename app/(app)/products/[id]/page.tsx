@@ -3,7 +3,7 @@
 import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { authFetch, BACKEND } from "../../../utils/api";
+import { authFetch, BACKEND, publicFetch } from "../../../utils/api";
 
 interface ProductSpec {
   key: string;
@@ -67,7 +67,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const fetchReviews = async () => {
     setReviewsLoading(true);
     try {
-      const res = await fetch(`${BACKEND}/api/products/${resolvedParams.id}/reviews`);
+      const res = await publicFetch(`${BACKEND}/api/products/${resolvedParams.id}/reviews`);
       const data = await res.json();
       if (data.success) setReviews(data.data || []);
     } catch (e) {
@@ -81,7 +81,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const fetchProduct = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${BACKEND}/api/products/${resolvedParams.id}`);
+      const response = await publicFetch(`${BACKEND}/api/products/${resolvedParams.id}`);
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.data) {

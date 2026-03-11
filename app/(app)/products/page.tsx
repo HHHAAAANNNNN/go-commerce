@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { authFetch, BACKEND } from "../../utils/api";
+import { authFetch, BACKEND, publicFetch } from "../../utils/api";
 
 interface Product {
   id: string;
@@ -40,7 +40,7 @@ export default function ProductsPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch(`${BACKEND}/api/products`);
+      const response = await publicFetch(`${BACKEND}/api/products`);
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.data) {

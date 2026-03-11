@@ -3,9 +3,7 @@
 import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { authFetch } from "../../../utils/api";
-
-const BACKEND = "http://localhost:8080";
+import { authFetch, BACKEND } from "../../../utils/api";
 
 interface ProductSpec {
   key: string;

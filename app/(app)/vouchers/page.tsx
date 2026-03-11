@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { authFetch } from '../../utils/api';
-
-const BACKEND = "http://localhost:8080";
+import { authFetch, BACKEND } from '../../utils/api';
 
 type VoucherType = 'percentage' | 'fixed_amount';
 type VoucherCategory = 'all' | VoucherType;

@@ -1,4 +1,4 @@
-export const BACKEND = "http://localhost:8080";
+export const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8080";
 
 /**
  * authFetch — fetch wrapper that automatically attaches the JWT Bearer token

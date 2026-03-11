@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { BACKEND } from "../../utils/api";
 
 interface CTASectionProps {
   onLoginClick: () => void;
@@ -40,7 +41,7 @@ export default function CTASection({ onLoginClick }: CTASectionProps) {
 
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:8080/api/auth/register", {
+      const response = await fetch(`${BACKEND}/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

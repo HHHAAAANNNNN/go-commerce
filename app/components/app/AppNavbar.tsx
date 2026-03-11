@@ -3,9 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { authFetch } from "../../utils/api";
-
-const BACKEND = "http://localhost:8080";
+import { authFetch, BACKEND } from "../../utils/api";
 
 interface User {
   id: number;
@@ -57,7 +55,7 @@ export default function AppNavbar({ onToggleSidebar }: AppNavbarProps) {
       const storedUser = localStorage.getItem("user");
       if (!storedUser) { setCartCount(0); return; }
       const u = JSON.parse(storedUser);
-      const res = await authFetch(`http://localhost:8080/api/users/${u.id}/cart`);
+      const res = await authFetch(`${BACKEND}/api/users/${u.id}/cart`);
       const data = await res.json();
       if (data.success && data.data) {
         setCartCount(data.data.length);

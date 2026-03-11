@@ -3,9 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { authFetch } from "../../utils/api";
-
-const BACKEND = "http://localhost:8080";
+import { authFetch, BACKEND } from "../../utils/api";
 
 const PAYMENT_METHODS = [
   { id: "gopay", label: "GoPay" },

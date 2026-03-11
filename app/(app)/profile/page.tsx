@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-
-const BACKEND = "http://localhost:8080";
+import { authFetch, BACKEND } from "../../utils/api";
 
 interface UserProfile {
   id: number;
@@ -110,7 +109,7 @@ export default function ProfilePage() {
         const fd = new FormData();
         fd.append("image", avatarFile);
         fd.append("category", "avatars");
-        const uploadRes = await fetch(`${BACKEND}/api/upload`, { method: "POST", body: fd });
+        const uploadRes = await authFetch(`${BACKEND}/api/upload`, { method: "POST", body: fd });
         const uploadData = await uploadRes.json();
         if (!uploadRes.ok || !uploadData.success) {
           showToast("Failed to upload avatar. Please try again.", "error");
@@ -139,7 +138,7 @@ export default function ProfilePage() {
         body.new_password = pwForm.newPw;
       }
 
-      const res = await fetch(`${BACKEND}/api/users/${user.id}/profile`, {
+      const res = await authFetch(`${BACKEND}/api/users/${user.id}/profile`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { BACKEND } from "../utils/api";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -32,7 +33,7 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
       console.log("Sending login request to backend...");
       console.log("Email:", email);
       
-      const response = await fetch("http://localhost:8080/api/auth/login", {
+      const response = await fetch(`${BACKEND}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

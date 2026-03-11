@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { authFetch } from "../../utils/api";
+import { authFetch, BACKEND } from "../../utils/api";
 
 interface Product {
   id: string;
@@ -40,7 +40,7 @@ export default function ProductsPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/products");
+      const response = await fetch(`${BACKEND}/api/products`);
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.data) {
@@ -293,7 +293,7 @@ export default function ProductsPage() {
               <div className="relative aspect-square bg-slate-800 overflow-hidden">
                 {product.image && !imageErrors[product.id] ? (
                   <img
-                    src={product.image.startsWith('http') ? product.image : `http://localhost:8080${product.image}`}
+                    src={product.image || ''}
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     onError={() => setImageErrors(prev => ({ ...prev, [product.id]: true }))}
@@ -571,7 +571,7 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
         };
         formData.append('category', categoryUploadMap[basicData.category] || basicData.category.toLowerCase());
 
-        const uploadResponse = await authFetch('http://localhost:8080/api/upload', {
+        const uploadResponse = await authFetch(`${BACKEND}/api/upload`, {
           method: 'POST',
           body: formData,
         });
@@ -630,7 +630,7 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
       }
 
       // Create product
-      const response = await authFetch('http://localhost:8080/api/products', {
+      const response = await authFetch(`${BACKEND}/api/products`, {
         method: 'POST',
         body: JSON.stringify({
           name: basicData.name,

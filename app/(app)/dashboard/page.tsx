@@ -3,9 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { authFetch } from "../../utils/api";
-
-const BACKEND = "http://localhost:8080";
+import { authFetch, BACKEND } from "../../utils/api";
 
 const PAYMENT_METHODS = [
   { id: "gopay", label: "GoPay" },

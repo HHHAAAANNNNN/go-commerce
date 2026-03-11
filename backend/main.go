@@ -44,8 +44,12 @@ func main() {
 	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir(publicAssetsDir))))
 
 	// Start server
-	port := ":8080"
-	fmt.Printf("🚀 Server starting on http://localhost%s\n", port)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	fmt.Printf("🚀 Server starting on http://localhost:%s\n", port)
+	port = ":" + port
 	fmt.Println("\n📋 Available Endpoints:")
 	fmt.Println("   GET    /api/health")
 	fmt.Println("   POST   /api/auth/register")

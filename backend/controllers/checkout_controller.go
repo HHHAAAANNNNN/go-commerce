@@ -157,7 +157,7 @@ func Checkout(w http.ResponseWriter, r *http.Request) {
 	// 8. Create order — orders.id is AUTO_INCREMENT INT, order_number is the user-visible string
 	orderNumber := fmt.Sprintf("ORD-%d-%d", userID, time.Now().UnixMilli())
 	result, err := tx.Exec(
-		"INSERT INTO orders (order_number, user_id, address_id, subtotal, discount_amount, total_amount, status, payment_status) VALUES (?, ?, NULL, ?, ?, ?, 'pending', 'pending')",
+		"INSERT INTO orders (order_number, user_id, address_id, subtotal, discount_amount, total_amount, status) VALUES (?, ?, NULL, ?, ?, ?, 'pending')",
 		orderNumber, userID, subtotal, discount, total,
 	)
 	if err != nil {
@@ -650,7 +650,7 @@ func UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Update order status
-		if _, txErr = tx.Exec("UPDATE orders SET status = 'cancelled', payment_status = 'cancelled' WHERE id = ?", orderID); txErr != nil {
+		if _, txErr = tx.Exec("UPDATE orders SET status = 'cancelled' WHERE id = ?", orderID); txErr != nil {
 			tx.Rollback()
 			utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to update status: "+txErr.Error())
 			return
@@ -681,8 +681,8 @@ func UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
 
 	// Non-cancel status update
 	result, err := config.DB.Exec(
-		"UPDATE orders SET status = ?, payment_status = ? WHERE order_number = ? AND user_id = ?",
-		req.Status, req.Status, orderNumber, userID,
+		"UPDATE orders SET status = ? WHERE order_number = ? AND user_id = ?",
+		req.Status, orderNumber, userID,
 	)
 	if err != nil {
 		utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to update status: "+err.Error())
@@ -769,7 +769,7 @@ func UpdateOrderStatusAdmin(w http.ResponseWriter, r *http.Request) {
 			utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to refund balance")
 			return
 		}
-		if _, e := tx.Exec("UPDATE orders SET status = ?, payment_status = ? WHERE id = ?", req.Status, req.Status, orderID); e != nil {
+		if _, e := tx.Exec("UPDATE orders SET status = ? WHERE id = ?", req.Status, orderID); e != nil {
 			tx.Rollback()
 			utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to update status")
 			return
@@ -784,8 +784,8 @@ func UpdateOrderStatusAdmin(w http.ResponseWriter, r *http.Request) {
 
 	// Non-cancel status update (no user_id restriction)
 	result, err := config.DB.Exec(
-		"UPDATE orders SET status = ?, payment_status = ? WHERE order_number = ?",
-		req.Status, req.Status, orderNumber,
+		"UPDATE orders SET status = ? WHERE order_number = ?",
+		req.Status, orderNumber,
 	)
 	if err != nil {
 		utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to update status: "+err.Error())

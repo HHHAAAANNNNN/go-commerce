@@ -120,7 +120,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         return;
       }
       const user = JSON.parse(storedUser);
-      const res = await fetch(`${BACKEND}/api/users/${user.id}/cart`, {
+      const res = await authFetch(`${BACKEND}/api/users/${user.id}/cart`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ product_id: String(product.id), quantity }),

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { authFetch } from "../../utils/api";
 
 const BACKEND = "http://localhost:8080";
 
@@ -94,7 +95,7 @@ export default function CartPage() {
       setUserId(u.id);
 
       // Fetch cart items from backend
-      const cartRes = await fetch(`${BACKEND}/api/users/${u.id}/cart`);
+      const cartRes = await authFetch(`${BACKEND}/api/users/${u.id}/cart`);
       const cartData = await cartRes.json();
       const entries: CartEntry[] = cartData.success && cartData.data
         ? cartData.data.map((item: { product_id: string; quantity: number }) => ({ productId: item.product_id, quantity: item.quantity }))
@@ -121,7 +122,7 @@ export default function CartPage() {
       setProducts(productMap);
 
       // Fetch balance
-      fetch(`${BACKEND}/api/users/${u.id}/balance`)
+      authFetch(`${BACKEND}/api/users/${u.id}/balance`)
         .then((r) => r.json())
         .then((d) => { if (d.success) setBalance(d.data.balance); })
         .catch(() => { });
@@ -199,7 +200,7 @@ export default function CartPage() {
   const removeItem = async (productId: string) => {
     if (!userId) return;
     try {
-      await fetch(`${BACKEND}/api/users/${userId}/cart/${productId}`, { method: "DELETE" });
+      await authFetch(`${BACKEND}/api/users/${userId}/cart/${productId}`, { method: "DELETE" });
       setCartEntries((prev) => prev.filter((e) => e.productId !== productId));
       setSelectedIds((prev) => {
         const next = new Set(prev);
@@ -214,7 +215,7 @@ export default function CartPage() {
     const newQty = Math.max(1, qty);
     if (!userId) return;
     try {
-      await fetch(`${BACKEND}/api/users/${userId}/cart/${productId}`, {
+      await authFetch(`${BACKEND}/api/users/${userId}/cart/${productId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ quantity: newQty }),
@@ -232,7 +233,7 @@ export default function CartPage() {
     if (!userId || selectedEntries.length === 0) return;
     if (balance < total) return;
     try {
-      const res = await fetch(`${BACKEND}/api/users/${userId}/checkout`, {
+      const res = await authFetch(`${BACKEND}/api/users/${userId}/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -266,7 +267,7 @@ export default function CartPage() {
     if (amount <= 0) return;
     setTopupLoading(true);
     try {
-      const res = await fetch(`${BACKEND}/api/users/${userId}/topup`, {
+      const res = await authFetch(`${BACKEND}/api/users/${userId}/topup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount }),

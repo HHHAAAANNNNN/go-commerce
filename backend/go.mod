@@ -1,6 +1,6 @@
 module github.com/HHHAAAANNNNN/go-commerce-backend
 
-go 1.22.0
+go 1.24.00
 
 require (
 	github.com/go-sql-driver/mysql v1.9.3

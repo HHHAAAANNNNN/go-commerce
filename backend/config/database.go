@@ -15,16 +15,26 @@ var DB *sql.DB
 // ConnectDatabase - Connect to MySQL database and run migrations
 func ConnectDatabase() error {
 	dbUser := os.Getenv("DB_USER")
-	if dbUser == "" { dbUser = "root" }
+	if dbUser == "" {
+		dbUser = "root"
+	}
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbHost := os.Getenv("DB_HOST")
-	if dbHost == "" { dbHost = "127.0.0.1" }
+	if dbHost == "" {
+		dbHost = "127.0.0.1"
+	}
 	dbPort := os.Getenv("DB_PORT")
-	if dbPort == "" { dbPort = "3306" }
+	if dbPort == "" {
+		dbPort = "3306"
+	}
 	dbName := os.Getenv("DB_NAME")
-	if dbName == "" { dbName = "go_commerce" }
+	if dbName == "" {
+		dbName = "go_commerce"
+	}
 	tlsParam := ""
-	if os.Getenv("DB_TLS") == "true" { tlsParam = "&tls=true" }
+	if os.Getenv("DB_TLS") == "true" {
+		tlsParam = "&tls=true"
+	}
 
 	dsnNoDB := fmt.Sprintf("%s:%s@tcp(%s:%s)/?parseTime=true&timeout=5s&readTimeout=5s&writeTimeout=5s%s",
 		dbUser, dbPassword, dbHost, dbPort, tlsParam)

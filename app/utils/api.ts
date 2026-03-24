@@ -9,9 +9,11 @@ export const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
  *   - Image paths:  "" + "/assets/products/..." → "/assets/..." served from Next.js public/
  *   - API paths:    "" + "/api/products"        → "/api/products" handled by mockFetch
  */
-export const BACKEND = DEMO_MODE
-  ? ""
-  : (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080");
+let backendUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+if (backendUrl.endsWith("/api")) {
+  backendUrl = backendUrl.slice(0, -4);
+}
+export const BACKEND = DEMO_MODE ? "" : backendUrl;
 
 /**
  * authFetch — fetch wrapper that automatically attaches the JWT Bearer token

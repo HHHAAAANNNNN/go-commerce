@@ -74,7 +74,7 @@ func main() {
 		AllowedOrigins: []string{
 			"https://go-commerce.web.id",
 			"https://www.go-commerce.web.id",
-			"http://localhost:3000",
+			"http://localhost:8080",
 		},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
 		AllowedHeaders:   []string{"Authorization", "Content-Type", "Accept"},

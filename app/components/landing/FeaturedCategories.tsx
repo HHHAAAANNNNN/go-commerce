@@ -238,7 +238,8 @@ export default function FeaturedCategories({
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const BACKEND = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+        let BACKEND = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+        if (BACKEND.endsWith("/api")) BACKEND = BACKEND.slice(0, -4);
         const res = await fetch(`${BACKEND}/api/products`);
         const json = await res.json();
         const all: Product[] = json.data ?? [];

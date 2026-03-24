@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { BACKEND, getImageUrl } from "../../utils/api";
 import { CartItem } from "../CartModal";
 
 interface Product {
@@ -111,7 +112,7 @@ function ProductCard({
         {product.image ? (
           <div className="relative w-full h-full">
             <Image
-              src={product.image}
+              src={getImageUrl(product.image)}
               alt={product.name}
               fill
               className="object-cover transition-transform duration-500"

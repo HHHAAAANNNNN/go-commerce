@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { authFetch, BACKEND, publicFetch } from "../../utils/api";
+import { authFetch, BACKEND, publicFetch, getImageUrl } from "../../utils/api";
 
 interface Product {
   id: string;
@@ -165,15 +165,15 @@ export default function ProductsPage() {
             <div className="flex items-center gap-3">
               {/* Add Button — admin only */}
               {role === 'admin' && (
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-primary-400 to-secondary-400 hover:from-primary-500 hover:to-secondary-500 text-white rounded-lg font-semibold transition-all shadow-lg shadow-primary-400/20 hover:shadow-primary-400/40 hover:scale-105"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                <span className="hidden sm:inline">Add Product</span>
-              </button>
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-primary-400 to-secondary-400 hover:from-primary-500 hover:to-secondary-500 text-white rounded-lg font-semibold transition-all shadow-lg shadow-primary-400/20 hover:shadow-primary-400/40 hover:scale-105"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span className="hidden sm:inline">Add Product</span>
+                </button>
               )}
             </div>
           </div>
@@ -293,7 +293,7 @@ export default function ProductsPage() {
               <div className="relative aspect-square bg-slate-800 overflow-hidden">
                 {product.image && !imageErrors[product.id] ? (
                   <img
-                    src={product.image || ''}
+                    src={getImageUrl(product.image) || ''}
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     onError={() => setImageErrors(prev => ({ ...prev, [product.id]: true }))}
@@ -372,15 +372,15 @@ export default function ProductsPage() {
             <h3 className="text-xl font-bold text-white mb-2">No products found</h3>
             <p className="text-slate-400 mb-6">Try adjusting your search or filters</p>
             {role === 'admin' && (
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-400 to-secondary-400 text-white rounded-lg font-semibold hover:opacity-90 transition-all"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Add New Product
-            </button>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-400 to-secondary-400 text-white rounded-lg font-semibold hover:opacity-90 transition-all"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Add New Product
+              </button>
             )}
           </div>
         )}

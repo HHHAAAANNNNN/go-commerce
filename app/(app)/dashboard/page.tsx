@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { authFetch, BACKEND } from "../../utils/api";
+import { authFetch, BACKEND, getImageUrl } from "../../utils/api";
 
 const PAYMENT_METHODS = [
   { id: "gopay", label: "GoPay" },
@@ -426,41 +426,41 @@ export default function DashboardPage() {
               </>
             ) : (
               <>
-            <div className="px-4 py-2 bg-gradient-to-r from-accent-400/20 to-accent-400/10 border border-accent-400/30 rounded-full">
-              <p className="text-accent-400 font-semibold text-sm">✨ {currentTier} Member</p>
-            </div>
-            <p className="text-slate-400 text-sm">Member since {membershipData.memberSince}</p>
-            {/* Balance row */}
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-slate-300 text-sm font-medium">
-                {balanceVisible ? formatIDR(balance) : "Rp ••••••"}
-              </span>
-              <button
-                onClick={() => setBalanceVisible(v => !v)}
-                className="p-1 hover:bg-slate-700/50 rounded-md transition-colors text-slate-400 hover:text-white"
-                title={balanceVisible ? "Sembunyikan" : "Tampilkan saldo"}
-              >
-                {balanceVisible ? (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                  </svg>
-                ) : (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                )}
-              </button>
-              <button
-                onClick={() => setShowTopup(true)}
-                className="flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-primary-500/30 to-secondary-500/30 hover:from-primary-500/50 hover:to-secondary-500/50 border border-primary-400/40 text-primary-300 hover:text-white rounded-full text-xs font-semibold transition-all"
-              >
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-                </svg>
-                Top Up
-              </button>
-            </div>
+                <div className="px-4 py-2 bg-gradient-to-r from-accent-400/20 to-accent-400/10 border border-accent-400/30 rounded-full">
+                  <p className="text-accent-400 font-semibold text-sm">✨ {currentTier} Member</p>
+                </div>
+                <p className="text-slate-400 text-sm">Member since {membershipData.memberSince}</p>
+                {/* Balance row */}
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-slate-300 text-sm font-medium">
+                    {balanceVisible ? formatIDR(balance) : "Rp ••••••"}
+                  </span>
+                  <button
+                    onClick={() => setBalanceVisible(v => !v)}
+                    className="p-1 hover:bg-slate-700/50 rounded-md transition-colors text-slate-400 hover:text-white"
+                    title={balanceVisible ? "Sembunyikan" : "Tampilkan saldo"}
+                  >
+                    {balanceVisible ? (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setShowTopup(true)}
+                    className="flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-primary-500/30 to-secondary-500/30 hover:from-primary-500/50 hover:to-secondary-500/50 border border-primary-400/40 text-primary-300 hover:text-white rounded-full text-xs font-semibold transition-all"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Top Up
+                  </button>
+                </div>
               </>
             )}
           </div>
@@ -515,172 +515,172 @@ export default function DashboardPage() {
 
       {/* Membership Status - Royal Gold & Purple Theme */}
       {role !== 'admin' && (
-      <div className="relative bg-gradient-to-br from-purple-950/90 via-indigo-950/80 to-slate-900/90 backdrop-blur-sm border-2 border-amber-500/40 rounded-2xl p-6 overflow-hidden shadow-2xl shadow-purple-900/20">
-        {/* Animated Background Effects */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-amber-500/15 to-purple-600/15 rounded-full filter blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-purple-600/10 to-amber-500/10 rounded-full filter blur-3xl"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/5 to-transparent shimmer-animation"></div>
+        <div className="relative bg-gradient-to-br from-purple-950/90 via-indigo-950/80 to-slate-900/90 backdrop-blur-sm border-2 border-amber-500/40 rounded-2xl p-6 overflow-hidden shadow-2xl shadow-purple-900/20">
+          {/* Animated Background Effects */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-amber-500/15 to-purple-600/15 rounded-full filter blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-purple-600/10 to-amber-500/10 rounded-full filter blur-3xl"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/5 to-transparent shimmer-animation"></div>
 
-        {/* Elegant Pattern Overlay */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: 'radial-gradient(circle, rgba(251, 191, 36, 0.4) 1px, transparent 1px)',
-          backgroundSize: '20px 20px'
-        }}></div>
+          {/* Elegant Pattern Overlay */}
+          <div className="absolute inset-0 opacity-[0.03]" style={{
+            backgroundImage: 'radial-gradient(circle, rgba(251, 191, 36, 0.4) 1px, transparent 1px)',
+            backgroundSize: '20px 20px'
+          }}></div>
 
-        {/* Top decorative border */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent"></div>
+          {/* Top decorative border */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent"></div>
 
-        <div className="relative z-10">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="relative p-2.5 bg-gradient-to-br from-amber-500/20 to-purple-600/20 rounded-xl backdrop-blur-sm border border-amber-400/40 shadow-lg shadow-amber-500/20">
-                  <div className="absolute inset-0 bg-gradient-to-br from-amber-400/10 to-transparent rounded-xl animate-pulse"></div>
-                  <svg className="w-6 h-6 text-amber-400 relative z-10" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                </div>
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-300 bg-clip-text text-transparent drop-shadow-lg">
-                  Premium Membership
-                </h2>
-              </div>
-              <p className="text-amber-100/70 text-sm font-medium">Exclusive access to premium benefits and rewards</p>
-            </div>
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/40 to-purple-500/40 blur-xl rounded-full animate-pulse"></div>
-              <div className="relative px-6 py-3 bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-600 rounded-full border-2 border-amber-400/60 shadow-xl shadow-amber-500/40 group-hover:scale-105 transition-transform">
-                <p className="text-white font-black tracking-wider text-sm">{membershipData.currentTier}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Current Benefits */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            {membershipData.benefits.map((benefit, index) => (
-              <div
-                key={index}
-                className={`relative group backdrop-blur-sm rounded-xl p-4 border transition-all duration-300 hover:scale-105 overflow-hidden ${benefit.active
-                  ? 'bg-gradient-to-br from-purple-900/40 via-indigo-900/30 to-slate-900/40 border-amber-500/20 hover:border-amber-400/50 hover:shadow-lg hover:shadow-amber-500/20'
-                  : 'bg-gradient-to-br from-slate-900/60 via-slate-900/40 to-slate-900/60 border-slate-700/30 opacity-60'
-                  }`}
-              >
-                {/* Shimmer effect on hover */}
-                {benefit.active && <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent shimmer-animation opacity-0 group-hover:opacity-100"></div>}
-                {/* Corner accent */}
-                <div className={`absolute top-0 right-0 w-16 h-16 rounded-bl-3xl ${benefit.active ? 'bg-gradient-to-br from-amber-400/10 to-transparent' : 'bg-gradient-to-br from-slate-600/10 to-transparent'}`}></div>
-                <div className="relative z-10">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className={`p-1.5 rounded-lg border ${benefit.active ? 'bg-amber-500/20 border-amber-400/30' : 'bg-slate-700/30 border-slate-600/30'}`}>
-                      {benefit.active ? (
-                        <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      ) : (
-                        <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                      )}
-                    </div>
-                    <p className={`font-semibold text-sm ${benefit.active ? 'text-amber-50' : 'text-slate-400'}`}>{benefit.name}</p>
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="relative p-2.5 bg-gradient-to-br from-amber-500/20 to-purple-600/20 rounded-xl backdrop-blur-sm border border-amber-400/40 shadow-lg shadow-amber-500/20">
+                    <div className="absolute inset-0 bg-gradient-to-br from-amber-400/10 to-transparent rounded-xl animate-pulse"></div>
+                    <svg className="w-6 h-6 text-amber-400 relative z-10" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
                   </div>
-                  <p className={`font-bold text-lg ${benefit.active ? 'text-amber-400' : 'text-slate-500'}`}>{benefit.value}</p>
+                  <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-300 bg-clip-text text-transparent drop-shadow-lg">
+                    Premium Membership
+                  </h2>
+                </div>
+                <p className="text-amber-100/70 text-sm font-medium">Exclusive access to premium benefits and rewards</p>
+              </div>
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-500/40 to-purple-500/40 blur-xl rounded-full animate-pulse"></div>
+                <div className="relative px-6 py-3 bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-600 rounded-full border-2 border-amber-400/60 shadow-xl shadow-amber-500/40 group-hover:scale-105 transition-transform">
+                  <p className="text-white font-black tracking-wider text-sm">{membershipData.currentTier}</p>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
 
-          {/* Next Tier Progress */}
-          <div className="relative bg-gradient-to-br from-slate-900/80 via-purple-950/60 to-indigo-950/60 rounded-xl p-6 border-2 border-amber-500/30 backdrop-blur-sm overflow-hidden shadow-inner">
-            {/* Decorative elements */}
-            <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-amber-400/10 to-purple-600/10 rounded-full filter blur-2xl"></div>
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-purple-600/10 to-amber-400/10 rounded-full filter blur-2xl"></div>
+            {/* Current Benefits */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              {membershipData.benefits.map((benefit, index) => (
+                <div
+                  key={index}
+                  className={`relative group backdrop-blur-sm rounded-xl p-4 border transition-all duration-300 hover:scale-105 overflow-hidden ${benefit.active
+                    ? 'bg-gradient-to-br from-purple-900/40 via-indigo-900/30 to-slate-900/40 border-amber-500/20 hover:border-amber-400/50 hover:shadow-lg hover:shadow-amber-500/20'
+                    : 'bg-gradient-to-br from-slate-900/60 via-slate-900/40 to-slate-900/60 border-slate-700/30 opacity-60'
+                    }`}
+                >
+                  {/* Shimmer effect on hover */}
+                  {benefit.active && <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent shimmer-animation opacity-0 group-hover:opacity-100"></div>}
+                  {/* Corner accent */}
+                  <div className={`absolute top-0 right-0 w-16 h-16 rounded-bl-3xl ${benefit.active ? 'bg-gradient-to-br from-amber-400/10 to-transparent' : 'bg-gradient-to-br from-slate-600/10 to-transparent'}`}></div>
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className={`p-1.5 rounded-lg border ${benefit.active ? 'bg-amber-500/20 border-amber-400/30' : 'bg-slate-700/30 border-slate-600/30'}`}>
+                        {benefit.active ? (
+                          <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                        )}
+                      </div>
+                      <p className={`font-semibold text-sm ${benefit.active ? 'text-amber-50' : 'text-slate-400'}`}>{benefit.name}</p>
+                    </div>
+                    <p className={`font-bold text-lg ${benefit.active ? 'text-amber-400' : 'text-slate-500'}`}>{benefit.value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
 
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <p className="text-amber-100/80 text-sm font-medium">Next Tier:</p>
-                    <span className="relative px-4 py-1.5 bg-gradient-to-br from-amber-600/30 via-yellow-500/30 to-amber-600/30 border-2 border-amber-400/50 rounded-full font-bold text-sm shadow-lg shadow-amber-500/30 overflow-hidden">
-                      {/* Glossy shine overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent rounded-full"></div>
-                      <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-t-full"></div>
-                      {/* Animated shimmer */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent shimmer-animation rounded-full"></div>
-                      <span className="relative flex items-center gap-1.5 drop-shadow-lg">
-                        <svg className="w-4 h-4 text-yellow-300 drop-shadow-md" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                        <span className="font-white tracking-wide text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-yellow-200 to-amber-200">
-                          {membershipData.nextTier}
+            {/* Next Tier Progress */}
+            <div className="relative bg-gradient-to-br from-slate-900/80 via-purple-950/60 to-indigo-950/60 rounded-xl p-6 border-2 border-amber-500/30 backdrop-blur-sm overflow-hidden shadow-inner">
+              {/* Decorative elements */}
+              <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-amber-400/10 to-purple-600/10 rounded-full filter blur-2xl"></div>
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-purple-600/10 to-amber-400/10 rounded-full filter blur-2xl"></div>
+
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <p className="text-amber-100/80 text-sm font-medium">Next Tier:</p>
+                      <span className="relative px-4 py-1.5 bg-gradient-to-br from-amber-600/30 via-yellow-500/30 to-amber-600/30 border-2 border-amber-400/50 rounded-full font-bold text-sm shadow-lg shadow-amber-500/30 overflow-hidden">
+                        {/* Glossy shine overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent rounded-full"></div>
+                        <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-t-full"></div>
+                        {/* Animated shimmer */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent shimmer-animation rounded-full"></div>
+                        <span className="relative flex items-center gap-1.5 drop-shadow-lg">
+                          <svg className="w-4 h-4 text-yellow-300 drop-shadow-md" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                          <span className="font-white tracking-wide text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-yellow-200 to-amber-200">
+                            {membershipData.nextTier}
+                          </span>
                         </span>
                       </span>
-                    </span>
+                    </div>
+                    <p className="text-purple-200/60 text-xs">
+                      {nextTierInfo
+                        ? `Unlock ${nextTierInfo.name} exclusive benefits`
+                        : 'You have reached the highest tier!'}
+                    </p>
                   </div>
-                  <p className="text-purple-200/60 text-xs">
-                    {nextTierInfo
-                      ? `Unlock ${nextTierInfo.name} exclusive benefits`
-                      : 'You have reached the highest tier!'}
-                  </p>
+                  <div className="text-right">
+                    <p className="text-white font-bold text-xl bg-gradient-to-r from-amber-200 to-amber-400 bg-clip-text text-transparent">
+                      {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(membershipData.totalSpent)}
+                    </p>
+                    <p className="text-purple-300/60 text-xs">
+                      of {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(membershipData.nextTierTarget)}
+                    </p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-white font-bold text-xl bg-gradient-to-r from-amber-200 to-amber-400 bg-clip-text text-transparent">
-                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(membershipData.totalSpent)}
-                  </p>
-                  <p className="text-purple-300/60 text-xs">
-                    of {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(membershipData.nextTierTarget)}
-                  </p>
-                </div>
-              </div>
 
-              {/* Progress Bar with Gold & Purple Theme */}
-              <div className="relative w-full h-4 bg-slate-950/80 rounded-full overflow-hidden mb-4 border-2 border-purple-900/50 shadow-inner">
-                <div
-                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-amber-600 via-amber-400 to-yellow-500 rounded-full transition-all duration-500 shadow-lg shadow-amber-500/60"
-                  style={{ width: `${progress}%` }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent shimmer-animation"></div>
-                  {/* Sparkle effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-300/30 via-amber-300/30 to-yellow-300/30 animate-pulse"></div>
+                {/* Progress Bar with Gold & Purple Theme */}
+                <div className="relative w-full h-4 bg-slate-950/80 rounded-full overflow-hidden mb-4 border-2 border-purple-900/50 shadow-inner">
+                  <div
+                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-amber-600 via-amber-400 to-yellow-500 rounded-full transition-all duration-500 shadow-lg shadow-amber-500/60"
+                    style={{ width: `${progress}%` }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent shimmer-animation"></div>
+                    {/* Sparkle effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-300/30 via-amber-300/30 to-yellow-300/30 animate-pulse"></div>
+                  </div>
+                  {/* Progress indicator */}
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-gradient-to-br from-amber-300 to-yellow-400 rounded-full shadow-xl shadow-amber-400/60 border-2 border-white/50 transition-all duration-500"
+                    style={{ left: `calc(${progress}% - 8px)` }}
+                  >
+                    <div className="absolute inset-0 bg-amber-200 rounded-full animate-ping opacity-75"></div>
+                  </div>
                 </div>
-                {/* Progress indicator */}
-                <div
-                  className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-gradient-to-br from-amber-300 to-yellow-400 rounded-full shadow-xl shadow-amber-400/60 border-2 border-white/50 transition-all duration-500"
-                  style={{ left: `calc(${progress}% - 8px)` }}
-                >
-                  <div className="absolute inset-0 bg-amber-200 rounded-full animate-ping opacity-75"></div>
-                </div>
-              </div>
 
-              <div className="flex items-center justify-between">
-                <p className="text-amber-100/80 text-sm">
-                  <span className="text-white font-bold text-base">{progress.toFixed(1)}%</span> Complete
-                  {nextTierInfo && (
-                    <>
-                      {' • '}
-                      <span className="text-amber-400 font-bold ml-1">
-                        {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(nextTierInfo.target - totalSpent)}
-                      </span>
-                      <span className="text-purple-300/60"> to {nextTierInfo.name}!</span>
-                    </>
-                  )}
-                </p>
-                <a
-                  href="/products"
-                  className="relative group px-6 py-2.5 bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-600 text-white rounded-full font-bold text-sm hover:from-amber-500 hover:via-amber-400 hover:to-yellow-500 transition-all duration-300 hover:scale-105 shadow-xl shadow-amber-500/40 overflow-hidden border border-amber-400/50"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent shimmer-animation opacity-0 group-hover:opacity-100"></div>
-                  <span className="relative flex items-center gap-2 font-black tracking-wide">
-                    Shop Now
-                    <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </span>
-                </a>
+                <div className="flex items-center justify-between">
+                  <p className="text-amber-100/80 text-sm">
+                    <span className="text-white font-bold text-base">{progress.toFixed(1)}%</span> Complete
+                    {nextTierInfo && (
+                      <>
+                        {' • '}
+                        <span className="text-amber-400 font-bold ml-1">
+                          {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(nextTierInfo.target - totalSpent)}
+                        </span>
+                        <span className="text-purple-300/60"> to {nextTierInfo.name}!</span>
+                      </>
+                    )}
+                  </p>
+                  <a
+                    href="/products"
+                    className="relative group px-6 py-2.5 bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-600 text-white rounded-full font-bold text-sm hover:from-amber-500 hover:via-amber-400 hover:to-yellow-500 transition-all duration-300 hover:scale-105 shadow-xl shadow-amber-500/40 overflow-hidden border border-amber-400/50"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent shimmer-animation opacity-0 group-hover:opacity-100"></div>
+                    <span className="relative flex items-center gap-2 font-black tracking-wide">
+                      Shop Now
+                      <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </span>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
       )}
 
       {/* Statistics Cards */}
@@ -916,7 +916,7 @@ export default function DashboardPage() {
                   <div className="relative h-40 bg-gradient-to-br from-slate-700/50 to-slate-800/50 flex items-center justify-center overflow-hidden">
                     {product.image ? (
                       <img
-                        src={product.image.startsWith('http') ? product.image : `${BACKEND}${product.image}`}
+                        src={getImageUrl(product.image)}
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}

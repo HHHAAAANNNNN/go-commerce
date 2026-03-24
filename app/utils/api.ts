@@ -16,6 +16,16 @@ if (backendUrl.endsWith("/api")) {
 export const BACKEND = DEMO_MODE ? "" : backendUrl;
 
 /**
+ * getImageUrl - dynamically construct the full backend URL for an image path
+ */
+export function getImageUrl(path: string) {
+  if (!path) return "";
+  if (path.startsWith("http")) return path;
+  if (path.startsWith("/")) return `${BACKEND}${path}`;
+  return `${BACKEND}/${path}`;
+}
+
+/**
  * authFetch — fetch wrapper that automatically attaches the JWT Bearer token
  * stored in localStorage. Use for any API call to a protected endpoint.
  *

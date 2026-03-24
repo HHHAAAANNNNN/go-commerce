@@ -10,6 +10,7 @@ import (
 	"github.com/HHHAAAANNNNN/go-commerce-backend/config"
 	"github.com/HHHAAAANNNNN/go-commerce-backend/routes"
 	"github.com/joho/godotenv"
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -66,8 +67,23 @@ func main() {
 	fmt.Println("   PUT    /api/products/{id}")
 	fmt.Println("   DELETE /api/products/{id}")
 	fmt.Println("\n📁 Static Files:")
-	fmt.Println("   GET    /assets/{category}/{filename}")
 	fmt.Println("\n⏳ Server is running... Press Ctrl+C to stop")
 
-	log.Fatal(http.ListenAndServe(port, router))
+	// Setup CORS
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{
+			"https://go-commerce.web.id",
+			"https://www.go-commerce.web.id",
+			"http://localhost:3000",
+		},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
+		AllowedHeaders:   []string{"Authorization", "Content-Type", "Accept"},
+		ExposedHeaders:   []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           300,
+	})
+
+	handler := c.Handler(router)
+
+	log.Fatal(http.ListenAndServe(port, handler))
 }

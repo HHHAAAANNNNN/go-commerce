@@ -21,7 +21,6 @@ func SetupRoutes() *mux.Router {
 	// Apply global middlewares
 	router.Use(middlewares.RecoverPanic)
 	router.Use(middlewares.Logger)
-	router.Use(middlewares.CORS)
 
 	// API routes
 	api := router.PathPrefix("/api").Subrouter()

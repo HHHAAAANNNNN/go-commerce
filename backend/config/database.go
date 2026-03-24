@@ -262,7 +262,7 @@ func runMigrations() error {
 	var catCount int
 	DB.QueryRow("SELECT COUNT(*) FROM categories").Scan(&catCount)
 	if catCount == 0 {
-		DB.Exec(`INSERT IGNORE INTO categories (name) VALUES ('Laptops'), ('Audio'), ('Accessories'), ('Electronics')`)
+		DB.Exec(`INSERT IGNORE INTO categories (name) VALUES ('Smartphones'), ('Laptops'), ('Audio')`)
 		log.Println("✅ sample categories seeded")
 	}
 

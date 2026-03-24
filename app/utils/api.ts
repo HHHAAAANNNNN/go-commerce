@@ -1,7 +1,7 @@
 import { mockFetch } from "./mockFetch";
 
 /** True when NEXT_PUBLIC_DEMO_MODE=true (Vercel demo deployment, no backend needed) */
-export const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+export const DEMO_MODE = false;
 
 /**
  * Backend base URL.

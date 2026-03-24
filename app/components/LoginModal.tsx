@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { BACKEND, DEMO_MODE } from "../utils/api";
-import { MOCK_USER, MOCK_TOKEN } from "../utils/mockData";
+import { BACKEND } from "../utils/api";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -30,23 +29,12 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
 
     setIsLoading(true);
 
-    // ── Demo mode: skip real network call ────────────────────────────────────
-    if (DEMO_MODE) {
-      localStorage.setItem("token", MOCK_TOKEN);
-      localStorage.setItem("user", JSON.stringify(MOCK_USER));
-      window.dispatchEvent(new Event("profileUpdated"));
-      toast.success("Login berhasil! (Demo Mode)");
-      onClose();
-      setTimeout(() => router.push("/dashboard"), 300);
-      setIsLoading(false);
-      return;
-    }
-    // ─────────────────────────────────────────────────────────────────────────
+
 
     try {
       console.log("Sending login request to backend...");
       console.log("Email:", email);
-      
+
       const response = await fetch(`${BACKEND}/api/auth/login`, {
         method: "POST",
         headers: {
@@ -59,7 +47,7 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
       });
 
       console.log("Response status:", response.status);
-      
+
       const data = await response.json();
       console.log("Response data:", data);
 
@@ -76,7 +64,7 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
       }
 
       toast.success("Login berhasil!");
-      
+
       // Redirect to dashboard after short delay
       setTimeout(() => {
         router.push("/dashboard");
@@ -119,14 +107,14 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
   return (
     <>
       {/* Backdrop */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/75 z-[60] transition-opacity duration-300 animate-fade-in"
         onClick={onClose}
       ></div>
 
       {/* Modal */}
       <div className="fixed inset-0 z-[60] flex items-start justify-center pt-20 px-4 pointer-events-none">
-        <div 
+        <div
           className="bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-8 shadow-2xl max-w-md w-full pointer-events-auto animate-slide-down"
           onClick={(e) => e.stopPropagation()}
         >
@@ -146,26 +134,7 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
             </button>
           </div>
 
-          {/* Demo mode banner */}
-          {DEMO_MODE && (
-            <div className="mb-5 p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-center">
-              <p className="text-amber-400 text-xs font-semibold mb-2">🚀 DEMO MODE — tidak perlu akun nyata</p>
-              <button
-                type="button"
-                onClick={() => {
-                  localStorage.setItem("token", MOCK_TOKEN);
-                  localStorage.setItem("user", JSON.stringify(MOCK_USER));
-                  window.dispatchEvent(new Event("profileUpdated"));
-                  toast.success("Login berhasil! (Demo Mode)");
-                  onClose();
-                  setTimeout(() => router.push("/dashboard"), 300);
-                }}
-                className="w-full py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-lg text-sm font-semibold transition-colors border border-amber-500/30"
-              >
-                ⚡ Masuk sebagai Demo User
-              </button>
-            </div>
-          )}
+
 
           {/* Form */}
           <form className="space-y-4" onSubmit={handleSubmit}>
@@ -238,7 +207,7 @@ export default function LoginModal({ isOpen, onClose, onRegisterClick }: LoginMo
                 className="text-slate-400 hover:text-white transition-colors duration-300 text-sm inline-block"
               >
                 <span className="flex items-center gap-1">
-                  Don't have an account? 
+                  Don't have an account?
                   <span className="text-primary-400 hover:text-secondary-400 transition-colors underline underline-offset-2">Register here</span>
                 </span>
               </button>

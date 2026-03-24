@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { BACKEND, DEMO_MODE } from "../../utils/api";
+import { BACKEND } from "../../utils/api";
 
 interface CTASectionProps {
   onLoginClick: () => void;
@@ -39,15 +39,7 @@ export default function CTASection({ onLoginClick }: CTASectionProps) {
     console.log("password:", formData.password);
     console.log("phone:", formData.phone);
 
-    // ── Demo mode: skip registration, ask user to just login ─────────────────
-    if (DEMO_MODE) {
-      toast.success("Demo Mode — tidak perlu register! Klik tombol Login untuk masuk.");
-      setShowRegisterForm(false);
-      setCurrentStep(1);
-      setFormData({ name: "", phone: "", email: "", password: "", confirmPassword: "" });
-      return;
-    }
-    // ─────────────────────────────────────────────────────────────────────────
+
 
     setIsLoading(true);
     try {
@@ -135,11 +127,11 @@ export default function CTASection({ onLoginClick }: CTASectionProps) {
     <section id="cta" className="relative py-32 bg-gradient-to-b from-[#0A0A0F] via-[#0f0a1a] to-[#0A0A0F] overflow-hidden">
       {/* Top gradient transition from previous section */}
       <div className="absolute inset-x-0 top-0 h-96 bg-gradient-to-b from-[#0A0A0F] via-[#0A0A0F]/50 to-transparent pointer-events-none"></div>
-      
+
       {/* Background Elements */}
       <div className="absolute inset-0 bg-gradient-to-r from-primary-400/5 via-transparent to-secondary-400/5"></div>
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-primary-400/10 via-accent-400/10 to-secondary-400/10 rounded-full filter blur-3xl"></div>
-      
+
       {/* Animated blobs */}
       <div className="absolute top-20 left-20 w-72 h-72 bg-primary-400/10 rounded-full filter blur-3xl animate-blob"></div>
       <div className="absolute top-20 right-20 w-72 h-72 bg-secondary-400/10 rounded-full filter blur-3xl animate-blob animation-delay-2000"></div>
@@ -148,7 +140,7 @@ export default function CTASection({ onLoginClick }: CTASectionProps) {
       <div className="relative container mx-auto px-4 -mt-8">
         <div className={`mx-auto transition-all duration-700 ease-in-out ${showRegisterForm ? 'max-w-7xl' : 'max-w-4xl'}`}>
           <div className={`grid transition-all duration-700 ease-in-out items-center ${showRegisterForm ? 'grid-cols-1 lg:grid-cols-3 gap-8' : 'grid-cols-1'}`}>
-            
+
             {/* Main CTA Content - Takes 2/3 when form is shown */}
             <div className={`transition-all duration-700 flex items-center ${showRegisterForm ? 'lg:col-span-2' : 'col-span-1'}`}>
               {/* Main Content */}
@@ -164,11 +156,11 @@ export default function CTASection({ onLoginClick }: CTASectionProps) {
                 <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary-400 via-accent-400 to-secondary-400 bg-clip-text text-transparent leading-tight">
                   Ready to Shop?
                 </h2>
-                
+
                 <p className="text-slate-400 text-lg mb-6 leading-relaxed">
                   Join thousands of satisfied customers and enjoy exclusive benefits
                 </p>
-                
+
                 {/* Benefits List */}
                 <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-8 text-slate-300">
                   <div className="flex items-center gap-2">
@@ -202,10 +194,10 @@ export default function CTASection({ onLoginClick }: CTASectionProps) {
                   >
                     <span className="relative z-10 flex items-center justify-center gap-2">
                       {showRegisterForm ? 'Hide Form' : 'Create Free Account'}
-                      <svg 
-                        className={`w-5 h-5 transition-transform duration-300 ${showRegisterForm ? 'rotate-180' : 'group-hover:translate-x-1'}`} 
-                        fill="none" 
-                        stroke="currentColor" 
+                      <svg
+                        className={`w-5 h-5 transition-transform duration-300 ${showRegisterForm ? 'rotate-180' : 'group-hover:translate-x-1'}`}
+                        fill="none"
+                        stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
                         {showRegisterForm ? (
@@ -226,7 +218,7 @@ export default function CTASection({ onLoginClick }: CTASectionProps) {
                     className="group text-slate-400 hover:text-white transition-colors duration-300 text-sm"
                   >
                     <span className="flex items-center gap-1">
-                      Already Member? 
+                      Already Member?
                       <span className="text-primary-400 group-hover:text-secondary-400 transition-colors underline underline-offset-2">Login Here</span>
                     </span>
                   </a>
@@ -257,16 +249,15 @@ export default function CTASection({ onLoginClick }: CTASectionProps) {
             </div>
 
             {/* Register Form - Slides in from right (1/3 width) */}
-            <div className={`transition-all duration-700 ease-in-out ${
-              showRegisterForm 
-                ? 'opacity-100 translate-x-0 visible' 
+            <div className={`transition-all duration-700 ease-in-out ${showRegisterForm
+                ? 'opacity-100 translate-x-0 visible'
                 : 'opacity-0 translate-x-full invisible lg:absolute lg:right-0'
-            }`}>
+              }`}>
               <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 shadow-2xl">
                 {/* Header */}
                 <h3 className="text-xl font-bold text-white mb-1">Create Account</h3>
                 <p className="text-slate-400 text-xs mb-4">Join us and start shopping today!</p>
-                
+
                 {/* Progress Indicator */}
                 <div className="mb-5">
                   <div className="flex items-center justify-between mb-2">
@@ -274,7 +265,7 @@ export default function CTASection({ onLoginClick }: CTASectionProps) {
                     <span className="text-xs text-slate-400">{currentStep === 1 ? 'Personal Info' : 'Account Security'}</span>
                   </div>
                   <div className="w-full bg-slate-800/50 rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-primary-400 to-secondary-400 h-2 rounded-full transition-all duration-500"
                       style={{ width: `${(currentStep / 2) * 100}%` }}
                     ></div>
@@ -433,7 +424,7 @@ export default function CTASection({ onLoginClick }: CTASectionProps) {
                       className="group text-slate-400 hover:text-white transition-colors duration-300 text-xs inline-block"
                     >
                       <span className="flex items-center gap-1">
-                        Already Member? 
+                        Already Member?
                         <span className="text-primary-400 group-hover:text-secondary-400 transition-colors underline underline-offset-2">Login Here</span>
                       </span>
                     </a>

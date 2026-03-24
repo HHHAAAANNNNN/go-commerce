@@ -134,23 +134,48 @@ func runMigrations() error {
 	}
 	log.Println("✅ users table ready")
 
+	// --- categories ---
+	_, err = DB.Exec(`
+		CREATE TABLE IF NOT EXISTS categories (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			name VARCHAR(100) NOT NULL UNIQUE
+		)`)
+	if err != nil {
+		return fmt.Errorf("categories table: %w", err)
+	}
+
 	// --- products ---
+	// Check if the old schema used VARCHAR(50) for id
+	var colType string
+	DB.QueryRow("SELECT DATA_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = 'id'").Scan(&colType)
+	if colType == "varchar" {
+		log.Println("⚠️  Outdated products schema detected (VARCHAR id). Dropping affected tables...")
+		DB.Exec("SET FOREIGN_KEY_CHECKS = 0")
+		DB.Exec("DROP TABLE IF EXISTS cart_items")
+		DB.Exec("DROP TABLE IF EXISTS order_items")
+		DB.Exec("DROP TABLE IF EXISTS product_specifications")
+		DB.Exec("DROP TABLE IF EXISTS products")
+		DB.Exec("SET FOREIGN_KEY_CHECKS = 1")
+	}
+
 	_, err = DB.Exec(`
 		CREATE TABLE IF NOT EXISTS products (
-			id         VARCHAR(50) PRIMARY KEY,
-			name       VARCHAR(200) NOT NULL,
-			price      INT NOT NULL,
-			stock      INT DEFAULT 0,
-			category   VARCHAR(100),
-			rating     DECIMAL(3,2) DEFAULT 0.00,
-			image_url  VARCHAR(500),
-			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+			id            INT AUTO_INCREMENT PRIMARY KEY,
+			name          VARCHAR(200) NOT NULL,
+			slug          VARCHAR(200),
+			price         INT NOT NULL,
+			stock         INT DEFAULT 0,
+			category_id   INT,
+			rating        DECIMAL(3,2) DEFAULT 0.00,
+			total_reviews INT DEFAULT 0,
+			description   TEXT,
+			image_url     VARCHAR(500),
+			brand         VARCHAR(100),
+			created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
 		)`)
 	if err != nil {
 		return fmt.Errorf("products table: %w", err)
-	}
-	if !tableHasColumn("products", "image_url") {
-		DB.Exec("ALTER TABLE products ADD COLUMN image_url VARCHAR(500)")
 	}
 	log.Println("✅ products table ready")
 
@@ -187,13 +212,14 @@ func runMigrations() error {
 		CREATE TABLE IF NOT EXISTS order_items (
 			id            INT AUTO_INCREMENT PRIMARY KEY,
 			order_id      INT NOT NULL,
-			product_id    VARCHAR(50) NOT NULL,
+			product_id    INT NOT NULL,
 			product_name  VARCHAR(200) NOT NULL DEFAULT '',
 			product_image VARCHAR(500) NOT NULL DEFAULT '',
 			quantity      INT NOT NULL,
 			price         INT NOT NULL,
 			subtotal      INT NOT NULL DEFAULT 0,
-			FOREIGN KEY (order_id) REFERENCES orders(id)
+			FOREIGN KEY (order_id) REFERENCES orders(id),
+			FOREIGN KEY (product_id) REFERENCES products(id)
 		)`)
 	if err != nil {
 		return fmt.Errorf("order_items table: %w", err)
@@ -205,11 +231,12 @@ func runMigrations() error {
 		CREATE TABLE IF NOT EXISTS cart_items (
 			id         INT AUTO_INCREMENT PRIMARY KEY,
 			user_id    INT NOT NULL,
-			product_id VARCHAR(50) NOT NULL,
+			product_id INT NOT NULL,
 			quantity   INT NOT NULL DEFAULT 1,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			UNIQUE KEY unique_cart_item (user_id, product_id),
-			FOREIGN KEY (user_id) REFERENCES users(id)
+			FOREIGN KEY (user_id) REFERENCES users(id),
+			FOREIGN KEY (product_id) REFERENCES products(id)
 		)`)
 	if err != nil {
 		return fmt.Errorf("cart_items table: %w", err)
@@ -231,17 +258,23 @@ func runMigrations() error {
 	}
 	log.Println("✅ product_specifications table ready")
 
-	// --- seed products ---
-	var count int
-	DB.QueryRow("SELECT COUNT(*) FROM products").Scan(&count)
-	if count == 0 {
-		DB.Exec(`INSERT INTO products (id, name, price, stock, category, rating) VALUES
-			('LAP001','Gaming Laptop',15000000,10,'Electronics',4.5),
-			('LAP002','Business Laptop',8000000,25,'Electronics',4.2),
-			('HP001','Wireless Headphones',1500000,50,'Audio',4.7),
-			('KB001','Mechanical Keyboard',750000,30,'Accessories',4.6),
-			('MS001','Gaming Mouse',450000,40,'Accessories',4.4)`)
-		log.Println("✅ sample products seeded")
+	// --- seed products and categories ---
+	var catCount int
+	DB.QueryRow("SELECT COUNT(*) FROM categories").Scan(&catCount)
+	if catCount == 0 {
+		DB.Exec(`INSERT IGNORE INTO categories (name) VALUES ('Laptops'), ('Audio'), ('Accessories'), ('Electronics')`)
+	}
+
+	var prodCount int
+	DB.QueryRow("SELECT COUNT(*) FROM products").Scan(&prodCount)
+	if prodCount == 0 {
+		DB.Exec(`INSERT INTO products (name, slug, price, stock, category_id, rating) VALUES
+			('Gaming Laptop', 'gaming-laptop', 15000000, 10, 1, 4.5),
+			('Business Laptop', 'business-laptop', 8000000, 25, 1, 4.2),
+			('Wireless Headphones', 'wireless-headphones', 1500000, 50, 2, 4.7),
+			('Mechanical Keyboard', 'mechanical-keyboard', 750000, 30, 3, 4.6),
+			('Gaming Mouse', 'gaming-mouse', 450000, 40, 3, 4.4)`)
+		log.Println("✅ sample categories & products seeded")
 	}
 
 	// --- vouchers: drop if old schema ---

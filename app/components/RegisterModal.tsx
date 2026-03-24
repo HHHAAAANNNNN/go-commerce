@@ -43,7 +43,8 @@ export default function RegisterModal({ isOpen, onClose, onLoginClick }: Registe
 
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:8080/api/auth/register", {
+      const BACKEND = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+      const response = await fetch(`${BACKEND}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

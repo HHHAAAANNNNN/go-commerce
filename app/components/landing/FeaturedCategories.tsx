@@ -20,8 +20,6 @@ interface FeaturedCategoriesProps {
   onAddToCart: (product: CartItem) => void;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080/api";
-
 const formatPrice = (price: number) =>
   new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -240,7 +238,8 @@ export default function FeaturedCategories({
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const res = await fetch(`${API_BASE}/products`);
+        const BACKEND = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+        const res = await fetch(`${BACKEND}/api/products`);
         const json = await res.json();
         const all: Product[] = json.data ?? [];
 

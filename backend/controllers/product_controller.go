@@ -31,22 +31,20 @@ func GetAllProducts(w http.ResponseWriter, r *http.Request) {
 	var products []models.Product
 	for rows.Next() {
 		var product models.Product
-		var imageURL, description, brand string
+		var imageURL, description, brand sql.NullString
 		var category sql.NullString
-		var priceFloat float64
 		var ratingFloat float64
 
-		err := rows.Scan(&product.ID, &product.Name, &priceFloat, &product.Stock,
+		err := rows.Scan(&product.ID, &product.Name, &product.Price, &product.Stock,
 			&category, &ratingFloat, &product.TotalReviews, &description, &imageURL, &brand, &product.CreatedAt)
 		if err != nil {
 			utils.ErrorResponse(w, http.StatusInternalServerError, "Scan error: "+err.Error())
 			return
 		}
-		product.Price = int(priceFloat)
 		product.Rating = models.Decimal(ratingFloat)
-		product.Description = description
-		product.Image = imageURL
-		product.Brand = brand
+		product.Description = description.String
+		product.Image = imageURL.String
+		product.Brand = brand.String
 		if category.Valid {
 			product.Category = category.String
 		} else {
@@ -80,13 +78,12 @@ func GetProductByID(w http.ResponseWriter, r *http.Request) {
 			  WHERE p.id = ?`
 
 	var product models.Product
-	var imageURL, description, brand string
+	var imageURL, description, brand sql.NullString
 	var category sql.NullString
-	var priceFloat float64
 	var ratingFloat float64
 
 	err = config.DB.QueryRow(query, productID).Scan(
-		&product.ID, &product.Name, &priceFloat, &product.Stock,
+		&product.ID, &product.Name, &product.Price, &product.Stock,
 		&category, &ratingFloat, &product.TotalReviews, &description, &imageURL, &brand, &product.CreatedAt,
 	)
 	if err != nil {
@@ -94,11 +91,10 @@ func GetProductByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	product.Price = int(priceFloat)
 	product.Rating = models.Decimal(ratingFloat)
-	product.Description = description
-	product.Image = imageURL
-	product.Brand = brand
+	product.Description = description.String
+	product.Image = imageURL.String
+	product.Brand = brand.String
 	if category.Valid {
 		product.Category = category.String
 	} else {
@@ -437,21 +433,19 @@ func SearchProducts(w http.ResponseWriter, r *http.Request) {
 	var products []models.Product
 	for rows.Next() {
 		var product models.Product
-		var imageURL, description, brand string
+		var imageURL, description, brand sql.NullString
 		var category sql.NullString
-		var priceFloat float64
 		var ratingFloat float64
 
-		err := rows.Scan(&product.ID, &product.Name, &priceFloat, &product.Stock,
+		err := rows.Scan(&product.ID, &product.Name, &product.Price, &product.Stock,
 			&category, &ratingFloat, &description, &imageURL, &brand, &product.CreatedAt)
 		if err != nil {
 			continue
 		}
-		product.Price = int(priceFloat)
 		product.Rating = models.Decimal(ratingFloat)
-		product.Description = description
-		product.Image = imageURL
-		product.Brand = brand
+		product.Description = description.String
+		product.Image = imageURL.String
+		product.Brand = brand.String
 		if category.Valid {
 			product.Category = category.String
 		} else {

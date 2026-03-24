@@ -11,7 +11,7 @@ export const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
  */
 export const BACKEND = DEMO_MODE
   ? ""
-  : (process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8080");
+  : (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080");
 
 /**
  * authFetch — fetch wrapper that automatically attaches the JWT Bearer token

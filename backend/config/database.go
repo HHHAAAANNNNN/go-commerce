@@ -258,23 +258,12 @@ func runMigrations() error {
 	}
 	log.Println("✅ product_specifications table ready")
 
-	// --- seed products and categories ---
+	// --- seed categories ---
 	var catCount int
 	DB.QueryRow("SELECT COUNT(*) FROM categories").Scan(&catCount)
 	if catCount == 0 {
 		DB.Exec(`INSERT IGNORE INTO categories (name) VALUES ('Laptops'), ('Audio'), ('Accessories'), ('Electronics')`)
-	}
-
-	var prodCount int
-	DB.QueryRow("SELECT COUNT(*) FROM products").Scan(&prodCount)
-	if prodCount == 0 {
-		DB.Exec(`INSERT INTO products (name, slug, price, stock, category_id, rating) VALUES
-			('Gaming Laptop', 'gaming-laptop', 15000000, 10, 1, 4.5),
-			('Business Laptop', 'business-laptop', 8000000, 25, 1, 4.2),
-			('Wireless Headphones', 'wireless-headphones', 1500000, 50, 2, 4.7),
-			('Mechanical Keyboard', 'mechanical-keyboard', 750000, 30, 3, 4.6),
-			('Gaming Mouse', 'gaming-mouse', 450000, 40, 3, 4.4)`)
-		log.Println("✅ sample categories & products seeded")
+		log.Println("✅ sample categories seeded")
 	}
 
 	// --- vouchers: drop if old schema ---

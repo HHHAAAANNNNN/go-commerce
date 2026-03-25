@@ -244,47 +244,46 @@ export default function AboutPage() {
                             </p>
 
                             <div className="flex flex-wrap items-center justify-center gap-4">
-                                <a href="https://www.linkedin.com/in/farhan-nugraha/" target="_blank" rel="noopener noreferrer" className="px-6 py-3 bg-[#0a66c2]/10 hover:bg-[#0a66c2]/20 border border-[#0a66c2]/40 text-[#0a66c2] hover:text-[#0a66c2] rounded-xl font-semibold transition-all duration-300 flex items-center gap-2">
+                                <a href="https://www.linkedin.com/in/farhan-nugraha-175378393/" target="_blank" rel="noopener noreferrer" className="px-6 py-3 bg-[#0a66c2]/10 hover:bg-[#0a66c2]/20 border border-[#0a66c2]/40 text-[#0a66c2] hover:text-[#0a66c2] rounded-xl font-semibold transition-all duration-300 flex items-center gap-2">
                                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" /></svg>
                                     LinkedIn
                                 </a>
 
                                 <a href="https://wa.me/6281238474150" target="_blank" rel="noopener noreferrer" className="px-6 py-3 bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/40 text-[#25D366] hover:text-[#25D366] rounded-xl font-semibold transition-all duration-300 flex items-center gap-2">
                                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.022-.967-.264-.099-.457-.149-.649.149-.191.298-.763.967-.935 1.164-.171.199-.343.224-.64.075-.297-.15-1.255-.463-2.39-1.305-.882-.653-1.477-1.46-1.649-1.758-.172-.298-.018-.46.13-.609.133-.133.298-.344.446-.517.15-.173.199-.297.299-.497.099-.198.05-.373-.024-.521-.075-.149-.648-1.564-.888-2.141-.233-.561-.47-.485-.648-.494-.17-.008-.363-.01-.555-.01s-.502.073-.765.372C6.918 8.167 6.075 8.961 6.075 10.575s1.782 3.167 2.03 3.5c.248.333 2.38 3.639 5.767 5.097.808.349 1.439.557 1.93.714.811.257 1.549.22 2.128.133.649-.098 1.993-.815 2.274-1.602.28-.787.28-1.46.196-1.603-.083-.142-.311-.225-.609-.373l-.001.001zm-5.467 7.424h-.005c-1.493 0-2.956-.401-4.237-1.16l-.304-.179-3.149.826.84-3.072-.197-.313c-.832-1.326-1.272-2.859-1.272-4.437 0-4.664 3.795-8.455 8.465-8.455 2.26 0 4.385.88 5.986 2.477A8.411 8.411 0 0120.468 12.01c-.001 4.662-3.796 8.455-8.463 8.455v-.002a20.076 20.076 0 00-.001-.659v.659zM12.005 2C6.48 2 2 6.477 2 12c0 1.764.463 3.486 1.34 5l-1.921 7.02 7.182-1.884c1.46.797 3.125 1.218 4.82 1.219h.005c5.523 0 10-4.477 10-10S17.528 2 12.005 2z" /></svg>
-                                    206:                                     WhatsApp
-                                    207:                                 </a>
-                                208:
-                                209:                                 <a href="https://github.com/HHHAAAANNNNN/" target="_blank" rel="noopener noreferrer" className="px-6 py-3 bg-slate-700/30 hover:bg-slate-700/60 border border-slate-600 text-white rounded-xl font-semibold transition-all duration-300 flex items-center gap-2">
-                                    210:                                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12c0 5.302 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.123-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.3 1.23.957-.266 1.98-.398 3-.403 1.02.005 2.043.137 3 .403 2.29-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.873.118 3.176.77.84 1.233 1.91 1.233 3.22 0 4.61-2.805 5.625-5.475 5.92.43.37.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.298 24 12c0-6.627-5.373-12-12-12" /></svg>
-                                    211:                                     GitHub Profile
-                                    212:                                 </a>
-                                213:                             </div>
-                            214:
-                            215:                             <div className="mt-8">
-                                216:                                 <Link href="/" className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-full font-bold hover:shadow-lg transition-all hover:-translate-y-0.5">
-                                    217:                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                                    218:                                     Back to Home
-                                    219:                                 </Link>
-                                220:                             </div>
-                            221:                         </div>
-                        222:                     </section>
-                    223:
-                    224:                 </div>
-                225:             </main>
-            226:             <Footer onLoginClick={handleLoginClick} />
-            227:
-            228:             <style jsx global>{`
-229:         @keyframes fadeUp {
-230:           from { opacity: 0; transform: translateY(20px); }
-231:           to   { opacity: 1; transform: translateY(0); }
-232:         }
-233:         .fade-up { animation: fadeUp 0.6s ease-out forwards; }
-234:         .animate-delay-100 { animation-delay: 100ms; }
-235:         .animate-delay-200 { animation-delay: 200ms; }
-236:         .animate-delay-300 { animation-delay: 300ms; }
-237:         .animate-delay-400 { animation-delay: 400ms; }
-238:       `}</style>
-            239:         </>
-240:     );
-    241:
+                                    WhatsApp
+                                </a>
+
+                                <a href="https://github.com/HHHAAAANNNNN/" target="_blank" rel="noopener noreferrer" className="px-6 py-3 bg-slate-700/30 hover:bg-slate-700/60 border border-slate-600 text-white rounded-xl font-semibold transition-all duration-300 flex items-center gap-2">
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12c0 5.302 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.123-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.3 1.23.957-.266 1.98-.398 3-.403 1.02.005 2.043.137 3 .403 2.29-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.873.118 3.176.77.84 1.233 1.91 1.233 3.22 0 4.61-2.805 5.625-5.475 5.92.43.37.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.298 24 12c0-6.627-5.373-12-12-12" /></svg>
+                                    GitHub Profile
+                                </a>
+                            </div>
+
+                            <div className="mt-8">
+                                <Link href="/" className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-full font-bold hover:shadow-lg transition-all hover:-translate-y-0.5">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                                    Back to Home
+                                </Link>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+            </main>
+            <Footer onLoginClick={handleLoginClick} />
+
+            <style jsx global>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up { animation: fadeUp 0.6s ease-out forwards; }
+        .animate-delay-100 { animation-delay: 100ms; }
+        .animate-delay-200 { animation-delay: 200ms; }
+        .animate-delay-300 { animation-delay: 300ms; }
+        .animate-delay-400 { animation-delay: 400ms; }
+      `}</style>
+        </>
+    );
 }

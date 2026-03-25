@@ -126,10 +126,10 @@ function ProductCard({
   return (
     <div
       key={`${product.id}-${index}`}
-      className={`flex-shrink-0 w-72 bg-gradient-to-br ${cardGradient} backdrop-blur-sm rounded-2xl overflow-hidden border transition-all duration-300 hover:scale-105 group`}
+      className={`flex-shrink-0 w-60 md:w-72 bg-gradient-to-br ${cardGradient} backdrop-blur-sm rounded-2xl overflow-hidden border transition-all duration-300 hover:scale-105 group`}
     >
       {/* Image */}
-      <div className="relative h-64 bg-gradient-to-br from-slate-800/50 to-slate-900/50 overflow-hidden">
+      <div className="relative h-48 md:h-64 bg-gradient-to-br from-slate-800/50 to-slate-900/50 overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center">
           <div
             className={`w-32 h-32 ${isPrimary ? "bg-primary-400/10" : "bg-secondary-400/10"
@@ -168,8 +168,8 @@ function ProductCard({
       </div>
 
       {/* Info */}
-      <div className="p-6">
-        <h3 className="text-white font-semibold text-lg mb-2 line-clamp-2 min-h-[3.5rem]">
+      <div className="p-4 md:p-6">
+        <h3 className="text-white font-semibold text-base md:text-lg mb-1 md:mb-2 line-clamp-2 min-h-[3.5rem]">
           {product.name}
         </h3>
 
@@ -229,7 +229,7 @@ function ScrollRow({
   return (
     <div
       ref={refEl}
-      className="flex gap-6 overflow-x-auto py-8 scrollbar-hide touch-pan-x"
+      className="flex gap-4 md:gap-6 overflow-x-auto py-4 md:py-8 scrollbar-hide"
       style={{ scrollBehavior: "auto" }}
     >
       {loading

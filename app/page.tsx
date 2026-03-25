@@ -68,7 +68,7 @@ export default function Home() {
   };
 
   return (
-    <>
+    <div className="overflow-x-hidden w-full relative min-h-screen">
       <Navbar onLoginClick={handleOpenLogin} />
       <main>
         <HeroSection />
@@ -108,6 +108,6 @@ export default function Home() {
         onClose={handleCloseModals}
         onLoginClick={handleOpenLogin}
       />
-    </>
+    </div>
   );
 }

@@ -20,8 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className={`${inter.variable} overflow-x-hidden w-full max-w-[100vw]`}>
-      <body className="font-sans antialiased overflow-x-hidden w-full max-w-[100vw]">
+    <html lang="id" className={`${inter.variable} overflow-x-hidden`}>
+      <body className="font-sans antialiased overflow-x-hidden">
         {children}
         <Toaster
           position="top-center"

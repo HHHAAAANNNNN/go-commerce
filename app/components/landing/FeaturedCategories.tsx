@@ -33,25 +33,15 @@ function useAutoScroll(ref: React.RefObject<HTMLDivElement | null>, enabled: boo
   useEffect(() => {
     if (!enabled || !ref.current) return;
     const container = ref.current;
-    let scrollPos = container.scrollLeft;
     let isInteracting = false;
-    let animationFrameId: number;
-    let lastTime = performance.now();
-    let fallbackTimer: NodeJS.Timeout;
+    let autoScrollInterval: NodeJS.Timeout;
 
     const stopAuto = () => {
       isInteracting = true;
-      clearTimeout(fallbackTimer);
     };
 
-    // Add small delay before resuming after swipe
     const startAuto = () => {
-      clearTimeout(fallbackTimer);
-      fallbackTimer = setTimeout(() => {
-        isInteracting = false;
-        if (container) scrollPos = container.scrollLeft;
-        lastTime = performance.now();
-      }, 500);
+      isInteracting = false;
     };
 
     container.addEventListener("mouseenter", stopAuto);
@@ -60,28 +50,18 @@ function useAutoScroll(ref: React.RefObject<HTMLDivElement | null>, enabled: boo
     container.addEventListener("touchend", startAuto, { passive: true });
     container.addEventListener("touchcancel", startAuto, { passive: true });
 
-    container.addEventListener("scroll", () => {
-      if (isInteracting && container) scrollPos = container.scrollLeft;
-    }, { passive: true });
-
-    const scroll = (time: number) => {
-      const delta = time - lastTime;
-      lastTime = time;
-
+    autoScrollInterval = setInterval(() => {
       if (!isInteracting && container) {
-        // Speed: moving ~50px per second for standard visual pacing
-        scrollPos += 0.05 * delta;
-        if (scrollPos >= container.scrollWidth / 2) scrollPos = 0;
-        container.scrollLeft = scrollPos;
+        container.scrollLeft += 1;
+        // Reset to beginning seamlessly if we've scrolled past half
+        if (container.scrollLeft >= container.scrollWidth / 2) {
+          container.scrollLeft = 0;
+        }
       }
-      animationFrameId = requestAnimationFrame(scroll);
-    };
-
-    animationFrameId = requestAnimationFrame(scroll);
+    }, 20); // 50 FPS
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
-      clearTimeout(fallbackTimer);
+      clearInterval(autoScrollInterval);
       container.removeEventListener("mouseenter", stopAuto);
       container.removeEventListener("mouseleave", startAuto);
       container.removeEventListener("touchstart", stopAuto);

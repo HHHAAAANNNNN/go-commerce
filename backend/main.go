@@ -38,6 +38,16 @@ func main() {
 	// URL: /assets/products/phones/file.jpg
 	// → strip "/assets/" → products/phones/file.jpg
 	// → serve from ../public/assets/ → public/assets/products/phones/file.jpg ✓
+	// Serve uploaded files
+	uploadsDir := "/app/uploads"
+	if os.Getenv("RAILWAY_ENVIRONMENT_NAME") == "" {
+		uploadsDir = "./uploads" // Local dev
+	}
+	os.MkdirAll(uploadsDir, 0755)
+	router.PathPrefix("/assets/uploads/").Handler(
+		http.StripPrefix("/assets/uploads/", http.FileServer(http.Dir(uploadsDir))),
+	)
+
 	publicAssetsDir := filepath.Join("..", "public", "assets")
 	if _, err := os.Stat(publicAssetsDir); os.IsNotExist(err) {
 		os.MkdirAll(publicAssetsDir, 0755)
@@ -84,21 +94,7 @@ func main() {
 	})
 
 	handler := c.Handler(router)
-	
-	// Serve uploaded files
-	uploadsDir := "/app/uploads"
-	if os.Getenv("RAILWAY_ENVIRONMENT_NAME") == "" {
-		uploadsDir = "./uploads" // Local dev
-	}
 
-	// Create if not exists
-	os.MkdirAll(uploadsDir, 0755)
-
-	// Add route
-	router.PathPrefix("/assets/uploads/").Handler(
-		http.StripPrefix("/assets/uploads/", http.FileServer(http.Dir(uploadsDir))),
-	)
-	
 	log.Fatal(http.ListenAndServe(port, handler))
 
 }

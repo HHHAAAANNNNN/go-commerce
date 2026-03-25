@@ -48,7 +48,7 @@ export default function Home() {
   };
 
   const handleUpdateQuantity = (id: number, quantity: number) => {
-    setCartItems(cartItems.map(item => 
+    setCartItems(cartItems.map(item =>
       item.id === id ? { ...item, quantity } : item
     ));
   };
@@ -77,7 +77,7 @@ export default function Home() {
         <SocialProof />
         <CTASection onLoginClick={handleOpenLogin} />
       </main>
-      <Footer />
+      <Footer onLoginClick={handleOpenLogin} />
 
       {/* Floating Buttons */}
       <FloatingButtons

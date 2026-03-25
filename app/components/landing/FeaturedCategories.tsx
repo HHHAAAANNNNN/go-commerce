@@ -322,7 +322,7 @@ export default function FeaturedCategories({
           <div className="mb-32">
             <div className="grid lg:grid-cols-2 gap-8 items-center">
               {/* Cards - Left */}
-              <div className="order-2 lg:order-1">
+              <div className="order-2 lg:order-1 min-w-0 overflow-hidden">
                 <ScrollRow
                   products={phones}
                   loading={loading}
@@ -334,32 +334,32 @@ export default function FeaturedCategories({
 
               {/* Info - Right */}
               <div className="order-1 lg:order-2 space-y-6">
-                <h3 className="text-4xl md:text-5xl font-bold text-white leading-tight">
+                <h3 className="text-3xl md:text-5xl font-bold text-white leading-tight">
                   Latest Flagship{" "}
                   <span className="text-primary-400">Smartphones</span>
                 </h3>
-                <p className="text-slate-400 text-lg leading-relaxed">
+                <p className="text-slate-400 text-base md:text-lg leading-relaxed">
                   Discover cutting-edge smartphones with powerful processors,
                   stunning displays, and advanced camera systems. Get the best
                   deals on trending flagship devices.
                 </p>
-                <div className="grid grid-cols-2 gap-4 py-6">
-                  <div className="p-4 bg-primary-400/5 rounded-xl border border-primary-400/10">
-                    <svg className="w-8 h-8 text-primary-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="grid grid-cols-2 gap-4 py-4 md:py-6">
+                  <div className="p-3 md:p-4 bg-primary-400/5 rounded-xl border border-primary-400/10">
+                    <svg className="w-6 h-6 md:w-8 md:h-8 text-primary-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
-                    <p className="text-white font-semibold">Fast Shipping</p>
-                    <p className="text-slate-500 text-sm">Same day delivery</p>
+                    <p className="text-white font-semibold text-sm md:text-base">Fast Shipping</p>
+                    <p className="text-slate-500 text-xs md:text-sm">Same day delivery</p>
                   </div>
-                  <div className="p-4 bg-secondary-400/5 rounded-xl border border-secondary-400/10">
-                    <svg className="w-8 h-8 text-secondary-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="p-3 md:p-4 bg-secondary-400/5 rounded-xl border border-secondary-400/10">
+                    <svg className="w-6 h-6 md:w-8 md:h-8 text-secondary-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                     </svg>
-                    <p className="text-white font-semibold">Member Deals</p>
-                    <p className="text-slate-500 text-sm">Up to 10% off</p>
+                    <p className="text-white font-semibold text-sm md:text-base">Member Deals</p>
+                    <p className="text-slate-500 text-xs md:text-sm">Up to 10% off</p>
                   </div>
                 </div>
-                <button className="group px-8 py-4 bg-gradient-to-r from-primary-400 to-primary-500 text-white rounded-full font-semibold text-lg hover:from-primary-500 hover:to-primary-600 transition-all duration-300 hover:scale-105 shadow-lg shadow-primary-400/20 hover:shadow-xl hover:shadow-primary-400/30">
+                <button className="group px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-primary-400 to-primary-500 text-white rounded-full font-semibold text-base md:text-lg hover:from-primary-500 hover:to-primary-600 transition-all duration-300 hover:scale-105 shadow-lg shadow-primary-400/20 hover:shadow-xl hover:shadow-primary-400/30">
                   Browse Phones
                   <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
@@ -374,39 +374,39 @@ export default function FeaturedCategories({
             <div className="grid lg:grid-cols-2 gap-8 items-center mt-[-50px]">
               {/* Info - Left */}
               <div className="space-y-6">
-                <h3 className="text-4xl md:text-5xl font-bold text-white leading-tight">
+                <h3 className="text-3xl md:text-5xl font-bold text-white leading-tight">
                   Premium{" "}
                   <span className="text-secondary-400">Laptops</span> Collection
                 </h3>
-                <p className="text-slate-400 text-lg leading-relaxed">
+                <p className="text-slate-400 text-base md:text-lg leading-relaxed">
                   High-performance laptops for work, gaming, and creativity.
                   Shop the latest models with cutting-edge technology and
                   stunning designs.
                 </p>
-                <div className="grid grid-cols-2 gap-4 py-6">
-                  <div className="p-4 bg-secondary-400/5 rounded-xl border border-secondary-400/10">
-                    <svg className="w-8 h-8 text-secondary-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="grid grid-cols-2 gap-4 py-4 md:py-6">
+                  <div className="p-3 md:p-4 bg-secondary-400/5 rounded-xl border border-secondary-400/10">
+                    <svg className="w-6 h-6 md:w-8 md:h-8 text-secondary-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                     </svg>
-                    <p className="text-white font-semibold">Warranty</p>
-                    <p className="text-slate-500 text-sm">2 years coverage</p>
+                    <p className="text-white font-semibold text-sm md:text-base">Warranty</p>
+                    <p className="text-slate-500 text-xs md:text-sm">2 years coverage</p>
                   </div>
-                  <div className="p-4 bg-accent-400/5 rounded-xl border border-accent-400/10">
-                    <svg className="w-8 h-8 text-accent-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <div className="p-3 md:p-4 bg-accent-400/5 rounded-xl border border-accent-400/10">
+                    <svg className="w-6 h-6 md:w-8 md:h-8 text-accent-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08-.402-2.599-1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <p className="text-white font-semibold">Best Price</p>
-                    <p className="text-slate-500 text-sm">Price guarantee</p>
+                    <p className="text-white font-semibold text-sm md:text-base">Best Price</p>
+                    <p className="text-slate-500 text-xs md:text-sm">Price guarantee</p>
                   </div>
                 </div>
-                <button className="group px-8 py-4 bg-gradient-to-r from-secondary-400 to-secondary-500 text-white rounded-full font-semibold text-lg hover:from-secondary-500 hover:to-secondary-600 transition-all duration-300 hover:scale-105 shadow-lg shadow-secondary-400/20 hover:shadow-xl hover:shadow-secondary-400/30">
+                <button className="group px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-secondary-400 to-secondary-500 text-white rounded-full font-semibold text-base md:text-lg hover:from-secondary-500 hover:to-secondary-600 transition-all duration-300 hover:scale-105 shadow-lg shadow-secondary-400/20 hover:shadow-xl hover:shadow-secondary-400/30">
                   Browse Laptops
                   <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
               </div>
 
               {/* Cards - Right */}
-              <div>
+              <div className="min-w-0 overflow-hidden">
                 <ScrollRow
                   products={laptops}
                   loading={loading}

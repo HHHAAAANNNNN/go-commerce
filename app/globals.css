@@ -242,4 +242,13 @@ html {
   .animate-slide-in-right {
     animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
+
+  /* Hide Scrollbar Utility */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }

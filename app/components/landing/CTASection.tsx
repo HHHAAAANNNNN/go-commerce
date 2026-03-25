@@ -124,20 +124,20 @@ export default function CTASection({ onLoginClick }: CTASectionProps) {
   }
 
   return (
-    <section id="cta" className="relative py-32 bg-gradient-to-b from-[#0A0A0F] via-[#0f0a1a] to-[#0A0A0F] overflow-hidden">
+    <section id="cta" className="relative pt-24 pb-10 bg-gradient-to-b from-[#0A0A0F] via-[#0f0a1a] to-[#0A0A0F] overflow-hidden">
       {/* Top gradient transition from previous section */}
-      <div className="absolute inset-x-0 top-0 h-96 bg-gradient-to-b from-[#0A0A0F] via-[#0A0A0F]/50 to-transparent pointer-events-none"></div>
+      <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#0A0A0F] via-[#0A0A0F]/50 to-transparent pointer-events-none"></div>
 
       {/* Background Elements */}
       <div className="absolute inset-0 bg-gradient-to-r from-primary-400/5 via-transparent to-secondary-400/5"></div>
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-primary-400/10 via-accent-400/10 to-secondary-400/10 rounded-full filter blur-3xl"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-primary-400/10 via-accent-400/10 to-secondary-400/10 rounded-full filter blur-3xl max-w-full"></div>
 
       {/* Animated blobs */}
       <div className="absolute top-20 left-20 w-72 h-72 bg-primary-400/10 rounded-full filter blur-3xl animate-blob"></div>
       <div className="absolute top-20 right-20 w-72 h-72 bg-secondary-400/10 rounded-full filter blur-3xl animate-blob animation-delay-2000"></div>
-      <div className="absolute bottom-20 left-1/2 w-72 h-72 bg-accent-400/10 rounded-full filter blur-3xl animate-blob animation-delay-4000"></div>
+      <div className="absolute bottom-0 left-1/2 w-72 h-72 bg-accent-400/10 rounded-full filter blur-3xl animate-blob animation-delay-4000"></div>
 
-      <div className="relative container mx-auto px-4 -mt-8">
+      <div className="relative container mx-auto px-4">
         <div className={`mx-auto transition-all duration-700 ease-in-out ${showRegisterForm ? 'max-w-7xl' : 'max-w-4xl'}`}>
           <div className={`grid transition-all duration-700 ease-in-out items-center ${showRegisterForm ? 'grid-cols-1 lg:grid-cols-3 gap-8' : 'grid-cols-1'}`}>
 
@@ -250,8 +250,8 @@ export default function CTASection({ onLoginClick }: CTASectionProps) {
 
             {/* Register Form - Slides in from right (1/3 width) */}
             <div className={`transition-all duration-700 ease-in-out ${showRegisterForm
-                ? 'opacity-100 translate-x-0 visible'
-                : 'opacity-0 translate-x-full invisible lg:absolute lg:right-0'
+              ? 'opacity-100 translate-x-0 visible'
+              : 'opacity-0 translate-x-full invisible lg:absolute lg:right-0'
               }`}>
               <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 shadow-2xl">
                 {/* Header */}

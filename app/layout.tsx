@@ -21,9 +21,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className={inter.variable}>
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased overflow-x-hidden w-full max-w-[100vw]">
         {children}
-        <Toaster 
+        <Toaster
           position="top-center"
           toastOptions={{
             duration: 4000,

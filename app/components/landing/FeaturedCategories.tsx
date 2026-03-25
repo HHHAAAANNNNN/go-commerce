@@ -33,14 +33,47 @@ function useAutoScroll(ref: React.RefObject<HTMLDivElement | null>, enabled: boo
   useEffect(() => {
     if (!enabled || !ref.current) return;
     const container = ref.current;
-    let scrollPos = 0;
-    const scroll = () => {
-      scrollPos += 0.5;
-      if (scrollPos >= container.scrollWidth / 2) scrollPos = 0;
-      container.scrollLeft = scrollPos;
+    let scrollPos = container.scrollLeft;
+    let isHovering = false;
+    let animationFrameId: number;
+    let lastTime = performance.now();
+
+    const stopAuto = () => { isHovering = true; };
+    const startAuto = () => {
+      isHovering = false;
+      if (container) scrollPos = container.scrollLeft;
+      lastTime = performance.now();
     };
-    const interval = setInterval(scroll, 20);
-    return () => clearInterval(interval);
+
+    container.addEventListener("mouseenter", stopAuto);
+    container.addEventListener("mouseleave", startAuto);
+    container.addEventListener("touchstart", stopAuto, { passive: true });
+    container.addEventListener("touchend", startAuto, { passive: true });
+    container.addEventListener("scroll", () => {
+      if (isHovering && container) scrollPos = container.scrollLeft;
+    }, { passive: true });
+
+    const scroll = (time: number) => {
+      const delta = time - lastTime;
+      lastTime = time;
+
+      if (!isHovering && container) {
+        scrollPos += 0.05 * delta;
+        if (scrollPos >= container.scrollWidth / 2) scrollPos = 0;
+        container.scrollLeft = scrollPos;
+      }
+      animationFrameId = requestAnimationFrame(scroll);
+    };
+
+    animationFrameId = requestAnimationFrame(scroll);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      container.removeEventListener("mouseenter", stopAuto);
+      container.removeEventListener("mouseleave", startAuto);
+      container.removeEventListener("touchstart", stopAuto);
+      container.removeEventListener("touchend", startAuto);
+    };
   }, [enabled, ref]);
 }
 
@@ -202,7 +235,7 @@ function ScrollRow({
   return (
     <div
       ref={refEl}
-      className="flex gap-6 overflow-x-hidden py-8"
+      className="flex gap-6 overflow-x-auto py-8 scrollbar-hide touch-pan-x"
       style={{ scrollBehavior: "auto" }}
     >
       {loading

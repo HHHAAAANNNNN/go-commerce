@@ -193,11 +193,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     <>
       {/* Success Toast — below navbar */}
       {successMsg && (
-        <div className={`fixed top-[85px] right-6 z-[60] flex items-center gap-3 px-5 py-4 rounded-xl shadow-2xl backdrop-blur-sm border ${
-          successMsg.startsWith("🛒 Demo") 
-            ? "bg-amber-500/20 border-amber-500/40" 
+        <div className={`fixed top-[85px] right-6 z-[60] flex items-center gap-3 px-5 py-4 rounded-xl shadow-2xl backdrop-blur-sm border ${successMsg.startsWith("🛒 Demo")
+            ? "bg-amber-500/20 border-amber-500/40"
             : "bg-green-500/20 border-green-500/40"
-        }`}>
+          }`}>
           {successMsg.startsWith("🛒 Demo") ? (
             <span className="text-amber-300 text-lg shrink-0">ℹ️</span>
           ) : (
@@ -213,15 +212,15 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
       {/* Floating Edit Button — admin only */}
       {role === 'admin' && (
-      <button
-        onClick={() => setShowEditModal(true)}
-        title="Edit Product"
-        className="fixed bottom-8 right-8 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-primary-400 to-secondary-400 hover:from-primary-500 hover:to-secondary-500 text-white shadow-2xl shadow-primary-400/40 hover:shadow-primary-400/60 hover:scale-110 active:scale-95 transition-all duration-200 flex items-center justify-center"
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-        </svg>
-      </button>
+        <button
+          onClick={() => setShowEditModal(true)}
+          title="Edit Product"
+          className="fixed bottom-8 right-8 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-primary-400 to-secondary-400 hover:from-primary-500 hover:to-secondary-500 text-white shadow-2xl shadow-primary-400/40 hover:shadow-primary-400/60 hover:scale-110 active:scale-95 transition-all duration-200 flex items-center justify-center"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+        </button>
       )}
 
       <div className="space-y-6">
@@ -280,14 +279,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               </div>
               {/* Delete button — admin only */}
               {role === 'admin' && (
-              <button
-                onClick={() => setShowDeleteModal(true)}
-                className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/60 text-red-400 hover:text-red-300 rounded-lg text-sm transition-all"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
+                <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/60 text-red-400 hover:text-red-300 rounded-lg text-sm transition-all"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
               )}
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">{product.name}</h1>
@@ -310,26 +309,26 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             </div>
             {/* Quantity + Add to Cart — customer only */}
             {role === 'customer' && (
-            <>
-            <div className="space-y-3">
-              <label className="text-white font-semibold">Quantity</label>
-              <div className="flex items-center gap-3">
-                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} disabled={product.stock === 0} className="w-12 h-12 flex items-center justify-center bg-slate-800 hover:bg-slate-700 disabled:bg-slate-900 disabled:cursor-not-allowed border border-slate-700 rounded-lg text-white transition-all">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
-                </button>
-                <span className="w-16 text-center text-white font-bold text-xl">{quantity}</span>
-                <button onClick={() => setQuantity(Math.min(product.stock, quantity + 1))} disabled={product.stock === 0} className="w-12 h-12 flex items-center justify-center bg-slate-800 hover:bg-slate-700 disabled:bg-slate-900 disabled:cursor-not-allowed border border-slate-700 rounded-lg text-white transition-all">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                </button>
-                <span className="text-slate-400 text-sm ml-2">({product.stock} available)</span>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <button onClick={handleAddToCart} disabled={product.stock === 0} className="flex-1 py-4 bg-gradient-to-r from-primary-400 to-secondary-400 hover:from-primary-500 hover:to-secondary-500 disabled:from-slate-600 disabled:to-slate-700 text-white font-bold rounded-lg transition-all duration-300 disabled:cursor-not-allowed">
-                {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
-              </button>
-            </div>
-            </>
+              <>
+                <div className="space-y-3">
+                  <label className="text-white font-semibold">Quantity</label>
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} disabled={product.stock === 0} className="w-12 h-12 flex items-center justify-center bg-slate-800 hover:bg-slate-700 disabled:bg-slate-900 disabled:cursor-not-allowed border border-slate-700 rounded-lg text-white transition-all">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
+                    </button>
+                    <span className="w-16 text-center text-white font-bold text-xl">{quantity}</span>
+                    <button onClick={() => setQuantity(Math.min(product.stock, quantity + 1))} disabled={product.stock === 0} className="w-12 h-12 flex items-center justify-center bg-slate-800 hover:bg-slate-700 disabled:bg-slate-900 disabled:cursor-not-allowed border border-slate-700 rounded-lg text-white transition-all">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                    </button>
+                    <span className="text-slate-400 text-sm ml-2">({product.stock} available)</span>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={handleAddToCart} disabled={product.stock === 0} className="flex-1 py-4 bg-gradient-to-r from-primary-400 to-secondary-400 hover:from-primary-500 hover:to-secondary-500 disabled:from-slate-600 disabled:to-slate-700 text-white font-bold rounded-lg transition-all duration-300 disabled:cursor-not-allowed">
+                    {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                  </button>
+                </div>
+              </>
             )}
             <div className="grid grid-cols-2 gap-3 pt-4">
               {[
@@ -701,7 +700,12 @@ function EditProductModal({ product, onClose, onSaved }: EditProductModalProps) 
         const uploadRes = await authFetch(`${BACKEND}/api/upload`, { method: 'POST', body: fd });
         if (uploadRes.ok) {
           const uploadData = await uploadRes.json();
-          if (uploadData.data?.url) finalImageUrl = uploadData.data.url;
+          // Try both possible structures
+          if (uploadData.data?.url) {
+            finalImageUrl = uploadData.data.url;
+          } else if (uploadData.url) {
+            finalImageUrl = uploadData.url;
+          }
         }
       }
 

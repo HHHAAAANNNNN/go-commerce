@@ -578,9 +578,11 @@ function AddProductModal({ onClose, onProductAdded }: AddProductModalProps) {
 
         if (uploadResponse.ok) {
           const uploadData = await uploadResponse.json();
-          // Store ONLY the relative path (e.g. /assets/products/phones/file.jpg)
-          if (uploadData.data && uploadData.data.url) {
+          // Try both possible structures
+          if (uploadData.data?.url) {
             imageUrl = uploadData.data.url;
+          } else if (uploadData.url) {
+            imageUrl = uploadData.url;
           }
         }
       }

@@ -194,8 +194,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       {/* Success Toast — below navbar */}
       {successMsg && (
         <div className={`fixed top-[85px] right-6 z-[60] flex items-center gap-3 px-5 py-4 rounded-xl shadow-2xl backdrop-blur-sm border ${successMsg.startsWith("🛒 Demo")
-            ? "bg-amber-500/20 border-amber-500/40"
-            : "bg-green-500/20 border-green-500/40"
+          ? "bg-amber-500/20 border-amber-500/40"
+          : "bg-green-500/20 border-green-500/40"
           }`}>
           {successMsg.startsWith("🛒 Demo") ? (
             <span className="text-amber-300 text-lg shrink-0">ℹ️</span>
@@ -647,9 +647,9 @@ function EditProductModal({ product, onClose, onSaved }: EditProductModalProps) 
 
   const [audioSpec, setAudioSpec] = useState({
     frequency_response: sv('Respon Frekuensi'),
-    impedance: strip(sv('Impedansi'), 'Ω'),
-    sensitivity: strip(sv('Sensitivitas'), 'dB'),
-    driver_size: strip(sv('Ukuran Driver'), 'mm'),
+    impedance: parseNum(sv('Impedansi')),
+    sensitivity: parseNum(sv('Sensitivitas')),
+    driver_size: parseNum(sv('Ukuran Driver')),
   });
 
   // suppress unused variable warning

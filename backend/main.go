@@ -86,4 +86,18 @@ func main() {
 	handler := c.Handler(router)
 
 	log.Fatal(http.ListenAndServe(port, handler))
+
+	// Serve uploaded files
+	uploadsDir := "/app/uploads"
+	if os.Getenv("RAILWAY_ENVIRONMENT_NAME") == "" {
+		uploadsDir = "./uploads" // Local dev
+	}
+
+	// Create if not exists
+	os.MkdirAll(uploadsDir, 0755)
+
+	// Add route
+	router.PathPrefix("/assets/uploads/").Handler(
+		http.StripPrefix("/assets/uploads/", http.FileServer(http.Dir(uploadsDir))),
+	)
 }

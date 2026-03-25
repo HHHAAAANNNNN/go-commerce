@@ -36,7 +36,7 @@ func SetupRoutes() *mux.Router {
 	api.HandleFunc("/auth/login", controllers.Login).Methods("POST", "OPTIONS")
 
 	// Upload — admin only
-	api.Handle("/upload", adminOnly(controllers.UploadImage)).Methods("POST", "OPTIONS")
+	api.Handle("/upload", adminOnly(controllers.UploadProductImage)).Methods("POST", "OPTIONS")
 
 	// User routes — list/create/update/delete are admin-only; per-user routes are open
 	api.Handle("/users", adminOnly(controllers.GetAllUsers)).Methods("GET", "OPTIONS")

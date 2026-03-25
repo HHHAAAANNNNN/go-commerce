@@ -251,7 +251,7 @@ export default function CTASection({ onLoginClick }: CTASectionProps) {
             {/* Register Form - Slides in from right (1/3 width) */}
             <div className={`transition-all duration-700 ease-in-out ${showRegisterForm
               ? 'opacity-100 translate-x-0 visible'
-              : 'opacity-0 translate-x-full invisible lg:absolute lg:right-0'
+              : 'opacity-0 translate-x-full invisible absolute right-0'
               }`}>
               <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 shadow-2xl">
                 {/* Header */}

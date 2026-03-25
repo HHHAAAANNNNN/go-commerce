@@ -66,7 +66,7 @@ export default function AppLayout({
   return (
     <div className="min-h-screen bg-[#0A0A0F]">
       <AppNavbar onToggleSidebar={handleToggleSidebar} />
-      
+
       {/* Sidebar — hidden on mobile, fixed on desktop */}
       <div className="hidden md:block fixed left-0 top-[73px] h-[calc(100vh-73px)] z-30">
         <Sidebar isCollapsed={isSidebarCollapsed} />
@@ -80,13 +80,11 @@ export default function AppLayout({
           onMobileClose={() => setIsMobileDrawerOpen(false)}
         />
       </div>
-      
-      {/* Main Content — no margin on mobile, sidebar margin on desktop */}
-      <main 
-        className={`pb-6 px-4 md:px-6 transition-all duration-300 ${
-          isSidebarCollapsed ? "md:ml-20" : "md:ml-64"
-        }`}
-        style={{ marginTop: '20px' }}
+
+      {/* Main Content — responsive layout */}
+      <main
+        className={`pt-6 pb-8 px-4 md:px-6 transition-all duration-300 ${isSidebarCollapsed ? "md:ml-20" : "md:ml-64"
+          }`}
       >
         {children}
       </main>

@@ -1,13 +1,14 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/HHHAAAANNNNN/go-commerce-backend/utils"
 )
 
 func UploadProductImage(w http.ResponseWriter, r *http.Request) {
@@ -47,8 +48,7 @@ func UploadProductImage(w http.ResponseWriter, r *http.Request) {
 	// Return accessible URL
 	imageURL := fmt.Sprintf("/assets/uploads/%s", filename)
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
+	utils.SuccessResponse(w, "Image uploaded successfully", map[string]string{
 		"url": imageURL,
 	})
 }

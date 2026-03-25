@@ -84,9 +84,7 @@ func main() {
 	})
 
 	handler := c.Handler(router)
-
-	log.Fatal(http.ListenAndServe(port, handler))
-
+	
 	// Serve uploaded files
 	uploadsDir := "/app/uploads"
 	if os.Getenv("RAILWAY_ENVIRONMENT_NAME") == "" {
@@ -100,4 +98,7 @@ func main() {
 	router.PathPrefix("/assets/uploads/").Handler(
 		http.StripPrefix("/assets/uploads/", http.FileServer(http.Dir(uploadsDir))),
 	)
+	
+	log.Fatal(http.ListenAndServe(port, handler))
+
 }
